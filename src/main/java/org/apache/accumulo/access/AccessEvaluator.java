@@ -39,7 +39,7 @@ import java.util.List;
  * </pre>
  *
  *
- * @since ???
+ * @since 1.0.0
  */
 public interface AccessEvaluator {
   /**
@@ -57,7 +57,7 @@ public interface AccessEvaluator {
   boolean canAccess(AccessExpression accessExpression) throws IllegalAccessExpressionException;
 
   /**
-   * @since ???
+   * @since 1.0.0
    */
   interface Authorizer {
     boolean isAuthorized(String auth);

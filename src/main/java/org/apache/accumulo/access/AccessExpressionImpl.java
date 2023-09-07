@@ -518,7 +518,7 @@ class AccessExpressionImpl implements AccessExpression {
 
   @Override
   public String toString() {
-    return "[" + new String(expression, UTF_8) + "]";
+    return getExpression();
   }
 
   /**

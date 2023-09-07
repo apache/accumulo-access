@@ -101,6 +101,24 @@
           "|A",
           "A&",
           "&A",
+          "&(five)",
+          "|(five)",
+          "(five)&",
+          "five|",
+          "a|(b)&",
+          "(&five)",
+          "(five|)",
+          "one(five)",
+          "(five)one",
+          "(one)(two)",
+          "a|(b(c))",
+          "(", ")",
+          "(a&b",
+          "b|a)",
+          "A|B)",
+          "(A&B)|(C&D)&(E)",
+          "a|b&c",
+          "A&B&C|D",
           "A|(B|)",
           "A|(|B)",
           "A|(B&)",
@@ -131,7 +149,44 @@
           "\"\\c\"",
           "\"\\\"",
           "\"\"\"",
-          "\"\"\"&A"
+          "\"\"\"&A",
+          "!",
+          "!|a",
+          "a|!",
+          "@",
+          "@|a",
+          "(@|a)",
+          "a|@",
+          "(a|@)",
+          "#",
+          "$",
+          "%",
+          "^",
+          "*",
+          "=",
+          "+",
+          "~",
+          "`",
+          "[",
+          "]",
+          "[A|Z]",
+          "{",
+          "{a|c}",
+          "}",
+          ",",
+          "<",
+          ">",
+          "?",
+          "&&",
+          "a&&b",
+          "a&b&&c",
+          "||",
+          "a||b",
+          "a|b||c",
+          "&|",
+          "|&",
+          "a|b&",
+          "(|a)"
         ]
       }
     ]
@@ -245,6 +300,44 @@
           "A",
           "/&A",
           "B|(_&C)"
+        ]
+      }
+    ]
+  },
+  {
+    "description": "expressions with all possible chars not needing quotes",
+    "auths": [
+      [
+        "abcdefghijklmnopqrstuzwxyz",
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "0123456789",
+        "/.-_:",
+        "Ab3/zy8"
+      ]
+    ],
+    "tests": [
+      {
+        "expectedResult": "ACCESSIBLE",
+        "expressions": [
+          "abcdefghijklmnopqrstuzwxyz",
+          "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+          "0123456789",
+          "/.-_:",
+          "Ab3/zy8",
+          "abcdefghijklmnopqrstuzwxyz&ABCDEFGHIJKLMNOPQRSTUVWXYZ&0123456789&/.-_:&Ab3/zy8",
+          "abcdefghijklmnopqrstuzwxyz|ABCDEFGHIJKLMNOPQRSTUVWXYZ|0123456789|/.-_:|Ab3/zy8",
+          "(abcdefghijklmnopqrstuzwxyz&ABCDEFGHIJKLMNOPQRSTUVWXYZ)|(0123456789&/.-_:&Ab3/zy8)",
+          "(abcdefghijklmnopqrstuzwxyz|ABCDEFGHIJKLMNOPQRSTUVWXYZ)&(0123456789|/.-_:|Ab3/zy8)"
+        ]
+      },
+      {
+        "expectedResult": "INACCESSIBLE",
+        "expressions": [
+          "abcdefghijklmnopqrstuzwxyz&abcdefghijklmnopqrstuzwxyz0123456789",
+          "ABCDEFGHIJKLMNOPQRSTUVWXYZAb3/zy8&0123456789",
+          "abcdefghijklmnopqrstuzwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+          "Ab4/zy7|(z&Ab3/zy8)",
+          "/.-_:&999"
         ]
       }
     ]
