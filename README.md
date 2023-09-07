@@ -39,4 +39,4 @@ The following types constitute the public API of this library.  All other types 
 
 For an example of using this library see the [unit test](src/test/java/org/apache/accumulo/access/AccessEvaluatorTest.java).
 
-See the [specification][SPECIFICATION.md] for details about access expressions.
+See the [specification](SPECIFICATION.md) for details about access expressions.
