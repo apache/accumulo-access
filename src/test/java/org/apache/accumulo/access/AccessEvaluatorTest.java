@@ -118,6 +118,7 @@ public class AccessEvaluatorTest {
       assertTrue(tests.expressions.length > 0);
 
       for (var expression : tests.expressions) {
+
         switch (tests.expectedResult) {
           case ACCESSIBLE:
             assertTrue(evaluator.canAccess(expression), expression);
