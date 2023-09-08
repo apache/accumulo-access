@@ -53,9 +53,8 @@ package org.apache.accumulo.access;
  * [🦖, CAT, 🦕]
  * </pre>
  *
- * @since ???
+ * @since 1.0.0
  */
-// TODO could name VisibilityLabel
 public interface AccessExpression {
 
   /**

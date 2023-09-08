@@ -81,16 +81,6 @@ class BytesWrapper implements Comparable<BytesWrapper> {
     return length;
   }
 
-  public byte[] toArray() {
-    if (offset == 0 && length == data.length) {
-      return data;
-    }
-
-    byte[] copy = new byte[length];
-    System.arraycopy(data, offset, copy, 0, length);
-    return copy;
-  }
-
   @Override
   public int compareTo(BytesWrapper obs) {
     return Arrays.compare(data, offset, offset + length(), obs.data, obs.offset,
