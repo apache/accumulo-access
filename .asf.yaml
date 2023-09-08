@@ -35,5 +35,3 @@ notifications:
   commits:      commits@accumulo.apache.org
   issues:       notifications@accumulo.apache.org
   pullrequests: notifications@accumulo.apache.org
-  jobs:         notifications@accumulo.apache.org
-  discussions:  notifications@accumulo.apache.org
