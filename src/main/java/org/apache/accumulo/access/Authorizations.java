@@ -23,7 +23,7 @@ import java.util.Set;
 
 /**
  *
- * @since ????
+ * @since 1.0.0
  */
 public class Authorizations {
   private final Set<String> authorizations;
