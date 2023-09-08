@@ -46,7 +46,8 @@ or-expression           =/ access-token
 access-token            = 1*( ALPHA / DIGIT / "_" / "-" / "." / ":" / slash )
 access-token            =/ DQUOTE 1*(utf8-subset / escaped) DQUOTE
 
-utf8-subset             = %x20-21 / %x23-5B / %5D-7E / UVCHARBEYONDASCII ; utf8 minus '"' and '\'
+utf8-subset             = %x20-21 / %x23-5B / %x5D-7E / unicode-beyond-ascii ; utf8 minus '"' and '\'
+unicode-beyond-ascii    = %x0080-D7FF / %xE000-10FFFF
 escaped                 = "\" DQUOTE / "\\"
 slash                   = "/"
 or-operator             = "|"
@@ -55,12 +56,9 @@ lparen                  = "("
 rparen                  = ")"
 ```
 
-The definition of utf8 was borrowed from this [ietf document][2].  TODO that doc defines unicode and not utf8
-
 ## Serialization
 
 An AccessExpression is a UTF-8 string. It can be serialized using a byte array as long as it
 can be deserialized back into the same UTF-8 string.
 
 [1]: https://www.rfc-editor.org/rfc/rfc5234
-[2]: https://datatracker.ietf.org/doc/html/draft-seantek-unicode-in-abnf-03#section-4.2

@@ -22,6 +22,12 @@
   </properties>
 
   <dependencies>
+	<dependency>
+	    <groupId>org.antlr</groupId>
+	    <artifactId>antlr4-runtime</artifactId>
+	    <version>4.13.1</version>
+	    <scope>compile</scope>
+	</dependency>
     <dependency>
       <groupId>com.github.spotbugs</groupId>
       <artifactId>spotbugs-annotations</artifactId>
@@ -44,10 +50,26 @@
 
   <build>
     <plugins>
+		<plugin>
+		    <groupId>org.antlr</groupId>
+		    <artifactId>antlr4-maven-plugin</artifactId>
+		    <version>4.13.1</version>
+		    <executions>
+		        <execution>
+		            <goals>
+		                <goal>antlr4</goal>
+		            </goals>
+		            <phase>generate-sources</phase>
+		            <configuration>
+		            	<outputDirectory>target/generated-sources/antlr4/org/apache/accumulo/access/grammars</outputDirectory>
+		            </configuration>
+		        </execution>
+		    </executions>
+		</plugin>
       <plugin>
         <groupId>net.revelc.code</groupId>
-	<artifactId>apilyzer-maven-plugin</artifactId>
-	<version>1.3.0</version>
+		<artifactId>apilyzer-maven-plugin</artifactId>
+		<version>1.3.0</version>
         <executions>
           <execution>
             <id>apilyzer</id>
