@@ -29,7 +29,7 @@ github:
   features:
     wiki: false
     issues: true
-    projects: false
+    projects: true
 
 notifications:
   commits:      commits@accumulo.apache.org
