@@ -22,14 +22,14 @@ grammar AccessExpression;
   package org.apache.accumulo.access.grammars;
 }
 
-access_expression : expression;
+access_expression : EOF | expression;
 
 expression : ACCESS_TOKEN
              | '(' expression ')'
              | expression AND_OPERATOR expression
              | expression OR_OPERATOR expression;
 
-ACCESS_TOKEN : ( [A-Za-z] | [0-9] | '_' | '-' | '.' | ':' | '/' )+ 
+ACCESS_TOKEN : ( [A-Za-z] | [0-9] | '_' | '-' | '.' | ':' | '/' )+
                | '"' ( [\u0020-\u0021] | [\u0023-\u005B] | [\u005D-\u007E] | [\u0080-\uD7FF] | [\uE000-\u{10FFFF}] | ( '\\"' | '\\' ) )+ '"' ;
 OR_OPERATOR : '|';
 AND_OPERATOR : '&';

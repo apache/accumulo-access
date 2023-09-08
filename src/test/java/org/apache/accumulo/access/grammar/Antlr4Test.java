@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.antlr.v4.runtime.CharStreams;
@@ -14,6 +15,12 @@ import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.antlr.v4.runtime.LexerNoViableAltException;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
+import org.apache.accumulo.access.AccessEvaluatorTest;
+import org.apache.accumulo.access.AccessEvaluatorTest.ExpectedResult;
+import org.apache.accumulo.access.AccessEvaluatorTest.TestDataSet;
+import org.apache.accumulo.access.AccessEvaluatorTest.TestExpressions;
+import org.apache.accumulo.access.AccessExpression;
+import org.apache.accumulo.access.IllegalAccessExpressionException;
 import org.apache.accumulo.access.grammars.AbnfLexer;
 import org.apache.accumulo.access.grammars.AbnfParser;
 import org.apache.accumulo.access.grammars.AccessExpressionLexer;
@@ -51,6 +58,17 @@ public class Antlr4Test {
     };
     
     AbnfParser parser = new AbnfParser(new CommonTokenStream(lexer));
+    parser.removeErrorListeners();
+    parser.addErrorListener(new ConsoleErrorListener() {
+
+      @Override
+      public void syntaxError(Recognizer<?,?> recognizer, Object offendingSymbol, int line,
+          int charPositionInLine, String msg, RecognitionException e) {
+        super.syntaxError(recognizer, offendingSymbol, line, charPositionInLine, msg, e);
+        errors.incrementAndGet();
+      }
+      
+    });
 
     parser.rulelist();
     assertEquals(0, errors.get());
@@ -65,6 +83,26 @@ public class Antlr4Test {
     assertThrows(AssertionFailedError.class, () -> test("A|"));
     test("(A&B)");
     test("(A|B)");
+  }
+  
+  @Test
+  public void testCompareWithAccessExpressionImplParsing() throws Exception {
+    List<TestDataSet> testData = AccessEvaluatorTest.readTestData();
+    for (TestDataSet testSet : testData) {
+      for (TestExpressions test : testSet.tests) {
+        ExpectedResult result = test.expectedResult;
+        for (String cv : test.expressions) {
+          System.out.println("Testing: " + cv);
+          if (result == ExpectedResult.ERROR) {
+            assertThrows(IllegalAccessExpressionException.class, () -> AccessExpression.of(cv));
+            assertThrows(AssertionError.class, () -> test(cv));
+          } else {
+            AccessExpression.of(cv);
+            test(cv);
+          }
+        }
+      }
+    }
   }
   
   private void test(String input) throws Exception {

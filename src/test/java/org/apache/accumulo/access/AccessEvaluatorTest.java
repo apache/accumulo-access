@@ -42,26 +42,26 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class AccessEvaluatorTest {
 
-  enum ExpectedResult {
+  public enum ExpectedResult {
     ACCESSIBLE, INACCESSIBLE, ERROR
   }
 
   public static class TestExpressions {
-    ExpectedResult expectedResult;
-    String[] expressions;
+    public ExpectedResult expectedResult;
+    public String[] expressions;
   }
 
   public static class TestDataSet {
-    String description;
+    public String description;
 
-    String[][] auths;
+    public String[][] auths;
 
-    List<TestExpressions> tests;
+    public List<TestExpressions> tests;
 
   }
 
-  private List<TestDataSet> readTestData() throws IOException {
-    try (var input = getClass().getClassLoader().getResourceAsStream("testdata.json")) {
+  public static List<TestDataSet> readTestData() throws IOException {
+    try (var input = AccessEvaluatorTest.class.getClassLoader().getResourceAsStream("testdata.json")) {
       if (input == null) {
         throw new IllegalStateException("could not find resource : testdata.json");
       }
