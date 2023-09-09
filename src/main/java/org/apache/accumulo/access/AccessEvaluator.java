@@ -31,7 +31,7 @@ import java.util.List;
  *
  * <pre>
  * {@code
- * var evaluator = VisibilityArbiter.builder().authorizations("ALPHA", "OMEGA").build();
+ * var evaluator = AccessEvaluator.builder().authorizations("ALPHA", "OMEGA").build();
  *
  * System.out.println(evaluator.canAccess("ALPHA&BETA"));
  * System.out.println(evaluator.canAccess("(ALPHA|BETA)&(OMEGA|EPSILON)"));
