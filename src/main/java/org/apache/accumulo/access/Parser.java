@@ -1,0 +1,84 @@
+package org.apache.accumulo.access;
+
+import java.io.IOException;
+import java.io.PushbackReader;
+import java.io.StringReader;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+class Parser {
+    public static AeNode parseAccessExpression(byte[] expression) {
+
+        Tokenizer tokenizer = new Tokenizer(expression);
+
+        if(!tokenizer.hasNext()) {
+            return AeNode.of();
+        }
+
+        var node = parseExpression(tokenizer);
+
+        if(tokenizer.hasNext()){
+            //not all input was read, so not a valid expression
+            tokenizer.error("Unconsumed token "+(char)tokenizer.peek());
+        }
+
+        return node;
+    }
+
+    private static AeNode parseExpression(Tokenizer tokenizer) {
+        if(!tokenizer.hasNext()) {
+            tokenizer.error("illegal empty expression ");
+        }
+
+        AeNode first;
+
+        if(tokenizer.peek() == '(') {
+            first = parseParenExpression(tokenizer);
+        } else {
+            first = AeNode.of(tokenizer.nextAuthorization());
+        }
+
+        if(tokenizer.hasNext() && (tokenizer.peek() == '&' || tokenizer.peek() == '|')) {
+            var nodes = new ArrayList<AeNode>();
+            nodes.add(first);
+
+            var operator = tokenizer.peek();
+
+            do {
+                tokenizer.next((char)operator);
+
+                if(!tokenizer.hasNext()) {
+                    tokenizer.error("nothing following a "+(char)operator+" operator ");
+                }
+
+                if(tokenizer.peek() == '(') {
+                    nodes.add(parseParenExpression(tokenizer));
+                } else {
+                    nodes.add(AeNode.of(tokenizer.nextAuthorization()));
+                }
+            } while(tokenizer.hasNext() && tokenizer.peek() == operator);
+
+            if(tokenizer.hasNext() && (tokenizer.peek() == '|' || tokenizer.peek() == '&')) {
+                // A case of mixed operators, lets give a clear error message
+                tokenizer.error("cannot mix | and &");
+            }
+
+
+            return AeNode.of(operator, nodes);
+        } else {
+            return first;
+        }
+    }
+
+    private static AeNode parseParenExpression(Tokenizer tokenizer) {
+        tokenizer.next( '(');
+        var node = parseExpression(tokenizer);
+        tokenizer.next( ')');
+        return node;
+    }
+}

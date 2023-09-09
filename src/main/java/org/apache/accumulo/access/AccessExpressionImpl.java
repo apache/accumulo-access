@@ -30,49 +30,11 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 
-/**
- * Validate the column visibility is a valid expression and set the visibility for a Mutation. See
- * {@link AccessExpressionImpl#AccessExpressionImpl(byte[])} for the definition of an expression.
- *
- * <p>
- * The expression is a sequence of characters from the set [A-Za-z0-9_-.] along with the binary
- * operators "&amp;" and "|" indicating that both operands are necessary, or the either is
- * necessary. The following are valid expressions for visibility:
- *
- * <pre>
- * A
- * A|B
- * (A|B)&amp;(C|D)
- * orange|(red&amp;yellow)
- * </pre>
- *
- * <p>
- * The following are not valid expressions for visibility:
- *
- * <pre>
- * A|B&amp;C
- * A=B
- * A|B|
- * A&amp;|B
- * ()
- * )
- * dog|!cat
- * </pre>
- *
- * <p>
- * In addition to the base set of visibilities, any character can be used in the expression if it is
- * quoted. If the quoted term contains '&quot;' or '\', then escape the character with '\'. The
- * {@link #quote(String)} method can be used to properly quote and escape terms automatically. The
- * following is an example of a quoted term:
- *
- * <pre>
- * &quot;A#C&quot; &amp; B
- * </pre>
- */
 class AccessExpressionImpl implements AccessExpression {
 
-  Node node = null;
-  private byte[] expression;
+  private final byte[] expression;
+
+  final AeNode aeNode;
 
   private final AtomicReference<String> expressionString = new AtomicReference<>(null);
 
@@ -86,403 +48,25 @@ class AccessExpressionImpl implements AccessExpression {
     return expressionString.updateAndGet(es -> es == null ? new String(expression, UTF_8) : es);
   }
 
-  byte[] getExpressionBytes() {
-    return expression;
-  }
-
-  /**
-   * The node types in a parse tree for a visibility expression.
-   */
-  enum NodeType {
-    EMPTY, TERM, OR, AND,
-  }
-
-  /**
-   * All empty nodes are equal and represent the same value.
-   */
-  private static final Node EMPTY_NODE = new Node(NodeType.EMPTY, 0);
-
   // must create this after creating EMPTY_NODE
   static final AccessExpression EMPTY = new AccessExpressionImpl("");
 
-  /**
-   * A node in the parse tree for a visibility expression.
-   */
-  static class Node {
-    /**
-     * An empty list of nodes.
-     */
-    public static final List<Node> EMPTY = Collections.emptyList();
-    NodeType type;
-    int start;
-    int end;
-    List<Node> children = EMPTY;
-
-    public Node(NodeType type, int start) {
-      this.type = type;
-      this.start = start;
-      this.end = start + 1;
-    }
-
-    public Node(int start, int end) {
-      this.type = NodeType.TERM;
-      this.start = start;
-      this.end = end;
-    }
-
-    public void add(Node child) {
-      if (children == EMPTY) {
-        children = new ArrayList<>();
-      }
-
-      children.add(child);
-    }
-
-    public NodeType getType() {
-      return type;
-    }
-
-    public List<Node> getChildren() {
-      return children;
-    }
-
-    public BytesWrapper getTerm(byte[] expression) {
-      if (type != NodeType.TERM) {
-        throw new IllegalStateException();
-      }
-
-      if (expression[start] == '"') {
-        // its a quoted term
-        int qStart = start + 1;
-        int qEnd = end - 1;
-
-        return new BytesWrapper(expression, qStart, qEnd - qStart);
-      }
-      return new BytesWrapper(expression, start, end - start);
-    }
-  }
-
-  /**
-   * A node comparator. Nodes sort according to node type, terms sort lexicographically. AND and OR
-   * nodes sort by number of children, or if the same by corresponding children.
-   */
-  static class NodeComparator implements Comparator<Node>, Serializable {
-
-    private static final long serialVersionUID = 1L;
-    byte[] text;
-
-    /**
-     * Creates a new comparator.
-     *
-     * @param text expression string, encoded in UTF-8
-     */
-    public NodeComparator(byte[] text) {
-      this.text = text;
-    }
-
-    @Override
-    public int compare(Node a, Node b) {
-      int diff = a.type.ordinal() - b.type.ordinal();
-      if (diff != 0) {
-        return diff;
-      }
-      switch (a.type) {
-        case EMPTY:
-          return 0; // All empty nodes are the same
-        case TERM:
-          return Arrays.compare(text, a.start, a.end, text, b.start, b.end);
-        case OR:
-        case AND:
-          diff = a.children.size() - b.children.size();
-          if (diff != 0) {
-            return diff;
-          }
-          for (int i = 0; i < a.children.size(); i++) {
-            diff = compare(a.children.get(i), b.children.get(i));
-            if (diff != 0) {
-              return diff;
-            }
-          }
-      }
-      return 0;
-    }
-  }
-
-  /*
-   * Convenience method that delegates to normalize with a new NodeComparator constructed using the
-   * supplied expression.
-   */
-  private static Node normalize(Node root, byte[] expression) {
-    return normalize(root, new NodeComparator(expression));
-  }
-
-  // @formatter:off
-    /*
-     * Walks an expression's AST in order to:
-     *  1) roll up expressions with the same operant (`a&(b&c) becomes a&b&c`)
-     *  2) sort labels lexicographically (permutations of `a&b&c` are re-ordered to appear as `a&b&c`)
-     *  3) dedupes labels (`a&b&a` becomes `a&b`)
-     */
-    // @formatter:on
-  private static Node normalize(Node root, NodeComparator comparator) {
-    if (root.type != NodeType.TERM) {
-      TreeSet<Node> rolledUp = new TreeSet<>(comparator);
-      java.util.Iterator<Node> itr = root.children.iterator();
-      while (itr.hasNext()) {
-        Node c = normalize(itr.next(), comparator);
-        if (c.type == root.type) {
-          rolledUp.addAll(c.children);
-          itr.remove();
-        }
-      }
-      rolledUp.addAll(root.children);
-      root.children.clear();
-      root.children.addAll(rolledUp);
-
-      // need to promote a child if it's an only child
-      if (root.children.size() == 1) {
-        return root.children.get(0);
-      }
-    }
-
-    return root;
-  }
-
-  /*
-   * Walks an expression's AST and appends a string representation to a supplied StringBuilder. This
-   * method adds parens where necessary.
-   */
-  private static void stringify(Node root, byte[] expression, StringBuilder out) {
-    if (root.type == NodeType.TERM) {
-      out.append(new String(expression, root.start, root.end - root.start, UTF_8));
-    } else {
-      String sep = "";
-      for (Node c : root.children) {
-        out.append(sep);
-        boolean parens = (c.type != NodeType.TERM && root.type != c.type);
-        if (parens) {
-          out.append("(");
-        }
-        stringify(c, expression, out);
-        if (parens) {
-          out.append(")");
-        }
-        sep = root.type == NodeType.AND ? "&" : "|";
-      }
-    }
-  }
 
   @Override
   public String normalize() {
-    Node normRoot = normalize(node, expression);
-    StringBuilder builder = new StringBuilder(expression.length);
-    stringify(normRoot, expression, builder);
+    // TODO pass a string builder
+    StringBuilder builder = new StringBuilder();
+    aeNode.normalize().stringify(builder, false);
     return builder.toString();
   }
 
   @Override
   public Authorizations getAuthorizations() {
     HashSet<String> auths = new HashSet<>();
-    findAuths(node, expression, auths);
+    aeNode.getAuthorizations(auths::add);
     return Authorizations.of(auths);
   }
 
-  private void findAuths(Node node, byte[] expression, HashSet<String> auths) {
-    switch (node.getType()) {
-      case AND:
-      case OR:
-        for (Node child : node.getChildren()) {
-          findAuths(child, expression, auths);
-        }
-        break;
-      case TERM:
-        auths.add(node.getTerm(expression).toString());
-        break;
-      case EMPTY:
-        break;
-      default:
-        throw new IllegalArgumentException("Unknown node type " + node.getType());
-    }
-  }
-
-  private static class ColumnVisibilityParser {
-    private int index = 0;
-    private int parens = 0;
-
-    public ColumnVisibilityParser() {}
-
-    Node parse(byte[] expression) {
-      if (expression.length > 0) {
-        Node node = parse_(expression);
-        if (node == null) {
-          throw new IllegalAccessExpressionException("operator or missing parens",
-              new String(expression, UTF_8), index - 1);
-        }
-        if (parens != 0) {
-          throw new IllegalAccessExpressionException("parenthesis mis-match",
-              new String(expression, UTF_8), index - 1);
-        }
-        return node;
-      }
-      return null;
-    }
-
-    Node processTerm(int start, int end, Node expr, byte[] expression) {
-      if (start != end) {
-        if (expr != null) {
-          throw new IllegalAccessExpressionException("expression needs | or &",
-              new String(expression, UTF_8), start);
-        }
-        return new Node(start, end);
-      }
-      if (expr == null) {
-        throw new IllegalAccessExpressionException("empty term", new String(expression, UTF_8),
-            start);
-      }
-      return expr;
-    }
-
-    Node parse_(byte[] expression) {
-      Node result = null;
-      Node expr = null;
-      int wholeTermStart = index;
-      int subtermStart = index;
-      boolean subtermComplete = false;
-
-      while (index < expression.length) {
-        switch (expression[index++]) {
-          case '&':
-            expr = processTerm(subtermStart, index - 1, expr, expression);
-            if (result != null) {
-              if (!result.type.equals(NodeType.AND)) {
-                throw new IllegalAccessExpressionException("cannot mix & and |",
-                    new String(expression, UTF_8), index - 1);
-              }
-            } else {
-              result = new Node(NodeType.AND, wholeTermStart);
-            }
-            result.add(expr);
-            expr = null;
-            subtermStart = index;
-            subtermComplete = false;
-            break;
-          case '|':
-            expr = processTerm(subtermStart, index - 1, expr, expression);
-            if (result != null) {
-              if (!result.type.equals(NodeType.OR)) {
-                throw new IllegalAccessExpressionException("cannot mix | and &",
-                    new String(expression, UTF_8), index - 1);
-              }
-            } else {
-              result = new Node(NodeType.OR, wholeTermStart);
-            }
-            result.add(expr);
-            expr = null;
-            subtermStart = index;
-            subtermComplete = false;
-            break;
-          case '(':
-            parens++;
-            if (subtermStart != index - 1 || expr != null) {
-              throw new IllegalAccessExpressionException("expression needs & or |",
-                  new String(expression, UTF_8), index - 1);
-            }
-            expr = parse_(expression);
-            subtermStart = index;
-            subtermComplete = false;
-            break;
-          case ')':
-            parens--;
-            Node child = processTerm(subtermStart, index - 1, expr, expression);
-            if (child == null && result == null) {
-              throw new IllegalAccessExpressionException("empty expression not allowed",
-                  new String(expression, UTF_8), index);
-            }
-            if (result == null) {
-              return child;
-            }
-            if (result.type == child.type) {
-              for (Node c : child.children) {
-                result.add(c);
-              }
-            } else {
-              result.add(child);
-            }
-            result.end = index - 1;
-            return result;
-          case '"':
-            if (subtermStart != index - 1) {
-              throw new IllegalAccessExpressionException("expression needs & or |",
-                  new String(expression, UTF_8), index - 1);
-            }
-
-            while (index < expression.length && expression[index] != '"') {
-              if (expression[index] == '\\') {
-                index++;
-                if (index == expression.length
-                    || (expression[index] != '\\' && expression[index] != '"')) {
-                  throw new IllegalAccessExpressionException("invalid escaping within quotes",
-                      new String(expression, UTF_8), index - 1);
-                }
-              }
-              index++;
-            }
-
-            if (index == expression.length) {
-              throw new IllegalAccessExpressionException("unclosed quote",
-                  new String(expression, UTF_8), subtermStart);
-            }
-
-            if (subtermStart + 1 == index) {
-              throw new IllegalAccessExpressionException("empty term",
-                  new String(expression, UTF_8), subtermStart);
-            }
-
-            index++;
-
-            subtermComplete = true;
-
-            break;
-          default:
-            if (subtermComplete) {
-              throw new IllegalAccessExpressionException("expression needs & or |",
-                  new String(expression, UTF_8), index - 1);
-            }
-
-            byte c = expression[index - 1];
-            if (!isValidAuthChar(c)) {
-              throw new IllegalAccessExpressionException("bad character (" + c + ")",
-                  new String(expression, UTF_8), index - 1);
-            }
-        }
-      }
-      Node child = processTerm(subtermStart, index, expr, expression);
-      if (result != null) {
-        result.add(child);
-        result.end = index;
-      } else {
-        result = child;
-      }
-      if (result.type != NodeType.TERM) {
-        if (result.children.size() < 2) {
-          throw new IllegalAccessExpressionException("missing term", new String(expression, UTF_8),
-              index);
-        }
-      }
-      return result;
-    }
-  }
-
-  private void validate(byte[] expression) {
-    // TODO does not seem like null should be accepted
-    if (expression != null && expression.length > 0) {
-      ColumnVisibilityParser p = new ColumnVisibilityParser();
-      node = p.parse(expression);
-    } else {
-      node = EMPTY_NODE;
-    }
-    this.expression = expression;
-  }
 
   /**
    * Creates an empty visibility. Normally, elements with empty visibility can be seen by everyone.
@@ -512,8 +96,9 @@ class AccessExpressionImpl implements AccessExpression {
    * @see #AccessExpressionImpl(String)
    */
   AccessExpressionImpl(byte[] expression) {
-    // TODO copy bytes to make immutable?
-    validate(expression);
+    // TODO copy?
+    this.expression = expression;
+    aeNode = Parser.parseAccessExpression(expression);
   }
 
   @Override
@@ -548,34 +133,6 @@ class AccessExpressionImpl implements AccessExpression {
     return Arrays.hashCode(expression);
   }
 
-  /**
-   * Gets the parse tree for this column visibility.
-   *
-   * @return parse tree node
-   */
-  Node getParseTree() {
-    return node;
-  }
-
-  /**
-   * Properly quotes terms in a column visibility expression. If no quoting is needed, then nothing
-   * is done.
-   *
-   * <p>
-   * Examples of using quote :
-   *
-   * <pre>
-   * import static org.apache.accumulo.core.security.ColumnVisibility.quote;
-   *   .
-   *   .
-   *   .
-   * String s = quote(&quot;A#C&quot;) + &quot;&amp;&quot; + quote(&quot;FOO&quot;);
-   * ColumnVisibility cv = new ColumnVisibility(s);
-   * </pre>
-   *
-   * @param term term to quote
-   * @return quoted term (unquoted if unnecessary)
-   */
   static String quote(String term) {
     return new String(quote(term.getBytes(UTF_8)), UTF_8);
   }
@@ -592,7 +149,7 @@ class AccessExpressionImpl implements AccessExpression {
     boolean needsQuote = false;
 
     for (byte b : term) {
-      if (!isValidAuthChar(b)) {
+      if (!Tokenizer.isValidAuthChar(b)) {
         needsQuote = true;
         break;
       }
@@ -603,35 +160,5 @@ class AccessExpressionImpl implements AccessExpression {
     }
 
     return AccessEvaluatorImpl.escape(term, true);
-  }
-
-  private static final boolean[] validAuthChars = new boolean[256];
-
-  static {
-    for (int i = 0; i < 256; i++) {
-      validAuthChars[i] = false;
-    }
-
-    for (int i = 'a'; i <= 'z'; i++) {
-      validAuthChars[i] = true;
-    }
-
-    for (int i = 'A'; i <= 'Z'; i++) {
-      validAuthChars[i] = true;
-    }
-
-    for (int i = '0'; i <= '9'; i++) {
-      validAuthChars[i] = true;
-    }
-
-    validAuthChars['_'] = true;
-    validAuthChars['-'] = true;
-    validAuthChars[':'] = true;
-    validAuthChars['.'] = true;
-    validAuthChars['/'] = true;
-  }
-
-  static final boolean isValidAuthChar(byte b) {
-    return validAuthChars[0xff & b];
   }
 }
