@@ -25,7 +25,12 @@
           "",
           "one&two",
           "foor|four",
-          "(one&two)|(foo&bar)"
+          "(one&two)|(foo&bar)",
+          "one&two&three&four",
+          "one|two|three|four",
+          "(one|five|six)&(two|seven|eight)&(three|eleven|nine|twenty)&four",
+          "(one&five&six)|(two&one&four)|(three&eleven&nine&twenty)|onehundred",
+          "(two&one&four)|(one&five&six)|(three&eleven&nine&twenty)|onehundred"
         ]
       },
       {
@@ -34,7 +39,11 @@
           "five",
           "one&five",
           "five&one",
-          "((one|foo)|bar)&goober"
+          "((one|foo)|bar)&goober",
+          "(one&five&six)|(two&seven&eight)|(three&eleven&nine&twenty)|onehundred",
+          "(one|five|six)&(two|seven|eight)&(three|eleven|nine|twenty)&onehundred",
+          "one&two&three&four&five",
+          "six|seven|eight|nine"
         ]
       }
     ]
