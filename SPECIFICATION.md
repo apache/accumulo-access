@@ -33,16 +33,13 @@ the following [ABNF][1]:
 ```
 access-expression       = [expression] ; empty string is a valid access expression
 
-expression              =  access-token [and-expression / or-expression]
-expression              =/ paren-expression [and-expression / or-expression]
+expression              =  (access-token / paren-expression) [and-expression / or-expression]
 
 paren-expression        =  "(" expression ")"
 
-and-expression          =  "&" access-token [and-expression]
-and-expression          =/ "&" paren-expression [and-expression]
+and-expression          =  "&" (access-token / paren-expression) [and-expression]
 
-or-expression           =  "|" access-token [or-expression]
-or-expression           =/ "|" paren-expression [or-expression]
+or-expression           =  "|" (access-token / paren-expression) [or-expression]
 
 access-token            = 1*( ALPHA / DIGIT / "_" / "-" / "." / ":" / slash )
 access-token            =/ DQUOTE 1*(utf8-subset / escaped) DQUOTE
