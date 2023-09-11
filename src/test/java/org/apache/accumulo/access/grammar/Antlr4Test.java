@@ -2,12 +2,14 @@ package org.apache.accumulo.access.grammar;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CodePointCharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -25,8 +27,8 @@ import org.apache.accumulo.access.grammars.AbnfLexer;
 import org.apache.accumulo.access.grammars.AbnfParser;
 import org.apache.accumulo.access.grammars.AccessExpressionLexer;
 import org.apache.accumulo.access.grammars.AccessExpressionParser;
+import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
 import org.junit.jupiter.api.Test;
-import org.opentest4j.AssertionFailedError;
 
 public class Antlr4Test {
   
@@ -80,7 +82,7 @@ public class Antlr4Test {
     test("A");
     test("A&B");
     test("A|C");
-    assertThrows(AssertionFailedError.class, () -> test("A|"));
+    assertThrows(AssertionError.class, () -> test("A|"));
     test("(A&B)");
     test("(A|B)");
   }
@@ -112,18 +114,21 @@ public class Antlr4Test {
 
       @Override
       public void recover(LexerNoViableAltException e) {
+        System.out.println("Error in lexer. Expression: " + expression +", msg: " + e);
         super.recover(e);
         errors.incrementAndGet();
       }
 
       @Override
       public void recover(RecognitionException re) {
+        System.out.println("Error in lexer. Expression: " + expression +", msg: " + re);
         super.recover(re);
         errors.incrementAndGet();
       }
       
     };
     AccessExpressionParser parser = new AccessExpressionParser(new CommonTokenStream(lexer));
+    parser.setErrorHandler(new BailErrorStrategy());
     parser.removeErrorListeners();
     parser.addErrorListener(new ConsoleErrorListener() {
 
@@ -135,7 +140,12 @@ public class Antlr4Test {
       }
       
     });
-    parser.access_expression();
+    try {
+      Access_expressionContext ctx = parser.access_expression();
+      assertNull(ctx.exception);
+    } catch (RuntimeException e1) {
+      throw new AssertionError(e1);
+    }
     assertEquals(0, errors.get());
     assertEquals(0, parser.getNumberOfSyntaxErrors());
   }
