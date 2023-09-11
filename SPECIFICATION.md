@@ -33,15 +33,13 @@ the following [ABNF][1]:
 ```
 access-expression       = [expression] ; empty string is a valid access expression
 
-expression              =  and-expression / or-expression
+expression              =  (access-token / paren-expression) [and-expression / or-expression]
 
-and-expression          =  and-expression and-operator and-expression
-and-expression          =/ lparen expression rparen
-and-expression          =/ access-token
+paren-expression        =  "(" expression ")"
 
-or-expression           =  or-expression or-operator or-expression
-or-expression           =/ lparen expression rparen
-or-expression           =/ access-token
+and-expression          =  "&" (access-token / paren-expression) [and-expression]
+
+or-expression           =  "|" (access-token / paren-expression) [or-expression]
 
 access-token            = 1*( ALPHA / DIGIT / "_" / "-" / "." / ":" / slash )
 access-token            =/ DQUOTE 1*(utf8-subset / escaped) DQUOTE
@@ -49,10 +47,6 @@ access-token            =/ DQUOTE 1*(utf8-subset / escaped) DQUOTE
 utf8-subset             = %x20-21 / %x23-5B / %5D-7E / UVCHARBEYONDASCII ; utf8 minus '"' and '\'
 escaped                 = "\" DQUOTE / "\\"
 slash                   = "/"
-or-operator             = "|"
-and-operator            = "&"
-lparen                  = "("
-rparen                  = ")"
 ```
 
 The definition of utf8 was borrowed from this [ietf document][2].  TODO that doc defines unicode and not utf8
