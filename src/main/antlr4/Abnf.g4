@@ -42,7 +42,12 @@ ABNF grammar derived from:
     December 2014
 
 Terminal rules mainly created by ANTLRWorks 1.5 sample code.
- */ 
+ */
+
+/*
+ * This is a copy of https://github.com/antlr/grammars-v4/blob/master/abnf/Abnf.g4 that
+ * has been modified to specify the package name for the generated java code
+ */
 grammar Abnf;
 
  @header {

@@ -1,14 +1,12 @@
 access-expression       = [expression] ; empty string is a valid access expression
 
-expression              =  and-expression / or-expression
+expression              =  (access-token / paren-expression) [and-expression / or-expression]
 
-and-expression          =  and-expression and-operator and-expression
-and-expression          =/ lparen expression rparen
-and-expression          =/ access-token
+paren-expression        =  "(" expression ")"
 
-or-expression           =  or-expression or-operator or-expression
-or-expression           =/ lparen expression rparen
-or-expression           =/ access-token
+and-expression          =  "&" (access-token / paren-expression) [and-expression]
+
+or-expression           =  "|" (access-token / paren-expression) [or-expression]
 
 access-token            = 1*( ALPHA / DIGIT / "_" / "-" / "." / ":" / slash )
 access-token            =/ DQUOTE 1*(utf8-subset / escaped) DQUOTE
@@ -17,7 +15,3 @@ utf8-subset             = %x20-21 / %x23-5B / %x5D-7E / unicode-beyond-ascii ; u
 unicode-beyond-ascii    = %x0080-D7FF / %xE000-10FFFF
 escaped                 = "\" DQUOTE / "\\"
 slash                   = "/"
-or-operator             = "|"
-and-operator            = "&"
-lparen                  = "("
-rparen                  = ")"

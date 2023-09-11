@@ -22,7 +22,7 @@
 # AccessExpression Specification
 
 This document specifies the format of an Apache Accumulo AccessExpression. An AccessExpression
-is an encoding of a boolean expression of the attributes that a subject is required to have to
+is an encoding of a boolean expression of the attributes that an entity is required to have to
 access a particular piece of data.
 
 ## Syntax

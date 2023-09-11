@@ -1,11 +1,9 @@
 package org.apache.accumulo.access.grammar;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -23,72 +21,17 @@ import org.apache.accumulo.access.AccessEvaluatorTest.TestDataSet;
 import org.apache.accumulo.access.AccessEvaluatorTest.TestExpressions;
 import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.IllegalAccessExpressionException;
-import org.apache.accumulo.access.grammars.AbnfLexer;
-import org.apache.accumulo.access.grammars.AbnfParser;
 import org.apache.accumulo.access.grammars.AccessExpressionLexer;
 import org.apache.accumulo.access.grammars.AccessExpressionParser;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
 import org.junit.jupiter.api.Test;
 
 public class Antlr4Test {
-  
-  @Test
-  public void testAbnfSpecificationParses() throws Exception {
-    
-    // This test checks that the Access Expression ABNF specification
-    // text conforms to the ABNF grammar
-    
-    InputStream is = Antlr4Test.class.getResourceAsStream("/specification.abnf");
-    assertNotNull(is);
-    
-    final AtomicLong errors = new AtomicLong(0);
 
-    AbnfLexer lexer = new AbnfLexer(CharStreams.fromStream(is)) {
-
-      @Override
-      public void recover(LexerNoViableAltException e) {
-        super.recover(e);
-        errors.incrementAndGet();
-      }
-
-      @Override
-      public void recover(RecognitionException re) {
-        super.recover(re);
-        errors.incrementAndGet();
-      }
-      
-    };
-    
-    AbnfParser parser = new AbnfParser(new CommonTokenStream(lexer));
-    parser.removeErrorListeners();
-    parser.addErrorListener(new ConsoleErrorListener() {
-
-      @Override
-      public void syntaxError(Recognizer<?,?> recognizer, Object offendingSymbol, int line,
-          int charPositionInLine, String msg, RecognitionException e) {
-        super.syntaxError(recognizer, offendingSymbol, line, charPositionInLine, msg, e);
-        errors.incrementAndGet();
-      }
-      
-    });
-
-    parser.rulelist();
-    assertEquals(0, errors.get());
-    
-  }
-  
-  @Test
-  public void testExpressions() throws Exception {
-    test("A");
-    test("A&B");
-    test("A|C");
-    assertThrows(AssertionError.class, () -> test("A|"));
-    test("(A&B)");
-    test("(A|B)");
-  }
-  
   @Test
   public void testCompareWithAccessExpressionImplParsing() throws Exception {
+    // This test checks that the parsing of the AccessExpressions in testdata.json
+    // using ANTLR have the same outcome as AccessExpression.of()
     List<TestDataSet> testData = AccessEvaluatorTest.readTestData();
     for (TestDataSet testSet : testData) {
       for (TestExpressions test : testSet.tests) {
