@@ -82,6 +82,7 @@
             <phase>generate-sources</phase>
             <configuration>
               <outputDirectory>target/generated-sources/antlr4/org/apache/accumulo/access/grammars</outputDirectory>
+              <visitor>true</visitor>
             </configuration>
           </execution>
         </executions>

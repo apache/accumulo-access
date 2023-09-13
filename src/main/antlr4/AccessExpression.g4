@@ -23,9 +23,13 @@ grammar AccessExpression;
 }
 
 access_expression : EOF | expression EOF;
-expression :     ( ACCESS_TOKEN | '(' expression ')' ) ( and_expression | or_expression )?;
-and_expression : '&' ( ACCESS_TOKEN | '(' expression ')' ) ( and_expression )?;
-or_expression :   '|' ( ACCESS_TOKEN | '(' expression ')' ) ( or_expression )?;
+expression :     ( and_expression | or_expression | '(' expression ')' | access_token) ( and_expression | or_expression )*;
+and_expression : ( access_token | '(' expression ')' ) (and_operator ( access_token | '(' expression ')' ) )+;
+or_expression :   ( access_token | '(' expression ')' ) (or_operator ( access_token | '(' expression ')' ) )+;
+access_token : '(' ACCESS_TOKEN ')' | ACCESS_TOKEN;
+and_operator : '&';
+or_operator : '|';
+
 
 ACCESS_TOKEN : ( [A-Za-z] | [0-9] | '_' | '-' | '.' | ':' | '/' )+
                | '"' ( [\u0020-\u0021] | [\u0023-\u005B] | [\u005D-\u007E] | [\u0080-\uD7FF] | [\uE000-\u{10FFFF}] | ( '\\"' | '\\\\' ) )+ '"' ;
