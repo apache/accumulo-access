@@ -56,5 +56,41 @@ The definition of utf8 was borrowed from this [ietf document][2].  TODO that doc
 An AccessExpression is a UTF-8 string. It can be serialized using a byte array as long as it
 can be deserialized back into the same UTF-8 string.
 
+## Evaluation
+
+Evaluation of access expressions performs a combination of [set](https://en.wikipedia.org/wiki/Set_(mathematics)) existence checks and [boolean algebra](https://en.wikipedia.org/wiki/Boolean_algebra). Access expression use the following from boolean algebra.
+
+ * The symbol `&` in an access expression represents [logical conjunction](https://en.wikipedia.org/wiki/Logical_conjunction) which is represented in a boolean algebra as `∧`.
+ * The symbol `|` in an access expression represents [logical disjunction](https://en.wikipedia.org/wiki/Logical_disjunction) which is represented in a boolean algebra as `∨`.
+
+When evaluating an access expression set existence checks are done against a subjects set of authorizations. The following is an algorithm for evaluation an access expression.
+
+ 1. For each access-token in an access expression check if it exists in the subjects set of authorizations.  Replace the access-token with `true` if it exists in the set and `false` otherwise.
+ 2. Evaluate the expression using boolean algebra and only if its true can the subject can access the data labeled with the access expression.
+
+The following is an example of evaluating the access expression `RED&(BLUE|GREEN)` using boolean algebra for a subject with the authorization set `{RED,GREEN}`.  In the example below `RED ∈ {RED,GREEN}` translates to does `RED` exist in the set `{RED,GREEN}` which it does, so it is true.
+
+ 1. RED ∈ {RED,GREEN} ∧ ( BLUE ∈ {RED,GREEN} ∨ GREEN ∈ {RED,GREEN} )
+ 2. true  ∧ ( false ∨ true )
+
+Since `true  ∧ ( false ∨ true )` is true then the subject with authorizations `{RED,GREEN}` can access data labeled with the access expression `RED&(BLUE|GREEN)`.  The access expression `(RED&BLUE)|(GREEN&PINK)` is an example of an access expression that is false for a subject with authorizations `{RED,GREEN}` and it would look like the following using boolean algebra.
+
+ 1. ( RED ∈ {RED,GREEN} ∧ BLUE ∈ {RED,GREEN} ) ∨ ( GREEN ∈ {RED,GREEN} ∧ PINK ∈ {RED,GREEN} )
+ 2. ( true ∧ false ) ∨ ( true ∧ false )
+
+An empty access expression always evaluates to true and this is only thing a subject with the empty set of authorizations can access.
+
+## Escaping
+
+Access tokens can only contain alpha numeric characters or the characters `_`,`-`,`.`,`:`, or `/` unless quoted using `"`.  Within quotes the characters `"` and `\ `' must escaped by prefixing with `\ `.   For example to use `abc\xyz` as an access-token it would need to be quoted and escaped like `"abc\\xyz"`.  When checking if an access-token exist in the subjects authorizations set it must be unquoted and unescaped.
+
+Evaluating `"abc!12"&"abc\\xyz"&GHI`for a subject with authorizations `{abc\xyz,abc!12}` looks like the following in boolean algebra which evaluates to `false`.
+
+ 1. abc!12 ∈ {abc\xyz,abc!12} ∧ abc\xyz ∈ {abc\xyz,abc!12} ∧ GHI ∈ {abc\xyz,abc!12}
+ 2. true ∧ true ∧ false
+
+Notice above when checking if `"abc\\xyz"` exist in the set that it is unquoted and the `\ ` character is unescaped. 
+
+
 [1]: https://www.rfc-editor.org/rfc/rfc5234
 [2]: https://datatracker.ietf.org/doc/html/draft-seantek-unicode-in-abnf-03#section-4.2
