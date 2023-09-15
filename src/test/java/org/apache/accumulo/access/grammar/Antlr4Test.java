@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CharStreams;
@@ -43,7 +45,7 @@ public class Antlr4Test {
       for (TestExpressions test : testSet.tests) {
         ExpectedResult result = test.expectedResult;
         for (String cv : test.expressions) {
-          System.out.println("Testing: " + cv);
+//          System.out.println("Testing: " + cv);
           if (result == ExpectedResult.ERROR) {
             assertThrows(IllegalAccessExpressionException.class, () -> AccessExpression.of(cv));
             assertThrows(AssertionError.class, () -> test(cv));
@@ -101,12 +103,20 @@ public class Antlr4Test {
   
   @Test
   public void testVisitorSimple() throws Exception {
-    String accessExpression = "A&B";
-    Authorizations auths = Authorizations.of("A", "B");
-    AccessExpressionEvaluator eval = new AccessExpressionEvaluator(auths);
+    String accessExpression = "(one&two)|(foo&bar)";
+    Authorizations auths = Authorizations.of("four", "three", "one", "two");
+    AccessExpressionEvaluator eval = new AccessExpressionEvaluator(List.of(auths));
     assertTrue(eval.canAccess(accessExpression));
   }
   
+  @Test
+  public void testVisitorSimpleFailure() throws Exception {
+    String accessExpression = "(A&B&C)";
+    Authorizations auths = Authorizations.of("A", "C");
+    AccessExpressionEvaluator eval = new AccessExpressionEvaluator(List.of(auths));
+    assertFalse(eval.canAccess(accessExpression));
+  }
+
   @Test
   public void testAntlrVisitorEvaluationAgainstAccessEvaluator() throws Exception {
     // This test checks that the evaluation of the AccessExpressions in testdata.json
@@ -115,9 +125,12 @@ public class Antlr4Test {
     for (TestDataSet testSet : testData) {
       for (TestExpressions test : testSet.tests) {
         for (String expression : test.expressions) {
-          AccessEvaluator evaluator = AccessEvaluator.builder().authorizations(testSet.auths[0]).build();
-          AccessExpressionEvaluator antlr = new AccessExpressionEvaluator(Authorizations.of(testSet.auths[0]));
-          System.out.println("Testing: " + expression);
+          List<Authorizations> authSets =
+              Stream.of(testSet.auths).map(Authorizations::of).collect(Collectors.toList());
+          AccessEvaluator evaluator = AccessEvaluator.builder().authorizations(authSets).build();
+          
+          AccessExpressionEvaluator antlr = new AccessExpressionEvaluator(authSets);
+//          System.out.println("Testing: " + expression);
           switch (test.expectedResult) {
             case ACCESSIBLE:
               assertTrue(evaluator.canAccess(expression), expression);
@@ -183,5 +196,4 @@ public class Antlr4Test {
     }
     
   }
-
 }

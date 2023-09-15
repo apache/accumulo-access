@@ -23,10 +23,10 @@ grammar AccessExpression;
 }
 
 access_expression : EOF | expression EOF;
-expression :     ( and_expression | or_expression | '(' expression ')' | access_token) ( and_expression | or_expression )*;
+expression :     ( and_expression | or_expression | '(' expression ')' | access_token);
 and_expression : ( access_token | '(' expression ')' ) (and_operator ( access_token | '(' expression ')' ) )+;
-or_expression :   ( access_token | '(' expression ')' ) (or_operator ( access_token | '(' expression ')' ) )+;
-access_token : '(' ACCESS_TOKEN ')' | ACCESS_TOKEN;
+or_expression :  ( access_token | '(' expression ')' ) (or_operator ( access_token | '(' expression ')' ) )+;
+access_token : ACCESS_TOKEN;
 and_operator : '&';
 or_operator : '|';
 
