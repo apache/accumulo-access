@@ -67,17 +67,6 @@ class AccessExpressionImpl implements AccessExpression {
     return Authorizations.of(auths);
   }
 
-
-  /**
-   * Creates an empty visibility. Normally, elements with empty visibility can be seen by everyone.
-   * Though, one could change this behavior with filters.
-   *
-   * @see #AccessExpressionImpl(String)
-   */
-  AccessExpressionImpl() {
-    this(new byte[] {});
-  }
-
   /**
    * Creates a column visibility for a Mutation.
    *
