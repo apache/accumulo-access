@@ -1,14 +1,9 @@
 package org.apache.accumulo.access;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
-import java.util.StringJoiner;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 abstract class AeNode implements Comparable<AeNode> {
 
@@ -24,21 +19,6 @@ abstract class AeNode implements Comparable<AeNode> {
 
     public int compareTo(AeNode o) {
         return ordinal() - o.ordinal();
-    }
-
-    static int compare(List<AeNode> l1, List<AeNode> l2) {
-        int cmp = l1.size() - l2.size();
-
-        if(cmp == 0) {
-            for (int i = 0; i < l1.size(); i++) {
-                cmp = l1.get(i).compareTo(l2.get(i));
-                if (cmp != 0) {
-                    break;
-                }
-            }
-        }
-
-        return cmp;
     }
 
     private static class EmptyNode extends AeNode {
@@ -164,8 +144,16 @@ abstract class AeNode implements Comparable<AeNode> {
         public int compareTo(AeNode other) {
             int cmp = super.compareTo(other);
             if(cmp == 0) {
-                // TODO handle equal size
-                cmp = compare(children, ((MultiNode) other).children);
+                cmp = children.size() - ((MultiNode) other).children.size();
+
+                if(cmp == 0) {
+                    for (int i = 0; i < children.size(); i++) {
+                        cmp = children.get(i).compareTo(((MultiNode) other).children.get(i));
+                        if (cmp != 0) {
+                            break;
+                        }
+                    }
+                }
             }
             return cmp;
         }
