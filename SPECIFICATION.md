@@ -66,7 +66,7 @@ Evaluation of access expressions performs a combination of [set](https://en.wiki
 When evaluating an access expression set existence checks are done against a subjects set of authorizations. The following is an algorithm for evaluation an access expression.
 
  1. For each access-token in an access expression check if it exists in the subjects set of authorizations.  Replace the access-token with `true` if it exists in the set and `false` otherwise.
- 2. Evaluate the expression using boolean algebra and only if its true can the subject can access the data labeled with the access expression.
+ 2. Evaluate the expression using boolean algebra and only if its true can the subject access the data labeled with the access expression.
 
 The following is an example of evaluating the access expression `RED&(BLUE|GREEN)` using boolean algebra for a subject with the authorization set `{RED,GREEN}`.  In the example below `RED ∈ {RED,GREEN}` translates to does `RED` exist in the set `{RED,GREEN}` which it does, so it is true.
 
