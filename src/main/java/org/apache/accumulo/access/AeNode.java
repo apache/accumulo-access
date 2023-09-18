@@ -5,6 +5,9 @@ import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+/**
+ * Contains the code for an Access Expression represented as a parse tree and all the operations on a parse tree.
+ */
 abstract class AeNode implements Comparable<AeNode> {
 
     abstract boolean canAccess(Predicate<BytesWrapper> authorizedPredicate);

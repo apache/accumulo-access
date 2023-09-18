@@ -2,6 +2,11 @@ package org.apache.accumulo.access;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+/**
+ * A simple wrapper around a byte array that keeps some state and provides high level operations to the {@link Parser}
+ * class.  The purpose of this class is to make {@link Parser} as simple and easy to understand as possible while still
+ * being performant.
+ */
 final class Tokenizer {
 
     private static final boolean[] validAuthChars = new boolean[256];

@@ -1,16 +1,10 @@
 package org.apache.accumulo.access;
 
-import java.io.IOException;
-import java.io.PushbackReader;
-import java.io.StringReader;
-import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
+/**
+ * Code for parsing an access expression and creating a parse tree of type {@link AeNode}
+ */
 final class Parser {
     public static AeNode parseAccessExpression(byte[] expression) {
 
