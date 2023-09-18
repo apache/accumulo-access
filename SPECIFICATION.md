@@ -89,7 +89,7 @@ Evaluating `"abc!12"&"abc\\xyz"&GHI`for a subject with authorizations `{abc\xyz,
  1. abc!12 ∈ {abc\xyz,abc!12} ∧ abc\xyz ∈ {abc\xyz,abc!12} ∧ GHI ∈ {abc\xyz,abc!12}
  2. true ∧ true ∧ false
 
-Notice above when checking if `"abc\\xyz"` exist in the set that it is unquoted and the `\ ` character is unescaped. 
+Notice above when checking if `"abc\\xyz"` exist in the set that it is unquoted and the `\` character is unescaped. 
 
 
 [1]: https://www.rfc-editor.org/rfc/rfc5234
