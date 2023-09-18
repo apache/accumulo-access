@@ -38,6 +38,15 @@ import java.util.stream.Stream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+/**
+ * Benchmarks Access Expressions using JMH.  To run, use the following commands.
+ *
+ * <p><blockquote><pre>
+ * mvn clean package
+ * mvn exec:exec -Dexec.executable="java" -Dexec.classpathScope=test -Dexec.args="-classpath %classpath org.apache.accumulo.access.AccessExpressionBenchmark"
+ * </code></blockquote>
+ * </pre>
+ */
 public class AccessExpressionBenchmark {
 
 
@@ -107,6 +116,9 @@ public class AccessExpressionBenchmark {
 
     }
 
+    /**
+     * Measures the time it takes to parse an expression stored in byte[] and produce a parse tree.
+     */
     @Benchmark
     public void measureBytesParsing(BenchmarkState state, Blackhole blackhole) {
         for(byte[] accessExpression : state.getBytesExpressions()) {
@@ -114,6 +126,9 @@ public class AccessExpressionBenchmark {
         }
     }
 
+    /**
+     * Measures the time it takes to parse an expression stored in a String and produce a parse tree.
+     */
     @Benchmark
     public void measureStringParsing(BenchmarkState state, Blackhole blackhole) {
         for(String accessExpression : state.getStringExpressions()) {
@@ -121,6 +136,9 @@ public class AccessExpressionBenchmark {
         }
     }
 
+    /**
+     * Measures the time it takes to evaluate a previously parsed expression.
+     */
     @Benchmark
     public void measureEvaluation(BenchmarkState state, Blackhole blackhole) {
         for(EvaluatorTests evaluatorTests : state.getEvaluatorTests()) {
@@ -130,6 +148,9 @@ public class AccessExpressionBenchmark {
         }
     }
 
+    /**
+     * Measures the time it takes to parse and evaluate an expression.  This has to create the parse tree an operate on it.
+     */
     @Benchmark
     public void measureEvaluationAndParsing(BenchmarkState state, Blackhole blackhole) {
         for(EvaluatorTests evaluatorTests : state.getEvaluatorTests()) {
