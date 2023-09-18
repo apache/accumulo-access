@@ -82,7 +82,7 @@ An empty access expression always evaluates to true and this is only thing a sub
 
 ## Escaping
 
-Access tokens can only contain alpha numeric characters or the characters `_`,`-`,`.`,`:`, or `/` unless quoted using `"`.  Within quotes the characters `"` and `\ `' must escaped by prefixing with `\ `.   For example to use `abc\xyz` as an access-token it would need to be quoted and escaped like `"abc\\xyz"`.  When checking if an access-token exist in the subjects authorizations set it must be unquoted and unescaped.
+Access tokens can only contain alpha numeric characters or the characters `_`,`-`,`.`,`:`, or `/` unless quoted using `"`.  Within quotes the characters `"` and `\ `' must escaped by prefixing with `\`.   For example to use `abc\xyz` as an access-token it would need to be quoted and escaped like `"abc\\xyz"`.  When checking if an access-token exists in the subjects authorizations set it must be unquoted and unescaped.
 
 Evaluating `"abc!12"&"abc\\xyz"&GHI`for a subject with authorizations `{abc\xyz,abc!12}` looks like the following in boolean algebra which evaluates to `false`.
 
