@@ -11,7 +11,7 @@ import java.util.NoSuchElementException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-class Parser {
+final class Parser {
     public static AeNode parseAccessExpression(byte[] expression) {
 
         Tokenizer tokenizer = new Tokenizer(expression);
@@ -50,7 +50,7 @@ class Parser {
             var operator = tokenizer.peek();
 
             do {
-                tokenizer.next((char)operator);
+                tokenizer.advance();
 
                 if(!tokenizer.hasNext()) {
                     tokenizer.error("nothing following a "+(char)operator+" operator ");
@@ -76,7 +76,7 @@ class Parser {
     }
 
     private static AeNode parseParenExpression(Tokenizer tokenizer) {
-        tokenizer.next( '(');
+        tokenizer.advance();
         var node = parseExpression(tokenizer);
         tokenizer.next( ')');
         return node;

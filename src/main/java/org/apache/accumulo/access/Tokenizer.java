@@ -2,7 +2,7 @@ package org.apache.accumulo.access;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-class Tokenizer {
+final class Tokenizer {
 
     private static final boolean[] validAuthChars = new boolean[256];
 
@@ -56,8 +56,8 @@ class Tokenizer {
         return index < expression.length;
     }
 
-    public byte next() {
-        return expression[index++];
+    public void advance() {
+        index++;
     }
 
     public void next(char expected) {
