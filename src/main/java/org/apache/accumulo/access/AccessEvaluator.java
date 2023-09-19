@@ -19,7 +19,6 @@
 package org.apache.accumulo.access;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * <p>
@@ -55,6 +54,17 @@ public interface AccessEvaluator {
    * TODO documnet that may be more efficient
    */
   boolean canAccess(AccessExpression accessExpression) throws IllegalAccessExpressionException;
+
+  /**
+   * Properly escapes an authorization string. The string can be quoted if desired.
+   *
+   * @param auth
+   * @param quote
+   * @return
+   */
+  static byte[] escape(byte[] auth, boolean quote) {
+    return AccessEvaluatorImpl.escape(auth, quote);
+  }
 
   /**
    * @since 1.0.0

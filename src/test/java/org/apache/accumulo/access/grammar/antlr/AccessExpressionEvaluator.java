@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.antlr.v4.runtime.BailErrorStrategy;
+import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CodePointCharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -19,7 +19,6 @@ import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.accumulo.access.AccessEvaluator;
-import org.apache.accumulo.access.AccessEvaluatorImpl;
 import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.IllegalAccessExpressionException;
@@ -33,7 +32,54 @@ import org.apache.accumulo.access.grammars.AccessExpressionParser.Or_expressionC
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Or_operatorContext;
 
 public class AccessExpressionEvaluator implements AccessEvaluator {
+  
+  private static class AccessExpressionErrorListener extends AccessExpressionLexer {
 
+    private int errors = 0;
+    private final CharStream input;
+    
+    public AccessExpressionErrorListener(CharStream input) {
+      super(input);
+      this.input = input;
+    }
+
+    @Override
+    public void recover(LexerNoViableAltException e) {
+      System.out.println("Error in lexer. Expression: " + input +", msg: " + e);
+      super.recover(e);
+      errors++;
+    }
+
+    @Override
+    public void recover(RecognitionException re) {
+      System.out.println("Error in lexer. Expression: " + input +", msg: " + re);
+      super.recover(re);
+      errors++;
+    }
+    
+    public int getErrorCount() {
+      return errors;
+    }
+    
+  }
+
+  private static class ParserErrorListener extends ConsoleErrorListener {
+
+    int errors = 0;
+    
+    @Override
+    public void syntaxError(Recognizer<?,?> recognizer, Object offendingSymbol, int line,
+        int charPositionInLine, String msg, RecognitionException e) {
+      super.syntaxError(recognizer, offendingSymbol, line, charPositionInLine, msg, e);
+      errors++;
+    }
+    
+    public int getErrorCount() {
+      return errors;
+    }    
+    
+  }
+  
   private class Entity {
     private Set<String> authorizations;
 
@@ -56,8 +102,7 @@ public class AccessExpressionEvaluator implements AccessEvaluator {
       e.authorizations = new HashSet<>(entityAuths.size() * 2);
       a.asSet().stream().forEach(auth -> {
         e.authorizations.add(auth);
-        // TODO: Not sure about this quoting
-        e.authorizations.add("\"" + new String(AccessEvaluatorImpl.escape(auth.getBytes(UTF_8), false), UTF_8) + "\"");
+        e.authorizations.add(new String(AccessEvaluator.escape(auth.getBytes(UTF_8), true), UTF_8));
       });
     }
 //    System.out.println("AUTHS: " + entities);
@@ -125,40 +170,18 @@ public class AccessExpressionEvaluator implements AccessEvaluator {
   
   private Access_expressionContext parseAccessExpression(String accessExpression) throws IllegalAccessExpressionException {
     CodePointCharStream expression = CharStreams.fromString(accessExpression);
-    final AtomicLong errors = new AtomicLong(0);
-    AccessExpressionLexer lexer = new AccessExpressionLexer(expression) {
-
-      @Override
-      public void recover(LexerNoViableAltException e) {
-        System.out.println("Error in lexer. Expression: " + expression +", msg: " + e);
-        super.recover(e);
-        errors.incrementAndGet();
-      }
-
-      @Override
-      public void recover(RecognitionException re) {
-        System.out.println("Error in lexer. Expression: " + expression +", msg: " + re);
-        super.recover(re);
-        errors.incrementAndGet();
-      }
-      
-    };
+    AccessExpressionErrorListener lexer = new AccessExpressionErrorListener(expression);
     AccessExpressionParser parser = new AccessExpressionParser(new CommonTokenStream(lexer));
     parser.setErrorHandler(new BailErrorStrategy());
     parser.removeErrorListeners();
-    parser.addErrorListener(new ConsoleErrorListener() {
-
-      @Override
-      public void syntaxError(Recognizer<?,?> recognizer, Object offendingSymbol, int line,
-          int charPositionInLine, String msg, RecognitionException e) {
-        super.syntaxError(recognizer, offendingSymbol, line, charPositionInLine, msg, e);
-        errors.incrementAndGet();
-      }
-      
-    });
+    ParserErrorListener errorListener = new ParserErrorListener();
+    parser.addErrorListener(errorListener);
     try {
+      int errors = 0;
       Access_expressionContext ctx = parser.access_expression();
-      if (errors.get() > 0 || parser.getNumberOfSyntaxErrors() > 0 || ctx.exception != null) {
+      errors = lexer.getErrorCount();
+      errors += errorListener.getErrorCount();
+      if (errors > 0 || parser.getNumberOfSyntaxErrors() > 0 || ctx.exception != null) {
         throw new IllegalAccessExpressionException("Parse error", "", 0);
       }
       return ctx;

@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 //this class is intentionally package private and should never be made public
-public class AccessEvaluatorImpl implements AccessEvaluator {
+class AccessEvaluatorImpl implements AccessEvaluator {
   private final Collection<Predicate<BytesWrapper>> authorizedPredicates;
 
   private AccessEvaluatorImpl(Authorizer authorizationChecker) {
@@ -91,7 +91,7 @@ public class AccessEvaluatorImpl implements AccessEvaluator {
    * @param quote true to wrap escaped authorization in quotes
    * @return escaped authorization string
    */
-  public static byte[] escape(byte[] auth, boolean quote) {
+  static byte[] escape(byte[] auth, boolean quote) {
     int escapeCount = 0;
 
     for (byte value : auth) {
