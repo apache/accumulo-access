@@ -19,6 +19,7 @@
 package org.apache.accumulo.access;
 
 import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
@@ -60,17 +61,17 @@ public class AccessExpressionBenchmark {
     @State(Scope.Benchmark)
     public static class BenchmarkState {
 
-        private ArrayList<byte[]> expressions;
+        private ArrayList<byte[]> allTestExpressions;
 
-        private ArrayList<String> strExpressions;
+        private ArrayList<String> allTestExpressionsStr;
 
         private ArrayList<EvaluatorTests> evaluatorTests;
 
         @Setup
         public void loadData() throws IOException {
             List<AccessEvaluatorTest.TestDataSet> testData = AccessEvaluatorTest.readTestData();
-            expressions = new ArrayList<>();
-            strExpressions = new ArrayList<>();
+            allTestExpressions = new ArrayList<>();
+            allTestExpressionsStr = new ArrayList<>();
             evaluatorTests = new ArrayList<>();
 
             for(var testDataSet : testData) {
@@ -89,9 +90,9 @@ public class AccessExpressionBenchmark {
                 for(var tests : testDataSet.tests) {
                     if(tests.expectedResult != AccessEvaluatorTest.ExpectedResult.ERROR) {
                         for(var exp : tests.expressions) {
-                            strExpressions.add(exp);
+                            allTestExpressionsStr.add(exp);
                             byte[] byteExp = exp.getBytes(UTF_8);
-                            expressions.add(byteExp);
+                            allTestExpressions.add(byteExp);
                             et.expressions.add(byteExp);
                             et.parsedExpressions.add(AccessExpression.of(exp));
                         }
@@ -103,11 +104,11 @@ public class AccessExpressionBenchmark {
         }
 
         List<byte[]> getBytesExpressions(){
-            return expressions;
+            return allTestExpressions;
         }
 
         List<String> getStringExpressions(){
-            return strExpressions;
+            return allTestExpressionsStr;
         }
 
         public ArrayList<EvaluatorTests> getEvaluatorTests() {
@@ -169,6 +170,7 @@ public class AccessExpressionBenchmark {
 
         Options opt = new OptionsBuilder()
                 .include(AccessExpressionBenchmark.class.getSimpleName())
+                .mode(Mode.Throughput)
                 .operationsPerInvocation(numExpressions)
                 .timeUnit(TimeUnit.MICROSECONDS)
                 .warmupTime(TimeValue.seconds(5))
