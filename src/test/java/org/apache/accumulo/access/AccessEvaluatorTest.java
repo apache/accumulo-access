@@ -60,8 +60,8 @@ public class AccessEvaluatorTest {
 
   }
 
-  private List<TestDataSet> readTestData() throws IOException {
-    try (var input = getClass().getClassLoader().getResourceAsStream("testdata.json")) {
+  static List<TestDataSet> readTestData() throws IOException {
+    try (var input = AccessEvaluatorTest.class.getClassLoader().getResourceAsStream("testdata.json")) {
       if (input == null) {
         throw new IllegalStateException("could not find resource : testdata.json");
       }
