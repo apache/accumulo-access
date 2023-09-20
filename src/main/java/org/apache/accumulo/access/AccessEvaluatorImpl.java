@@ -145,48 +145,11 @@ class AccessEvaluatorImpl implements AccessEvaluator {
     }
   }
 
-  public boolean evaluate(AccessExpressionImpl visibility) throws IllegalAccessExpressionException {
+  public boolean evaluate(AccessExpressionImpl accessExpression)
+      throws IllegalAccessExpressionException {
     // The VisibilityEvaluator computes a trie from the given Authorizations, that ColumnVisibility
     // expressions can be evaluated against.
-    return authorizedPredicates.stream()
-        .allMatch(ap -> evaluate(ap, visibility.getExpressionBytes(), visibility.getParseTree()));
-  }
-
-  private static boolean evaluate(Predicate<BytesWrapper> authorizedPredicate,
-      final byte[] expression, final AccessExpressionImpl.Node root)
-      throws IllegalAccessExpressionException {
-    if (expression.length == 0) {
-      return true;
-    }
-    switch (root.type) {
-      case TERM:
-        return authorizedPredicate.test(root.getTerm(expression));
-      case AND:
-        if (root.children == null || root.children.size() < 2) {
-          throw new IllegalAccessExpressionException("AND has less than 2 children",
-              root.getTerm(expression).toString(), root.start);
-        }
-        for (AccessExpressionImpl.Node child : root.children) {
-          if (!evaluate(authorizedPredicate, expression, child)) {
-            return false;
-          }
-        }
-        return true;
-      case OR:
-        if (root.children == null || root.children.size() < 2) {
-          throw new IllegalAccessExpressionException("OR has less than 2 children",
-              root.getTerm(expression).toString(), root.start);
-        }
-        for (AccessExpressionImpl.Node child : root.children) {
-          if (evaluate(authorizedPredicate, expression, child)) {
-            return true;
-          }
-        }
-        return false;
-      default:
-        throw new IllegalAccessExpressionException("No such node type",
-            root.getTerm(expression).toString(), root.start);
-    }
+    return authorizedPredicates.stream().allMatch(accessExpression.aeNode::canAccess);
   }
 
   private static class BuilderImpl

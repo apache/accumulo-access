@@ -95,6 +95,12 @@ public class AccessExpressionTest {
     testData.add(List.of("(Z&(X&M))&C&(A&B)", "A&B&C&M&X&Z"));
     testData.add(List.of("(Z&(X&(M|L)))&C&(A&B)", "A&B&C&X&Z&(L|M)"));
     testData.add(List.of("(Z|(X|(M&L)))|C|(A|B)", "A|B|C|X|Z|(L&M)"));
+    testData.add(List.of("(A&(C&B)&C)|((A&C)&(B&C))", "A&B&C"));
+    testData.add(List.of("(A|(C|B)|C)&((A|C)|(B|C))", "A|B|C"));
+    testData.add(List.of("a|a|a|a", "a"));
+    testData.add(List.of("a&a&a&a", "a"));
+    testData.add(List.of("(a|a)|(a|a)", "a"));
+    testData.add(List.of("(a&a)&(a&a)", "a"));
 
     for (var testCase : testData) {
       assertEquals(2, testCase.size());
