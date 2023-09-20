@@ -45,7 +45,7 @@ abstract class AeNode implements Comparable<AeNode> {
 
         @Override
         public int compareTo(AeNode o) {
-            return 0;
+            return super.compareTo(o);
         }
 
         @Override
