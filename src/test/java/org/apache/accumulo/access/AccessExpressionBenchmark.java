@@ -168,6 +168,8 @@ public class AccessExpressionBenchmark {
 
         int numExpressions =state.getBytesExpressions().size();
 
+        System.out.println("Number of Expressions: " + numExpressions);
+
         Options opt = new OptionsBuilder()
                 .include(AccessExpressionBenchmark.class.getSimpleName())
                 .mode(Mode.Throughput)
