@@ -145,11 +145,11 @@ class AccessEvaluatorImpl implements AccessEvaluator {
     }
   }
 
-  public boolean evaluate(AccessExpressionImpl accessExpression) throws IllegalAccessExpressionException {
+  public boolean evaluate(AccessExpressionImpl accessExpression)
+      throws IllegalAccessExpressionException {
     // The VisibilityEvaluator computes a trie from the given Authorizations, that ColumnVisibility
     // expressions can be evaluated against.
-    return authorizedPredicates.stream()
-        .allMatch(accessExpression.aeNode::canAccess);
+    return authorizedPredicates.stream().allMatch(accessExpression.aeNode::canAccess);
   }
 
   private static class BuilderImpl

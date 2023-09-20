@@ -20,14 +20,8 @@ package org.apache.accumulo.access;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
-import java.util.List;
-import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 
 class AccessExpressionImpl implements AccessExpression {
@@ -50,7 +44,6 @@ class AccessExpressionImpl implements AccessExpression {
 
   // must create this after creating EMPTY_NODE
   static final AccessExpression EMPTY = new AccessExpressionImpl("");
-
 
   @Override
   public String normalize() {
