@@ -1,4 +1,4 @@
-package org.apache.accumulo.access.grammar;
+package org.apache.accumulo.access.grammar.antlr;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,37 +28,14 @@ import org.apache.accumulo.access.AccessEvaluatorTest.TestExpressions;
 import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.IllegalAccessExpressionException;
-import org.apache.accumulo.access.grammar.antlr.AccessExpressionEvaluator;
 import org.apache.accumulo.access.grammars.AccessExpressionLexer;
 import org.apache.accumulo.access.grammars.AccessExpressionParser;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
 import org.junit.jupiter.api.Test;
 
-public class Antlr4Test {
+public class Antlr4Tests {
 
-  @Test
-  public void testCompareWithAccessExpressionImplParsing() throws Exception {
-    // This test checks that the parsing of the AccessExpressions in testdata.json
-    // using ANTLR have the same outcome as AccessExpression.of()
-    List<TestDataSet> testData = AccessEvaluatorTest.readTestData();
-    for (TestDataSet testSet : testData) {
-      for (TestExpressions test : testSet.tests) {
-        ExpectedResult result = test.expectedResult;
-        for (String cv : test.expressions) {
-//          System.out.println("Testing: " + cv);
-          if (result == ExpectedResult.ERROR) {
-            assertThrows(IllegalAccessExpressionException.class, () -> AccessExpression.of(cv));
-            assertThrows(AssertionError.class, () -> test(cv));
-          } else {
-            AccessExpression.of(cv);
-            test(cv);
-          }
-        }
-      }
-    }
-  }
-  
-  private void test(String input) throws Exception {
+  private void testParse(String input) throws Exception {
     CodePointCharStream expression = CharStreams.fromString(input);
     final AtomicLong errors = new AtomicLong(0);
     AccessExpressionLexer lexer = new AccessExpressionLexer(expression) {
@@ -100,25 +77,48 @@ public class Antlr4Test {
     assertEquals(0, errors.get());
     assertEquals(0, parser.getNumberOfSyntaxErrors());
   }
+
+  @Test
+  public void testCompareWithAccessExpressionImplParsing() throws Exception {
+    // This test checks that the parsing of the AccessExpressions in testdata.json
+    // using ANTLR have the same outcome as AccessExpression.of()
+    List<TestDataSet> testData = AccessEvaluatorTest.readTestData();
+    for (TestDataSet testSet : testData) {
+      for (TestExpressions test : testSet.tests) {
+        ExpectedResult result = test.expectedResult;
+        for (String cv : test.expressions) {
+//          System.out.println("Testing: " + cv);
+          if (result == ExpectedResult.ERROR) {
+            assertThrows(IllegalAccessExpressionException.class, () -> AccessExpression.of(cv));
+            assertThrows(AssertionError.class, () -> testParse(cv));
+          } else {
+            AccessExpression.of(cv);
+            testParse(cv);
+          }
+        }
+      }
+    }
+  }
+  
   
   @Test
-  public void testVisitorSimple() throws Exception {
+  public void testSimpleEvaluation() throws Exception {
     String accessExpression = "(one&two)|(foo&bar)";
     Authorizations auths = Authorizations.of("four", "three", "one", "two");
-    AccessExpressionEvaluator eval = new AccessExpressionEvaluator(List.of(auths));
+    AccessExpressionAntlrEvaluator eval = new AccessExpressionAntlrEvaluator(List.of(auths));
     assertTrue(eval.canAccess(accessExpression));
   }
   
   @Test
-  public void testVisitorSimpleFailure() throws Exception {
+  public void testSimpleEvaluationFailure() throws Exception {
     String accessExpression = "(A&B&C)";
     Authorizations auths = Authorizations.of("A", "C");
-    AccessExpressionEvaluator eval = new AccessExpressionEvaluator(List.of(auths));
+    AccessExpressionAntlrEvaluator eval = new AccessExpressionAntlrEvaluator(List.of(auths));
     assertFalse(eval.canAccess(accessExpression));
   }
 
   @Test
-  public void testAntlrVisitorEvaluationAgainstAccessEvaluator() throws Exception {
+  public void testCompareAntlrEvaluationAgainstAccessEvaluatorImpl() throws Exception {
     // This test checks that the evaluation of the AccessExpressions in testdata.json
     // using ANTLR have the same outcome as AccessEvaluatorImpl
     List<TestDataSet> testData = AccessEvaluatorTest.readTestData();
@@ -129,7 +129,7 @@ public class Antlr4Test {
               Stream.of(testSet.auths).map(Authorizations::of).collect(Collectors.toList());
           AccessEvaluator evaluator = AccessEvaluator.builder().authorizations(authSets).build();
           
-          AccessExpressionEvaluator antlr = new AccessExpressionEvaluator(authSets);
+          AccessExpressionAntlrEvaluator antlr = new AccessExpressionAntlrEvaluator(authSets);
 //          System.out.println("Testing: " + expression);
           switch (test.expectedResult) {
             case ACCESSIBLE:

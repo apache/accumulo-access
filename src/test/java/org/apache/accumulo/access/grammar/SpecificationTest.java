@@ -12,6 +12,7 @@ import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.antlr.v4.runtime.LexerNoViableAltException;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
+import org.apache.accumulo.access.grammar.antlr.Antlr4Tests;
 import org.apache.accumulo.access.grammars.AbnfLexer;
 import org.apache.accumulo.access.grammars.AbnfParser;
 import org.junit.jupiter.api.Test;
@@ -27,7 +28,7 @@ public class SpecificationTest {
     // The test resource specification.abnf is a copy of the ABNF
     // from SPECIFICATION.md
     
-    InputStream is = Antlr4Test.class.getResourceAsStream("/specification.abnf");
+    InputStream is = Antlr4Tests.class.getResourceAsStream("/specification.abnf");
     assertNotNull(is);
     
     final AtomicLong errors = new AtomicLong(0);

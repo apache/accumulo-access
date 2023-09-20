@@ -7,23 +7,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.antlr.v4.runtime.BailErrorStrategy;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CodePointCharStream;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.ConsoleErrorListener;
-import org.antlr.v4.runtime.LexerNoViableAltException;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.IllegalAccessExpressionException;
-import org.apache.accumulo.access.grammars.AccessExpressionLexer;
-import org.apache.accumulo.access.grammars.AccessExpressionParser;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_tokenContext;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.And_expressionContext;
@@ -31,56 +20,10 @@ import org.apache.accumulo.access.grammars.AccessExpressionParser.And_operatorCo
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Or_expressionContext;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Or_operatorContext;
 
-public class AccessExpressionEvaluator implements AccessEvaluator {
-  
-  private static class AccessExpressionErrorListener extends AccessExpressionLexer {
+public class AccessExpressionAntlrEvaluator implements AccessEvaluator {
 
-    private int errors = 0;
-    private final CharStream input;
-    
-    public AccessExpressionErrorListener(CharStream input) {
-      super(input);
-      this.input = input;
-    }
-
-    @Override
-    public void recover(LexerNoViableAltException e) {
-      System.out.println("Error in lexer. Expression: " + input +", msg: " + e);
-      super.recover(e);
-      errors++;
-    }
-
-    @Override
-    public void recover(RecognitionException re) {
-      System.out.println("Error in lexer. Expression: " + input +", msg: " + re);
-      super.recover(re);
-      errors++;
-    }
-    
-    public int getErrorCount() {
-      return errors;
-    }
-    
-  }
-
-  private static class ParserErrorListener extends ConsoleErrorListener {
-
-    int errors = 0;
-    
-    @Override
-    public void syntaxError(Recognizer<?,?> recognizer, Object offendingSymbol, int line,
-        int charPositionInLine, String msg, RecognitionException e) {
-      super.syntaxError(recognizer, offendingSymbol, line, charPositionInLine, msg, e);
-      errors++;
-    }
-    
-    public int getErrorCount() {
-      return errors;
-    }    
-    
-  }
-  
   private class Entity {
+    
     private Set<String> authorizations;
 
     @Override
@@ -89,10 +32,10 @@ public class AccessExpressionEvaluator implements AccessEvaluator {
     }
     
   }
-  
+
   private final List<Entity> entities;
   
-  public AccessExpressionEvaluator(List<Authorizations> authSets) {
+  public AccessExpressionAntlrEvaluator(List<Authorizations> authSets) {
     entities = new ArrayList<>(authSets.size());
 
     for (Authorizations a : authSets) {
@@ -120,9 +63,12 @@ public class AccessExpressionEvaluator implements AccessEvaluator {
     if ("".equals(accessExpression)) {
       return true;
     }
-    Access_expressionContext root = parseAccessExpression(accessExpression);
+    return canAccess(AccessExpressionAntlrParser.parseAccessExpression(accessExpression));
+  }
+  
+  public boolean canAccess(Access_expressionContext parsedExpression) {
     for (Entity e : entities) {
-      if (!evaluate(e, root)) {
+      if (!evaluate(e, parsedExpression)) {
         return false;
       }
     }
@@ -168,26 +114,5 @@ public class AccessExpressionEvaluator implements AccessEvaluator {
     return retval;
   }
   
-  private Access_expressionContext parseAccessExpression(String accessExpression) throws IllegalAccessExpressionException {
-    CodePointCharStream expression = CharStreams.fromString(accessExpression);
-    AccessExpressionErrorListener lexer = new AccessExpressionErrorListener(expression);
-    AccessExpressionParser parser = new AccessExpressionParser(new CommonTokenStream(lexer));
-    parser.setErrorHandler(new BailErrorStrategy());
-    parser.removeErrorListeners();
-    ParserErrorListener errorListener = new ParserErrorListener();
-    parser.addErrorListener(errorListener);
-    try {
-      int errors = 0;
-      Access_expressionContext ctx = parser.access_expression();
-      errors = lexer.getErrorCount();
-      errors += errorListener.getErrorCount();
-      if (errors > 0 || parser.getNumberOfSyntaxErrors() > 0 || ctx.exception != null) {
-        throw new IllegalAccessExpressionException("Parse error", "", 0);
-      }
-      return ctx;
-    } catch (RuntimeException e1) {
-      throw new IllegalAccessExpressionException(e1.getMessage(), "", 0);
-    }
-  }
   
 }
