@@ -23,18 +23,18 @@ import org.apache.accumulo.access.grammars.AccessExpressionParser.Or_operatorCon
 public class AccessExpressionAntlrEvaluator implements AccessEvaluator {
 
   private class Entity {
-    
+
     private Set<String> authorizations;
 
     @Override
     public String toString() {
       return "Entity [authorizations=" + authorizations + "]";
     }
-    
+
   }
 
   private final List<Entity> entities;
-  
+
   public AccessExpressionAntlrEvaluator(List<Authorizations> authSets) {
     entities = new ArrayList<>(authSets.size());
 
@@ -48,24 +48,24 @@ public class AccessExpressionAntlrEvaluator implements AccessEvaluator {
         e.authorizations.add(new String(AccessEvaluator.escape(auth.getBytes(UTF_8), true), UTF_8));
       });
     }
-//    System.out.println("AUTHS: " + entities);
+    // System.out.println("AUTHS: " + entities);
   }
-  
+
   public boolean canAccess(byte[] accessExpression) throws IllegalAccessExpressionException {
     return canAccess(AccessExpression.of(accessExpression));
   }
-  
+
   public boolean canAccess(AccessExpression accessExpression) {
-    return canAccess(accessExpression.getExpression());    
+    return canAccess(accessExpression.getExpression());
   }
-  
+
   public boolean canAccess(String accessExpression) {
     if ("".equals(accessExpression)) {
       return true;
     }
     return canAccess(AccessExpressionAntlrParser.parseAccessExpression(accessExpression));
   }
-  
+
   public boolean canAccess(Access_expressionContext parsedExpression) {
     for (Entity e : entities) {
       if (!evaluate(e, parsedExpression)) {
@@ -74,12 +74,13 @@ public class AccessExpressionAntlrEvaluator implements AccessEvaluator {
     }
     return true;
   }
-  
+
   private Boolean evaluate(Entity e, ParseTree node) {
     Boolean retval;
     if (node instanceof Access_tokenContext) {
       retval = e.authorizations.contains(node.getText());
-    } else if (node instanceof TerminalNode || node instanceof And_operatorContext | node instanceof Or_operatorContext) {
+    } else if (node instanceof TerminalNode
+        || node instanceof And_operatorContext | node instanceof Or_operatorContext) {
       retval = null;
     } else {
       int childCount = node.getChildCount();
@@ -101,18 +102,18 @@ public class AccessExpressionAntlrEvaluator implements AccessEvaluator {
         retval = falseCount == 0;
       } else {
         if (node instanceof Or_expressionContext) {
-          retval = trueCount > 0;      
+          retval = trueCount > 0;
         } else if (node instanceof And_expressionContext) {
           retval = trueCount > 0 && falseCount == 0;
         } else {
           retval = trueCount > 0 && falseCount == 0;
         }
       }
-//      System.out.println("child results-> true=" + trueCount +", false=" + falseCount);
+      // System.out.println("child results-> true=" + trueCount +", false=" + falseCount);
     }
-//    System.out.println("node: " + node.getClass().getSimpleName()+ ", value: " + node.getText() + ", retval: " + retval);
+    // System.out.println("node: " + node.getClass().getSimpleName()+ ", value: " + node.getText() +
+    // ", retval: " + retval);
     return retval;
   }
-  
-  
+
 }

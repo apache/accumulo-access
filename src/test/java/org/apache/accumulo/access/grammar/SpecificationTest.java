@@ -27,10 +27,10 @@ public class SpecificationTest {
 
     // The test resource specification.abnf is a copy of the ABNF
     // from SPECIFICATION.md
-    
+
     InputStream is = Antlr4Tests.class.getResourceAsStream("/specification.abnf");
     assertNotNull(is);
-    
+
     final AtomicLong errors = new AtomicLong(0);
 
     AbnfLexer lexer = new AbnfLexer(CharStreams.fromStream(is)) {
@@ -46,7 +46,7 @@ public class SpecificationTest {
         errors.incrementAndGet();
       }
     };
-    
+
     AbnfParser parser = new AbnfParser(new CommonTokenStream(lexer));
     parser.removeErrorListeners();
     parser.addErrorListener(new ConsoleErrorListener() {
@@ -60,7 +60,7 @@ public class SpecificationTest {
 
     parser.rulelist();
     assertEquals(0, errors.get());
-    
+
   }
 
 }

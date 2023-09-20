@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.accumulo.access.AccessEvaluatorTest;
-import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -30,7 +29,7 @@ import org.openjdk.jmh.runner.options.TimeValue;
  *
  * <p>
  * <blockquote>
- * 
+ *
  * <pre>
  * mvn clean package
  * mvn exec:exec -Dexec.executable="java" -Dexec.classpathScope=test -Dexec.args="-classpath %classpath org.apache.accumulo.access.grammar.antlr.AccessExpressionAntlrBenchmark"

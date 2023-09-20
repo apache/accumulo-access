@@ -42,18 +42,18 @@ public class Antlr4Tests {
 
       @Override
       public void recover(LexerNoViableAltException e) {
-        System.out.println("Error in lexer. Expression: " + expression +", msg: " + e);
+        System.out.println("Error in lexer. Expression: " + expression + ", msg: " + e);
         super.recover(e);
         errors.incrementAndGet();
       }
 
       @Override
       public void recover(RecognitionException re) {
-        System.out.println("Error in lexer. Expression: " + expression +", msg: " + re);
+        System.out.println("Error in lexer. Expression: " + expression + ", msg: " + re);
         super.recover(re);
         errors.incrementAndGet();
       }
-      
+
     };
     AccessExpressionParser parser = new AccessExpressionParser(new CommonTokenStream(lexer));
     parser.setErrorHandler(new BailErrorStrategy());
@@ -66,7 +66,7 @@ public class Antlr4Tests {
         super.syntaxError(recognizer, offendingSymbol, line, charPositionInLine, msg, e);
         errors.incrementAndGet();
       }
-      
+
     });
     try {
       Access_expressionContext ctx = parser.access_expression();
@@ -87,7 +87,7 @@ public class Antlr4Tests {
       for (TestExpressions test : testSet.tests) {
         ExpectedResult result = test.expectedResult;
         for (String cv : test.expressions) {
-//          System.out.println("Testing: " + cv);
+          // System.out.println("Testing: " + cv);
           if (result == ExpectedResult.ERROR) {
             assertThrows(IllegalAccessExpressionException.class, () -> AccessExpression.of(cv));
             assertThrows(AssertionError.class, () -> testParse(cv));
@@ -99,8 +99,7 @@ public class Antlr4Tests {
       }
     }
   }
-  
-  
+
   @Test
   public void testSimpleEvaluation() throws Exception {
     String accessExpression = "(one&two)|(foo&bar)";
@@ -108,7 +107,7 @@ public class Antlr4Tests {
     AccessExpressionAntlrEvaluator eval = new AccessExpressionAntlrEvaluator(List.of(auths));
     assertTrue(eval.canAccess(accessExpression));
   }
-  
+
   @Test
   public void testSimpleEvaluationFailure() throws Exception {
     String accessExpression = "(A&B&C)";
@@ -128,45 +127,48 @@ public class Antlr4Tests {
           List<Authorizations> authSets =
               Stream.of(testSet.auths).map(Authorizations::of).collect(Collectors.toList());
           AccessEvaluator evaluator = AccessEvaluator.builder().authorizations(authSets).build();
-          
+
           AccessExpressionAntlrEvaluator antlr = new AccessExpressionAntlrEvaluator(authSets);
-//          System.out.println("Testing: " + expression);
+          // System.out.println("Testing: " + expression);
           switch (test.expectedResult) {
             case ACCESSIBLE:
               assertTrue(evaluator.canAccess(expression), expression);
               assertTrue(evaluator.canAccess(expression.getBytes(UTF_8)), expression);
               assertTrue(evaluator.canAccess(AccessExpression.of(expression)), expression);
-              assertTrue(evaluator.canAccess(AccessExpression.of(expression.getBytes(UTF_8))), expression);
+              assertTrue(evaluator.canAccess(AccessExpression.of(expression.getBytes(UTF_8))),
+                  expression);
               assertTrue(evaluator.canAccess(AccessExpression.of(expression).normalize()),
                   expression);
-              assertEquals(expression, AccessExpression.of(expression.getBytes(UTF_8)).getExpression());
+              assertEquals(expression,
+                  AccessExpression.of(expression.getBytes(UTF_8)).getExpression());
               assertEquals(expression, AccessExpression.of(expression).getExpression());
-              
+
               assertTrue(antlr.canAccess(expression), expression);
               assertTrue(antlr.canAccess(expression.getBytes(UTF_8)), expression);
               assertTrue(antlr.canAccess(AccessExpression.of(expression)), expression);
-              assertTrue(antlr.canAccess(AccessExpression.of(expression.getBytes(UTF_8))), expression);
-              assertTrue(antlr.canAccess(AccessExpression.of(expression).normalize()),
+              assertTrue(antlr.canAccess(AccessExpression.of(expression.getBytes(UTF_8))),
                   expression);
+              assertTrue(antlr.canAccess(AccessExpression.of(expression).normalize()), expression);
 
-              
               break;
             case INACCESSIBLE:
               assertFalse(evaluator.canAccess(expression), expression);
               assertFalse(evaluator.canAccess(expression.getBytes(UTF_8)), expression);
               assertFalse(evaluator.canAccess(AccessExpression.of(expression)), expression);
-              assertFalse(evaluator.canAccess(AccessExpression.of(expression.getBytes(UTF_8))), expression);
+              assertFalse(evaluator.canAccess(AccessExpression.of(expression.getBytes(UTF_8))),
+                  expression);
               assertFalse(evaluator.canAccess(AccessExpression.of(expression).normalize()),
                   expression);
-              assertEquals(expression, AccessExpression.of(expression.getBytes(UTF_8)).getExpression());
+              assertEquals(expression,
+                  AccessExpression.of(expression.getBytes(UTF_8)).getExpression());
               assertEquals(expression, AccessExpression.of(expression).getExpression());
 
               assertFalse(antlr.canAccess(expression), expression);
               assertFalse(antlr.canAccess(expression.getBytes(UTF_8)), expression);
               assertFalse(antlr.canAccess(AccessExpression.of(expression)), expression);
-              assertFalse(antlr.canAccess(AccessExpression.of(expression.getBytes(UTF_8))), expression);
-              assertFalse(antlr.canAccess(AccessExpression.of(expression).normalize()),
+              assertFalse(antlr.canAccess(AccessExpression.of(expression.getBytes(UTF_8))),
                   expression);
+              assertFalse(antlr.canAccess(AccessExpression.of(expression).normalize()), expression);
 
               break;
             case ERROR:
@@ -177,8 +179,9 @@ public class Antlr4Tests {
               assertThrows(IllegalAccessExpressionException.class,
                   () -> evaluator.canAccess(AccessExpression.of(expression)), expression);
               assertThrows(IllegalAccessExpressionException.class,
-                      () -> evaluator.canAccess(AccessExpression.of(expression.getBytes(UTF_8))), expression);
-              
+                  () -> evaluator.canAccess(AccessExpression.of(expression.getBytes(UTF_8))),
+                  expression);
+
               assertThrows(IllegalAccessExpressionException.class,
                   () -> antlr.canAccess(expression), expression);
               assertThrows(IllegalAccessExpressionException.class,
@@ -186,7 +189,8 @@ public class Antlr4Tests {
               assertThrows(IllegalAccessExpressionException.class,
                   () -> antlr.canAccess(AccessExpression.of(expression)), expression);
               assertThrows(IllegalAccessExpressionException.class,
-                      () -> antlr.canAccess(AccessExpression.of(expression.getBytes(UTF_8))), expression);
+                  () -> antlr.canAccess(AccessExpression.of(expression.getBytes(UTF_8))),
+                  expression);
               break;
             default:
               throw new IllegalArgumentException();
@@ -194,6 +198,6 @@ public class Antlr4Tests {
         }
       }
     }
-    
+
   }
 }

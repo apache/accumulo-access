@@ -30,12 +30,12 @@ import org.junit.jupiter.api.Test;
 public class AccessExpressionTest {
 
   @Test
-  public void testEmptyExpression(){
+  public void testEmptyExpression() {
     assertEquals("", AccessExpression.of().getExpression());
   }
 
   @Test
-  public void testGetAuthorizations(){
+  public void testGetAuthorizations() {
     // Test data pairs where the first entry of each pair is an expression to normalize and second
     // is the expected authorization in the expression
     var testData = new ArrayList<List<String>>();
@@ -53,14 +53,15 @@ public class AccessExpressionTest {
       assertEquals(2, testCase.size());
       var expression = testCase.get(0);
       var expected = testCase.get(1);
-      var actual = AccessExpression.of(expression).getAuthorizations().asSet().stream().sorted().collect(Collectors.joining(","));
-      assertEquals(expected,actual);
-      actual = AccessExpression.of(expression.getBytes(UTF_8)).getAuthorizations().asSet().stream().sorted().collect(Collectors.joining(","));
-      assertEquals(expected,actual);
+      var actual = AccessExpression.of(expression).getAuthorizations().asSet().stream().sorted()
+          .collect(Collectors.joining(","));
+      assertEquals(expected, actual);
+      actual = AccessExpression.of(expression.getBytes(UTF_8)).getAuthorizations().asSet().stream()
+          .sorted().collect(Collectors.joining(","));
+      assertEquals(expected, actual);
     }
 
   }
-
 
   @Test
   public void testNormalize() {
