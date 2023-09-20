@@ -255,7 +255,7 @@ abstract class AeNode implements Comparable<AeNode> {
     }
 
     int ordinal() {
-      return 3;
+      return 2;
     }
   }
 
