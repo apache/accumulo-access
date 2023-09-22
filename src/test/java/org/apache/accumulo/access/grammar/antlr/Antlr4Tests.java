@@ -122,13 +122,14 @@ public class Antlr4Tests {
     // using ANTLR have the same outcome as AccessEvaluatorImpl
     List<TestDataSet> testData = AccessEvaluatorTest.readTestData();
     for (TestDataSet testSet : testData) {
+
+      List<Authorizations> authSets =
+          Stream.of(testSet.auths).map(Authorizations::of).collect(Collectors.toList());
+      AccessEvaluator evaluator = AccessEvaluator.builder().authorizations(authSets).build();
+      AccessExpressionAntlrEvaluator antlr = new AccessExpressionAntlrEvaluator(authSets);
+
       for (TestExpressions test : testSet.tests) {
         for (String expression : test.expressions) {
-          List<Authorizations> authSets =
-              Stream.of(testSet.auths).map(Authorizations::of).collect(Collectors.toList());
-          AccessEvaluator evaluator = AccessEvaluator.builder().authorizations(authSets).build();
-
-          AccessExpressionAntlrEvaluator antlr = new AccessExpressionAntlrEvaluator(authSets);
           // System.out.println("Testing: " + expression);
           switch (test.expectedResult) {
             case ACCESSIBLE:

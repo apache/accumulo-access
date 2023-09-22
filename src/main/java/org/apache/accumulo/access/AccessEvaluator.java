@@ -56,17 +56,6 @@ public interface AccessEvaluator {
   boolean canAccess(AccessExpression accessExpression) throws IllegalAccessExpressionException;
 
   /**
-   * Properly escapes an authorization string. The string can be quoted if desired.
-   *
-   * @param auth
-   * @param quote
-   * @return
-   */
-  static byte[] escape(byte[] auth, boolean quote) {
-    return AccessEvaluatorImpl.escape(auth, quote);
-  }
-
-  /**
    * @since 1.0.0
    */
   interface Authorizer {

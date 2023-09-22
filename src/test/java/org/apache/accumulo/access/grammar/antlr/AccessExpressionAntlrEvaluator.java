@@ -1,7 +1,5 @@
 package org.apache.accumulo.access.grammar.antlr;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -45,7 +43,11 @@ public class AccessExpressionAntlrEvaluator implements AccessEvaluator {
       e.authorizations = new HashSet<>(entityAuths.size() * 2);
       a.asSet().stream().forEach(auth -> {
         e.authorizations.add(auth);
-        e.authorizations.add(new String(AccessEvaluator.escape(auth.getBytes(UTF_8), true), UTF_8));
+        String quoted = AccessExpression.quote(auth);
+        if (!quoted.startsWith("\"")) {
+          quoted = '"' + quoted + '"';
+        }
+        e.authorizations.add(quoted);
       });
     }
     // System.out.println("AUTHS: " + entities);
