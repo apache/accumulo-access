@@ -50,8 +50,4 @@ For an example of using this library see the [unit test](src/test/java/org/apach
 
 See the [specification](SPECIFICATION.md) for details about access expressions.
 
-## Usage in other languages
-
-The src/main/antlr4/AccessExpression.g4 file is an [ANTLR v4](https://github.com/antlr/antlr4) grammar. ANTLR v4 provides support for several other
-programming languages. Users of this library should be able to generate ANTLR parsers using the provided grammar to validate that the AccessExpression's
-that they are creating are valid.
+See the [getting started guide](contrib/getting-started/README.md) for a simple example of how to use this java library.
