@@ -43,6 +43,28 @@ mvn clean package
 
 ## Example runs
 
+Running with the authorizations set `{BLUE,GREEN,PINK,RED}` shows the complete data set because all data is accessible with these authorizations.
+
+```
+$ ./run.sh BLUE GREEN PINK RED
+data1 : (RED&GREEN)|(BLUE&PINK)
+data2 : (RED&GREEN)|(BLUE&PINK)
+data3 : (RED|GREEN)&(BLUE|PINK)
+data4 : (RED&GREEN)|(BLUE&PINK)
+data5 : (RED|GREEN)&(BLUE|PINK)
+data6 : 
+data7 : PINK
+data8 : RED&BLUE&GREEN&PINK
+data9 : PINK|(BLUE&RED)
+```
+
+Running with the empty set of authorizations shows only `data6` which has an empty access expression and is always accessible with any authorization set.
+
+```
+$ ./run.sh 
+data6 : 
+```
+
 Running with the authorizations set `{BLUE,RED}`
 
 ```
@@ -72,18 +94,5 @@ data7 : PINK
 data9 : PINK|(BLUE&RED)
 ```
 
-Running with the authorizations set `{BLUE,GREEN,PINK,RED}`
 
-```
-$ ./run.sh BLUE GREEN PINK RED
-data1 : (RED&GREEN)|(BLUE&PINK)
-data2 : (RED&GREEN)|(BLUE&PINK)
-data3 : (RED|GREEN)&(BLUE|PINK)
-data4 : (RED&GREEN)|(BLUE&PINK)
-data5 : (RED|GREEN)&(BLUE|PINK)
-data6 : 
-data7 : PINK
-data8 : RED&BLUE&GREEN&PINK
-data9 : PINK|(BLUE&RED)
-```
 
