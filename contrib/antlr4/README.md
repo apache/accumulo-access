@@ -18,4 +18,4 @@
 
 This contrib example contains an [ANTLRv4](https://www.antlr.org/) grammar file (see [AccessExpression.g4](src/main/antlr4/AccessExpression.g4)) that can be used to create AccessExpressions parsers in languages supported by ANTLRv4.
 
-An example [parser](src/test/java/org/apache/accumulo/access/grammar/antlr/AccessExpressionAntlrParser.java) and [evaluator](src/test/java/org/apache/accumulo/access/grammar/antlr/AccessExpressionAntlrEvaluator.java] are used when building this project to confirm that the parsing and evalutation are consistent with the reference Java implementation.
+An example [parser](src/test/java/org/apache/accumulo/access/grammar/antlr/AccessExpressionAntlrParser.java) and [evaluator](src/test/java/org/apache/accumulo/access/grammar/antlr/AccessExpressionAntlrEvaluator.java] are used when building this project to confirm that the parsing and evaluation are consistent with the reference Java implementation.
