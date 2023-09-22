@@ -46,7 +46,6 @@ public class AccessExample {
         records.add(new Record("data3", "(RED|GREEN)&(BLUE|PINK)"));
         records.add(new Record("data4", "(RED&GREEN)|(BLUE&PINK)"));
         records.add(new Record("data5", "(RED|GREEN)&(BLUE|PINK)"));
-        // TODO default for empty?
         records.add(new Record("data6", ""));
         records.add(new Record("data7", "PINK"));
         records.add(new Record("data8", "RED&BLUE&GREEN&PINK"));
