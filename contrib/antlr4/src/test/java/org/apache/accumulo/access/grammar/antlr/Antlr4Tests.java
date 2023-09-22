@@ -21,13 +21,13 @@ import org.antlr.v4.runtime.LexerNoViableAltException;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.apache.accumulo.access.AccessEvaluator;
-import org.apache.accumulo.access.AccessEvaluatorTest;
-import org.apache.accumulo.access.AccessEvaluatorTest.ExpectedResult;
-import org.apache.accumulo.access.AccessEvaluatorTest.TestDataSet;
-import org.apache.accumulo.access.AccessEvaluatorTest.TestExpressions;
 import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.IllegalAccessExpressionException;
+import org.apache.accumulo.access.TestDataLoader;
+import org.apache.accumulo.access.TestDataLoader.ExpectedResult;
+import org.apache.accumulo.access.TestDataLoader.TestDataSet;
+import org.apache.accumulo.access.TestDataLoader.TestExpressions;
 import org.apache.accumulo.access.grammars.AccessExpressionLexer;
 import org.apache.accumulo.access.grammars.AccessExpressionParser;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
@@ -82,7 +82,7 @@ public class Antlr4Tests {
   public void testCompareWithAccessExpressionImplParsing() throws Exception {
     // This test checks that the parsing of the AccessExpressions in testdata.json
     // using ANTLR have the same outcome as AccessExpression.of()
-    List<TestDataSet> testData = AccessEvaluatorTest.readTestData();
+    List<TestDataSet> testData = TestDataLoader.readTestData();
     for (TestDataSet testSet : testData) {
       for (TestExpressions test : testSet.tests) {
         ExpectedResult result = test.expectedResult;
@@ -120,7 +120,7 @@ public class Antlr4Tests {
   public void testCompareAntlrEvaluationAgainstAccessEvaluatorImpl() throws Exception {
     // This test checks that the evaluation of the AccessExpressions in testdata.json
     // using ANTLR have the same outcome as AccessEvaluatorImpl
-    List<TestDataSet> testData = AccessEvaluatorTest.readTestData();
+    List<TestDataSet> testData = TestDataLoader.readTestData();
     for (TestDataSet testSet : testData) {
 
       List<Authorizations> authSets =

@@ -19,6 +19,7 @@
 
 # Maven ignores
 /target/
+/contrib/antlr4/target/
 
 # IDE ignores
 /.settings/
@@ -34,3 +35,16 @@
 /nb-configuration.xml
 /.vscode/
 /.factorypath
+/contrib/antlr4/.settings/
+/contrib/antlr4/.project
+/contrib/antlr4/.classpath
+/contrib/antlr4/.pydevproject
+/contrib/antlr4/.idea
+/contrib/antlr4/*.iml
+/contrib/antlr4/*.ipr
+/contrib/antlr4/*.iws
+/contrib/antlr4/nbproject/
+/contrib/antlr4/nbactions.xml
+/contrib/antlr4/nb-configuration.xml
+/contrib/antlr4/.vscode/
+/contrib/antlr4/.factorypath

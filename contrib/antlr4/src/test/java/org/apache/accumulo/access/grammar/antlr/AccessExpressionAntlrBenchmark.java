@@ -3,14 +3,15 @@ package org.apache.accumulo.access.grammar.antlr;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.accumulo.access.AccessEvaluatorTest;
 import org.apache.accumulo.access.Authorizations;
+import org.apache.accumulo.access.TestDataLoader;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Mode;
@@ -19,7 +20,6 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
@@ -56,8 +56,8 @@ public class AccessExpressionAntlrBenchmark {
     private ArrayList<EvaluatorTests> evaluatorTests;
 
     @Setup
-    public void loadData() throws IOException {
-      List<AccessEvaluatorTest.TestDataSet> testData = AccessEvaluatorTest.readTestData();
+    public void loadData() throws IOException, URISyntaxException {
+      List<TestDataLoader.TestDataSet> testData = TestDataLoader.readTestData();
       allTestExpressions = new ArrayList<>();
       allTestExpressionsStr = new ArrayList<>();
       evaluatorTests = new ArrayList<>();
@@ -71,7 +71,7 @@ public class AccessExpressionAntlrBenchmark {
             Stream.of(testDataSet.auths).map(Authorizations::of).collect(Collectors.toList()));
 
         for (var tests : testDataSet.tests) {
-          if (tests.expectedResult != AccessEvaluatorTest.ExpectedResult.ERROR) {
+          if (tests.expectedResult != TestDataLoader.ExpectedResult.ERROR) {
             for (var exp : tests.expressions) {
               allTestExpressionsStr.add(exp);
               byte[] byteExp = exp.getBytes(UTF_8);
@@ -145,7 +145,7 @@ public class AccessExpressionAntlrBenchmark {
     }
   }
 
-  public static void main(String[] args) throws RunnerException, IOException {
+  public static void main(String[] args) throws Exception {
 
     var state = new BenchmarkState();
     state.loadData();
