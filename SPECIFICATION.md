@@ -22,7 +22,7 @@
 # AccessExpression Specification
 
 This document specifies the format of an Apache Accumulo AccessExpression. An AccessExpression
-is an encoding of a boolean expression of the attributes that a subject is required to have to
+is an encoding of a boolean expression of the attributes that an entity is required to have to
 access a particular piece of data.
 
 ## Syntax
@@ -44,12 +44,11 @@ or-expression           =  "|" (access-token / paren-expression) [or-expression]
 access-token            = 1*( ALPHA / DIGIT / "_" / "-" / "." / ":" / slash )
 access-token            =/ DQUOTE 1*(utf8-subset / escaped) DQUOTE
 
-utf8-subset             = %x20-21 / %x23-5B / %5D-7E / UVCHARBEYONDASCII ; utf8 minus '"' and '\'
+utf8-subset             = %x20-21 / %x23-5B / %x5D-7E / unicode-beyond-ascii ; utf8 minus '"' and '\'
+unicode-beyond-ascii    = %x0080-D7FF / %xE000-10FFFF
 escaped                 = "\" DQUOTE / "\\"
 slash                   = "/"
 ```
-
-The definition of utf8 was borrowed from this [ietf document][2]. TODO that doc defines unicode and not utf8
 
 ## Serialization
 
@@ -58,13 +57,13 @@ can be deserialized back into the same UTF-8 string.
 
 ## Evaluation
 
-Evaluation of access expressions performs a combination of [set][3] existence
-checks and [boolean algebra][4]. Access expression use the following from
+Evaluation of access expressions performs a combination of [set][2] existence
+checks and [boolean algebra][3]. Access expression use the following from
 boolean algebra.
 
- * The symbol `&` in an access expression represents [logical conjunction][5]
+ * The symbol `&` in an access expression represents [logical conjunction][4]
    which is represented in a boolean algebra as `∧`.
- * The symbol `|` in an access expression represents [logical disjunction][6]
+ * The symbol `|` in an access expression represents [logical disjunction][5]
    which is represented in a boolean algebra as `∨`.
 
 When evaluating an access expression set existence checks are done against a
@@ -119,9 +118,7 @@ Notice above when checking if `"abc\\xyz"` exist in the set that it is unquoted
 and the `\` character is unescaped.
 
 [1]: https://www.rfc-editor.org/rfc/rfc5234
-[2]: https://datatracker.ietf.org/doc/html/draft-seantek-unicode-in-abnf-03#section-4.2
-[3]: https://en.wikipedia.org/wiki/Set_(mathematics)
-[4]: https://en.wikipedia.org/wiki/Boolean_algebra
-[5]: https://en.wikipedia.org/wiki/Logical_conjunction
-[6]: https://en.wikipedia.org/wiki/Logical_disjunction
-
+[2]: https://en.wikipedia.org/wiki/Set_(mathematics)
+[3]: https://en.wikipedia.org/wiki/Boolean_algebra
+[4]: https://en.wikipedia.org/wiki/Logical_conjunction
+[5]: https://en.wikipedia.org/wiki/Logical_disjunction
