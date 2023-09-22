@@ -42,25 +42,25 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class AccessEvaluatorTest {
 
-  public enum ExpectedResult {
+  enum ExpectedResult {
     ACCESSIBLE, INACCESSIBLE, ERROR
   }
 
   public static class TestExpressions {
-    public ExpectedResult expectedResult;
-    public String[] expressions;
+    ExpectedResult expectedResult;
+    String[] expressions;
   }
 
   public static class TestDataSet {
-    public String description;
+    String description;
 
-    public String[][] auths;
+    String[][] auths;
 
-    public List<TestExpressions> tests;
+    List<TestExpressions> tests;
 
   }
 
-  public static List<TestDataSet> readTestData() throws IOException {
+  static List<TestDataSet> readTestData() throws IOException {
     try (var input =
         AccessEvaluatorTest.class.getClassLoader().getResourceAsStream("testdata.json")) {
       if (input == null) {
