@@ -50,7 +50,6 @@ public class AccessExpressionAntlrEvaluator implements AccessEvaluator {
         e.authorizations.add(quoted);
       });
     }
-    // System.out.println("AUTHS: " + entities);
   }
 
   public boolean canAccess(byte[] accessExpression) throws IllegalAccessExpressionException {
@@ -111,10 +110,7 @@ public class AccessExpressionAntlrEvaluator implements AccessEvaluator {
           retval = trueCount > 0 && falseCount == 0;
         }
       }
-      // System.out.println("child results-> true=" + trueCount +", false=" + falseCount);
     }
-    // System.out.println("node: " + node.getClass().getSimpleName()+ ", value: " + node.getText() +
-    // ", retval: " + retval);
     return retval;
   }
 

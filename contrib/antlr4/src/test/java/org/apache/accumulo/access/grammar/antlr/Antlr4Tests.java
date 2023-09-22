@@ -87,7 +87,6 @@ public class Antlr4Tests {
       for (TestExpressions test : testSet.tests) {
         ExpectedResult result = test.expectedResult;
         for (String cv : test.expressions) {
-          // System.out.println("Testing: " + cv);
           if (result == ExpectedResult.ERROR) {
             assertThrows(IllegalAccessExpressionException.class, () -> AccessExpression.of(cv));
             assertThrows(AssertionError.class, () -> testParse(cv));
@@ -130,7 +129,6 @@ public class Antlr4Tests {
 
       for (TestExpressions test : testSet.tests) {
         for (String expression : test.expressions) {
-          // System.out.println("Testing: " + expression);
           switch (test.expectedResult) {
             case ACCESSIBLE:
               assertTrue(evaluator.canAccess(expression), expression);
