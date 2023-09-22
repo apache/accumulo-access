@@ -65,11 +65,11 @@ final class Tokenizer {
 
   public void next(char expected) {
     if (!hasNext()) {
-      error("expected " + expected + " but expression is at end");
+      error("Expected '" + expected + "' instead saw end of input");
     }
 
     if (expression[index] != expected) {
-      error("expected " + expected + " but saw " + (char) (expression[index]));
+      error("Expected '" + expected + "' instead saw '" + (char) (expression[index]) + "'");
     }
     index++;
   }
@@ -95,18 +95,18 @@ final class Tokenizer {
           index++;
           if (index == expression.length
               || (expression[index] != '\\' && expression[index] != '"')) {
-            error("invalid escaping within quotes", index - 1);
+            error("Invalid escaping within quotes", index - 1);
           }
         }
         index++;
       }
 
       if (index == expression.length) {
-        error("unclosed quote", start - 1);
+        error("Unclosed quote", start - 1);
       }
 
       if (start == index) {
-        error("empty authorization token in quotes", start - 1);
+        error("Empty authorization token in quotes", start - 1);
       }
 
       authorizationToken.start = start;
@@ -125,7 +125,8 @@ final class Tokenizer {
       authorizationToken.len = index - start;
       return authorizationToken;
     } else {
-      error("Expected an authorization");
+      error(
+          "Expected a '(' character or an authorization token instead saw '" + (char) peek() + "'");
       return null;
     }
   }

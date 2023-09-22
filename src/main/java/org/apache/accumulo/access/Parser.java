@@ -18,24 +18,15 @@ final class Parser {
 
     if (tokenizer.hasNext()) {
       // not all input was read, so not a valid expression
-      tokenizer.error("Unconsumed token " + (char) tokenizer.peek());
+      tokenizer.error("Unexpected character '" + (char) tokenizer.peek() + "'");
     }
 
     return node;
   }
 
   private static AeNode parseExpression(Tokenizer tokenizer) {
-    if (!tokenizer.hasNext()) {
-      tokenizer.error("illegal empty expression ");
-    }
 
-    AeNode first;
-
-    if (tokenizer.peek() == '(') {
-      first = parseParenExpression(tokenizer);
-    } else {
-      first = AeNode.of(tokenizer.nextAuthorization());
-    }
+    AeNode first = parseParenExpressionOrAuthorization(tokenizer);
 
     if (tokenizer.hasNext() && (tokenizer.peek() == '&' || tokenizer.peek() == '|')) {
       var nodes = new ArrayList<AeNode>();
@@ -46,20 +37,13 @@ final class Parser {
       do {
         tokenizer.advance();
 
-        if (!tokenizer.hasNext()) {
-          tokenizer.error("nothing following a " + (char) operator + " operator ");
-        }
+        nodes.add(parseParenExpressionOrAuthorization(tokenizer));
 
-        if (tokenizer.peek() == '(') {
-          nodes.add(parseParenExpression(tokenizer));
-        } else {
-          nodes.add(AeNode.of(tokenizer.nextAuthorization()));
-        }
       } while (tokenizer.hasNext() && tokenizer.peek() == operator);
 
       if (tokenizer.hasNext() && (tokenizer.peek() == '|' || tokenizer.peek() == '&')) {
         // A case of mixed operators, lets give a clear error message
-        tokenizer.error("cannot mix | and &");
+        tokenizer.error("Cannot mix '|' and '&'");
       }
 
       return AeNode.of(operator, nodes);
@@ -68,10 +52,19 @@ final class Parser {
     }
   }
 
-  private static AeNode parseParenExpression(Tokenizer tokenizer) {
-    tokenizer.advance();
-    var node = parseExpression(tokenizer);
-    tokenizer.next(')');
-    return node;
+  private static AeNode parseParenExpressionOrAuthorization(Tokenizer tokenizer) {
+    if (!tokenizer.hasNext()) {
+      tokenizer
+          .error("Expected a '(' character or an authorization token instead saw end of input");
+    }
+
+    if (tokenizer.peek() == '(') {
+      tokenizer.advance();
+      var node = parseExpression(tokenizer);
+      tokenizer.next(')');
+      return node;
+    } else {
+      return AeNode.of(tokenizer.nextAuthorization());
+    }
   }
 }

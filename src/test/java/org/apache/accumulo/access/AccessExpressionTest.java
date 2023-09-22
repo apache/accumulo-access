@@ -20,6 +20,8 @@ package org.apache.accumulo.access;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -111,5 +113,47 @@ public class AccessExpressionTest {
       assertEquals(expected, AccessExpression.of(expression.getBytes(UTF_8)).normalize());
       assertEquals(expected, AccessExpression.of(normalized).normalize());
     }
+  }
+
+  void checkError(String expression, String expected, int index) {
+    var exception =
+        assertThrows(IllegalAccessExpressionException.class, () -> AccessExpression.of(expression));
+    assertTrue(exception.getMessage().contains(expected));
+    assertEquals(index, exception.getIndex());
+  }
+
+  @Test
+  public void testErrorMessages() {
+    checkError("a|b&c", "Cannot mix '|' and '&'", 3);
+    checkError("a&b|c", "Cannot mix '|' and '&'", 3);
+
+    checkError("(a|b", "Expected ')' instead saw end of input", 4);
+    checkError("((a|b)", "Expected ')' instead saw end of input", 6);
+    checkError("((a|b)(c)", "Expected ')' instead saw '('", 6);
+    checkError("((a|b)~", "Expected ')' instead saw '~'", 6);
+    checkError("((a|b)a", "Expected ')' instead saw 'a'", 6);
+
+    checkError("#", "Expected a '(' character or an authorization token instead saw '#'", 0);
+    checkError("()", "Expected a '(' character or an authorization token instead saw ')'", 1);
+    checkError("a&", "Expected a '(' character or an authorization token instead saw end of input",
+        2);
+    checkError("a&b&",
+        "Expected a '(' character or an authorization token instead saw end of input", 4);
+    checkError("a|", "Expected a '(' character or an authorization token instead saw end of input",
+        2);
+    checkError("a|b|",
+        "Expected a '(' character or an authorization token instead saw end of input", 4);
+
+    checkError("a#", "Unexpected character '#'", 1);
+    checkError("a&b#", "Unexpected character '#'", 3);
+    checkError("a|b#", "Unexpected character '#'", 3);
+    checkError("(a|b)(c)", "Unexpected character '('", 5);
+
+    checkError("\"\"", "Empty authorization token in quotes", 0);
+    checkError("A&\"\"", "Empty authorization token in quotes", 2);
+    checkError("(A|\"\")", "Empty authorization token in quotes", 3);
+
+    checkError("\"\\9\"", "Invalid escaping within quotes", 1);
+    checkError("ERR&\"\\9\"", "Invalid escaping within quotes", 5);
   }
 }
