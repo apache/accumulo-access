@@ -21,9 +21,9 @@ package org.apache.accumulo.access;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * TODO document
+ * An exception that is thrown when an access expression is not correct.
  *
- * @since ???
+ * @since 1.0.0
  */
 public final class IllegalAccessExpressionException extends PatternSyntaxException {
   private static final long serialVersionUID = 1L;
