@@ -22,7 +22,7 @@ import java.util.Collection;
 
 /**
  * <p>
- * Use to decide if an entity with one more sets of authorizations can access zero or more access expression.
+ * Used to decide if an entity with one more sets of authorizations can access zero or more access expression.
  *
  * <p>
  * Below is an example that should print false and then print true.
