@@ -19,16 +19,9 @@
 package org.apache.accumulo.access;
 
 /**
- * An opaque type that contains a parsed visibility expression. When this type is constructed with
+ * An opaque type that contains a parsed access expression. When this type is constructed with
  * {@link #of(String)} and then used with {@link AccessEvaluator#canAccess(AccessExpression)} it can
- * be more efficient and avoid reparsing the expression.
- *
- * <p>
- * For reviewers : this type is similar to ColumnVisibility. This interface and impl have goal of
- * being immutable which differs from column visibility. ColumnVisibility leaks internal
- * implementation details in its public API, this type does not.
- *
- * TODO needs better javadoc.
+ * be more efficient and avoid re-parsing the expression.
  *
  * Below is an example of using this API.
  *
@@ -53,6 +46,7 @@ package org.apache.accumulo.access;
  * [🦖, CAT, 🦕]
  * </pre>
  *
+ * @see <a href="https://github.com/apache/accumulo-access">Accumulo Access Documentation</a>
  * @since 1.0.0
  */
 public interface AccessExpression {
@@ -63,7 +57,13 @@ public interface AccessExpression {
   String getExpression();
 
   /**
-   * TODO give examples
+   * Deduplicate, sort, and flatten expressions.
+   *
+   * <p>As an example of flattening, the expression {@code A&(B&C)} can be flattened to {@code A&B&C}.
+   *
+   * <p>As an example of sorting, the expression {@code (Z&Y)|(C&B)} can be sorted to {@code (B&C)|(Y&Z)}
+   *
+   * <p>As an example of deduplication, the expression {@code X&Y&X} is equivalent to {@code X&Y}
    *
    * @return A normalized version of the visibility expression that removes duplicates and orders
    *         the expression in a consistent way.
@@ -80,7 +80,9 @@ public interface AccessExpression {
     return new AccessExpressionImpl(expression);
   }
 
-  // TODO document utf8 expectations
+  /**
+   * @param expression is expected to be encoded using UTF-8
+   */
   static AccessExpression of(byte[] expression) throws IllegalAccessExpressionException {
     return new AccessExpressionImpl(expression);
   }
@@ -93,18 +95,20 @@ public interface AccessExpression {
   }
 
   /**
-   * Authorizations occurring a visibility expression can only contain the characters TODO unless
-   * quoted. Use this method to quote authorizations that occur in a visibility expression. This
-   * method will only quote if its needed.
+   * Authorizations occurring in an access expression can only contain the characters listed in the
+   * <a href="https://github.com/apache/accumulo-access/blob/main/SPECIFICATION.md">specification</a>
+   * unless quoted. Use this method to quote authorizations that occur in an access expression. This
+   * method will only quote if it is needed.
    */
   static byte[] quote(byte[] authorization) {
     return AccessExpressionImpl.quote(authorization);
   }
 
   /**
-   * Authorizations occurring a visibility expression can only contain the characters TODO unless
-   * quoted. Use this method to quote authorizations that occur in a visibility expression. This
-   * method will only quote if its needed.
+   * Authorizations occurring in an access expression can only contain the characters listed in the
+   * <a href="https://github.com/apache/accumulo-access/blob/main/SPECIFICATION.md">specification</a>
+   * unless quoted. Use this method to quote authorizations that occur in an access expression. This
+   * method will only quote if it is needed.
    */
   static String quote(String authorization) {
     return AccessExpressionImpl.quote(authorization);

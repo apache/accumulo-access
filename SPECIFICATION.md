@@ -25,6 +25,12 @@ This document specifies the format of an Apache Accumulo AccessExpression. An Ac
 is an encoding of a boolean expression of the attributes that an entity is required to have to
 access a particular piece of data.
 
+## Concepts
+
+* AccessExpression - a boolean expression of attributes required to access an object (e.g. Key/Value pair in Accumulo).
+* Authorizations - a set of attributes, typically attributed to the entity trying to access an object.
+* AccessEvaluator - An object that determines if the entity can access the object using the entity's Authorizations and the objects AccessExpression.
+
 ## Syntax
 
 The formal definition of the AccessExpression UTF-8 string representation is provided by
@@ -50,6 +56,20 @@ escaped                 = "\" DQUOTE / "\\"
 slash                   = "/"
 ```
 
+The following are examples of proper expressions that the above rules would match.
+
+ * `BLUE`
+ * `RED&BLUE`
+ * `RED&BLUE&GREEN`
+ * `(RED&BLUE)|(GREEN&(PINK|PURPLE))`
+
+The following are example of improper expressions that the rules would not match and reasons they do not match.
+
+* `&BLUE` : Must start with an access token or a paren expression
+* `(RED&BLUE)|` : An access token or paren expression must follow a `|`
+* `RED&BLUE|GREEN` : Once a `&` is seen then can only have `&` and not `|`, unless using parenthesis. 
+* `RED|BLUE&GREEN` : Once a `|` is seen then can only have `|`and not `&`, unless using parenthesis.
+
 ## Serialization
 
 An AccessExpression is a UTF-8 string. It can be serialized using a byte array as long as it
@@ -66,28 +86,28 @@ boolean algebra.
  * The symbol `|` in an access expression represents [logical disjunction][5]
    which is represented in a boolean algebra as `∨`.
 
-When evaluating an access expression set existence checks are done against a
-subjects set of authorizations. The following is an algorithm for evaluation an
+When evaluating an access expression set existence checks are done against an
+entities set of authorizations. The following is an algorithm for evaluation an
 access expression.
 
  1. For each access-token in an access expression check if it exists in the
-    subjects set of authorizations. Replace the access-token with `true` if it
+    entities set of authorizations. Replace the access-token with `true` if it
     exists in the set and `false` otherwise.
  2. Evaluate the expression using boolean algebra and only if its true can the
-    subject access the data labeled with the access expression.
+    entity access the data labeled with the access expression.
 
 The following is an example of evaluating the access expression
-`RED&(BLUE|GREEN)` using boolean algebra for a subject with the authorization
+`RED&(BLUE|GREEN)` using boolean algebra for an entity with the authorization
 set `{RED,GREEN}`. In the example below `RED ∈ {RED,GREEN}` translates to does
 `RED` exist in the set `{RED,GREEN}` which it does, so it is true.
 
  1. RED ∈ {RED,GREEN} ∧ ( BLUE ∈ {RED,GREEN} ∨ GREEN ∈ {RED,GREEN} )
  2. true  ∧ ( false ∨ true )
 
-Since `true  ∧ ( false ∨ true )` is true then the subject with authorizations
+Since `true  ∧ ( false ∨ true )` is true then the entity with authorizations
 `{RED,GREEN}` can access data labeled with the access expression
 `RED&(BLUE|GREEN)`. The access expression `(RED&BLUE)|(GREEN&PINK)` is an
-example of an access expression that is false for a subject with authorizations
+example of an access expression that is false for an entity with authorizations
 `{RED,GREEN}` and it would look like the following using boolean algebra.
 
  1. ( RED ∈ {RED,GREEN} ∧ BLUE ∈ {RED,GREEN} ) ∨ ( GREEN ∈ {RED,GREEN} ∧ PINK ∈
@@ -95,7 +115,7 @@ example of an access expression that is false for a subject with authorizations
  2. ( true ∧ false ) ∨ ( true ∧ false )
 
 An empty access expression always evaluates to true and this is only thing a
-subject with the empty set of authorizations can access.
+entity with the empty set of authorizations can access.
 
 ## Escaping
 
@@ -103,10 +123,10 @@ Access tokens can only contain alpha numeric characters or the characters
 `_`,`-`,`.`,`:`, or `/` unless quoted using `"`. Within quotes the characters
 `"` and `\` must escaped by prefixing with `\`. For example to use `abc\xyz` as
 an access-token it would need to be quoted and escaped like `"abc\\xyz"`. When
-checking if an access-token exists in the subjects authorizations set it must
+checking if an access-token exists in the entities authorizations set it must
 be unquoted and unescaped.
 
-Evaluating `"abc!12"&"abc\\xyz"&GHI`for a subject with authorizations
+Evaluating `"abc!12"&"abc\\xyz"&GHI`for an entity with authorizations
 `{abc\xyz,abc!12}` looks like the following in boolean algebra which evaluates
 to `false`.
 

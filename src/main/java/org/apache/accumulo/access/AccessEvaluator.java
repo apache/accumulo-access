@@ -22,8 +22,7 @@ import java.util.Collection;
 
 /**
  * <p>
- * An implementation of the Accumulo visibility standard as specified in this document (TODO write
- * the document based on current Accumulo implementation and post somewhere).
+ * Used to decide if an entity with one more sets of authorizations can access zero or more access expression.
  *
  * <p>
  * Below is an example that should print false and then print true.
@@ -37,7 +36,7 @@ import java.util.Collection;
  * }
  * </pre>
  *
- *
+ * @see <a href="https://github.com/apache/accumulo-access">Accumulo Access Documentation</a>
  * @since 1.0.0
  */
 public interface AccessEvaluator {
