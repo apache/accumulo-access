@@ -126,7 +126,7 @@ an access-token it would need to be quoted and escaped like `"abc\\xyz"`. When
 checking if an access-token exists in the entities authorizations set it must
 be unquoted and unescaped.
 
-Evaluating `"abc!12"&"abc\\xyz"&GHI`for a entity with authorizations
+Evaluating `"abc!12"&"abc\\xyz"&GHI`for an entity with authorizations
 `{abc\xyz,abc!12}` looks like the following in boolean algebra which evaluates
 to `false`.
 
