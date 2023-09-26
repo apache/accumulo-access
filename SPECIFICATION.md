@@ -97,7 +97,7 @@ access expression.
     entity access the data labeled with the access expression.
 
 The following is an example of evaluating the access expression
-`RED&(BLUE|GREEN)` using boolean algebra for a entity with the authorization
+`RED&(BLUE|GREEN)` using boolean algebra for an entity with the authorization
 set `{RED,GREEN}`. In the example below `RED ∈ {RED,GREEN}` translates to does
 `RED` exist in the set `{RED,GREEN}` which it does, so it is true.
 
