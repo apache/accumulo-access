@@ -107,7 +107,7 @@ set `{RED,GREEN}`. In the example below `RED ∈ {RED,GREEN}` translates to does
 Since `true  ∧ ( false ∨ true )` is true then the entity with authorizations
 `{RED,GREEN}` can access data labeled with the access expression
 `RED&(BLUE|GREEN)`. The access expression `(RED&BLUE)|(GREEN&PINK)` is an
-example of an access expression that is false for a entity with authorizations
+example of an access expression that is false for an entity with authorizations
 `{RED,GREEN}` and it would look like the following using boolean algebra.
 
  1. ( RED ∈ {RED,GREEN} ∧ BLUE ∈ {RED,GREEN} ) ∨ ( GREEN ∈ {RED,GREEN} ∧ PINK ∈
