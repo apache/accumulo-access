@@ -41,21 +41,35 @@ import java.util.Collection;
  * @since 1.0.0
  */
 public interface AccessEvaluator {
+
   /**
+   * @param accessExpression for this parameter a valid access expression is expected.
    * @return true if the expression is visible using the authorizations supplied at creation, false
    *         otherwise
-   * @throws IllegalArgumentException when the expression is not valid
+   * @throws IllegalAccessExpressionException when the expression is not valid
    */
   boolean canAccess(String accessExpression) throws IllegalAccessExpressionException;
 
+  /**
+   * @param accessExpression for this parameter a valid access expression is expected.
+   * @return true if the expression is visible using the authorizations supplied at creation, false
+   *         otherwise
+   * @throws IllegalAccessExpressionException when the expression is not valid
+   */
   boolean canAccess(byte[] accessExpression) throws IllegalAccessExpressionException;
 
   /**
-   * TODO documnet that may be more efficient
+   * @param accessExpression a validated and parsed access expression. The implementation of this
+   *        method may be able to reuse the internal parse tree and avoid re-parsing.
+   * @return true if the expression is visible using the authorizations supplied at creation, false
+   *         otherwise
    */
-  boolean canAccess(AccessExpression accessExpression) throws IllegalAccessExpressionException;
+  boolean canAccess(AccessExpression accessExpression);
 
   /**
+   * An interface that is used to check if an authorization seen in an access expression is
+   * authorized.
+   *
    * @since 1.0.0
    */
   interface Authorizer {
@@ -64,7 +78,7 @@ public interface AccessEvaluator {
 
   interface AuthorizationsBuilder {
 
-    ExecutionBuilder authorizations(Authorizations authorizations);
+    OptionalBuilder authorizations(Authorizations authorizations);
 
     /**
      * Allows providing multiple sets of authorizations. Each expression will be evaluated
@@ -117,15 +131,31 @@ public interface AccessEvaluator {
      *
      *
      */
-    ExecutionBuilder authorizations(Collection<Authorizations> authorizations);
+    OptionalBuilder authorizations(Collection<Authorizations> authorizations);
 
-    ExecutionBuilder authorizations(String... authorizations);
+    /**
+     * Allows specifying a single set of authorizations.
+     */
+    OptionalBuilder authorizations(String... authorizations);
 
-    ExecutionBuilder authorizations(Authorizer authorizer);
+    /**
+     * Allows specifying an authorizer that is analogous to a single set of authorization.
+     */
+    OptionalBuilder authorizations(Authorizer authorizer);
   }
 
-  interface ExecutionBuilder extends FinalBuilder {
-    ExecutionBuilder cacheSize(int cacheSize);
+  interface OptionalBuilder extends FinalBuilder {
+
+    /**
+     * When set to a value greater than zero, the result of evaluating expressions will be
+     * remembered and if the same expression is seen it again the remembered result will be used
+     * instead of reevaluating it. If this method is not called on the builder then no caching is
+     * done. When the same expressions can occur repeatedly caching can greatly increase
+     * performance.
+     *
+     * @param cacheSize the number of expressions evaluations to remember in an LRU cache.
+     */
+    OptionalBuilder cacheSize(int cacheSize);
   }
 
   interface FinalBuilder {
