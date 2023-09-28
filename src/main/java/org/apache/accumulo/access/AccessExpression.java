@@ -59,11 +59,15 @@ public interface AccessExpression {
   /**
    * Deduplicate, sort, and flatten expressions.
    *
-   * <p>As an example of flattening, the expression {@code A&(B&C)} can be flattened to {@code A&B&C}.
+   * <p>
+   * As an example of flattening, the expression {@code A&(B&C)} can be flattened to {@code A&B&C}.
    *
-   * <p>As an example of sorting, the expression {@code (Z&Y)|(C&B)} can be sorted to {@code (B&C)|(Y&Z)}
+   * <p>
+   * As an example of sorting, the expression {@code (Z&Y)|(C&B)} can be sorted to
+   * {@code (B&C)|(Y&Z)}
    *
-   * <p>As an example of deduplication, the expression {@code X&Y&X} is equivalent to {@code X&Y}
+   * <p>
+   * As an example of deduplication, the expression {@code X&Y&X} is equivalent to {@code X&Y}
    *
    * @return A normalized version of the visibility expression that removes duplicates and orders
    *         the expression in a consistent way.
@@ -96,9 +100,10 @@ public interface AccessExpression {
 
   /**
    * Authorizations occurring in an access expression can only contain the characters listed in the
-   * <a href="https://github.com/apache/accumulo-access/blob/main/SPECIFICATION.md">specification</a>
-   * unless quoted. Use this method to quote authorizations that occur in an access expression. This
-   * method will only quote if it is needed.
+   * <a href=
+   * "https://github.com/apache/accumulo-access/blob/main/SPECIFICATION.md">specification</a> unless
+   * quoted. Use this method to quote authorizations that occur in an access expression. This method
+   * will only quote if it is needed.
    */
   static byte[] quote(byte[] authorization) {
     return AccessExpressionImpl.quote(authorization);
@@ -106,9 +111,10 @@ public interface AccessExpression {
 
   /**
    * Authorizations occurring in an access expression can only contain the characters listed in the
-   * <a href="https://github.com/apache/accumulo-access/blob/main/SPECIFICATION.md">specification</a>
-   * unless quoted. Use this method to quote authorizations that occur in an access expression. This
-   * method will only quote if it is needed.
+   * <a href=
+   * "https://github.com/apache/accumulo-access/blob/main/SPECIFICATION.md">specification</a> unless
+   * quoted. Use this method to quote authorizations that occur in an access expression. This method
+   * will only quote if it is needed.
    */
   static String quote(String authorization) {
     return AccessExpressionImpl.quote(authorization);
