@@ -47,7 +47,6 @@ class AccessExpressionImpl implements AccessExpression {
 
   @Override
   public String normalize() {
-    // TODO pass a string builder
     StringBuilder builder = new StringBuilder();
     aeNode.normalize().stringify(builder, false);
     return builder.toString();
@@ -78,7 +77,6 @@ class AccessExpressionImpl implements AccessExpression {
    * @see #AccessExpressionImpl(String)
    */
   AccessExpressionImpl(byte[] expression) {
-    // TODO copy?
     this.expression = expression;
     aeNode = Parser.parseAccessExpression(expression);
   }

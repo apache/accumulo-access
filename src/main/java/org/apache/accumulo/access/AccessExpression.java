@@ -88,7 +88,7 @@ public interface AccessExpression {
    * @param expression is expected to be encoded using UTF-8
    */
   static AccessExpression of(byte[] expression) throws IllegalAccessExpressionException {
-    return new AccessExpressionImpl(expression);
+    return new AccessExpressionImpl(Arrays.copyOf(expression, expression.length));
   }
 
   /**

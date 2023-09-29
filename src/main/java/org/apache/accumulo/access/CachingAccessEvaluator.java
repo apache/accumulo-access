@@ -48,7 +48,6 @@ class CachingAccessEvaluator implements AccessEvaluator {
 
   @Override
   public boolean canAccess(byte[] expression) throws IllegalArgumentException {
-    // TODO avoid converting to string, maybe create separate cache for byte arrays keys
     return canAccess(new String(expression, UTF_8));
   }
 

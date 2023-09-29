@@ -152,8 +152,7 @@ class AccessEvaluatorImpl implements AccessEvaluator {
     return authorizedPredicates.stream().allMatch(accessExpression.aeNode::canAccess);
   }
 
-  private static class BuilderImpl
-      implements AuthorizationsBuilder, FinalBuilder, ExecutionBuilder {
+  private static class BuilderImpl implements AuthorizationsBuilder, FinalBuilder, OptionalBuilder {
 
     private Authorizer authorizationsChecker;
 
@@ -180,14 +179,14 @@ class AccessEvaluatorImpl implements AccessEvaluator {
     }
 
     @Override
-    public ExecutionBuilder authorizations(Authorizations authorizations) {
+    public OptionalBuilder authorizations(Authorizations authorizations) {
       setAuthorizations(authorizations.asSet().stream().map(auth -> auth.getBytes(UTF_8))
           .collect(toUnmodifiableList()));
       return this;
     }
 
     @Override
-    public ExecutionBuilder authorizations(Collection<Authorizations> authorizationSets) {
+    public OptionalBuilder authorizations(Collection<Authorizations> authorizationSets) {
       setAuthorizations(authorizationSets
           .stream().map(authorizations -> authorizations.asSet().stream()
               .map(auth -> auth.getBytes(UTF_8)).collect(toUnmodifiableList()))
@@ -196,14 +195,14 @@ class AccessEvaluatorImpl implements AccessEvaluator {
     }
 
     @Override
-    public ExecutionBuilder authorizations(String... authorizations) {
+    public OptionalBuilder authorizations(String... authorizations) {
       setAuthorizations(Stream.of(authorizations).map(auth -> auth.getBytes(UTF_8))
           .collect(toUnmodifiableList()));
       return this;
     }
 
     @Override
-    public ExecutionBuilder authorizations(Authorizer authorizationChecker) {
+    public OptionalBuilder authorizations(Authorizer authorizationChecker) {
       if (authorizationSets != null) {
         throw new IllegalStateException("Cannot set checker and authorizations");
       }
@@ -212,7 +211,7 @@ class AccessEvaluatorImpl implements AccessEvaluator {
     }
 
     @Override
-    public ExecutionBuilder cacheSize(int cacheSize) {
+    public OptionalBuilder cacheSize(int cacheSize) {
       if (cacheSize < 0) {
         throw new IllegalArgumentException();
       }
