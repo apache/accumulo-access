@@ -18,6 +18,8 @@
  */
 package org.apache.accumulo.access;
 
+import java.util.Arrays;
+
 /**
  * An opaque type that contains a parsed access expression. When this type is constructed with
  * {@link #of(String)} and then used with {@link AccessEvaluator#canAccess(AccessExpression)} it can
