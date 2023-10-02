@@ -53,5 +53,4 @@ function comparecounts() {
   fi
 }
 
-
 comparecounts && echo "Found exactly $NUM_EXPECTED unapproved JUnit API uses, as expected"
