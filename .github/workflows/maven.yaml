@@ -48,7 +48,7 @@ jobs:
       with:
         path: |
           ~/.m2/repository/
-          !~/.m2/repository/org/apache/accumulo
+          !~/.m2/repository/org/apache/accumulo-access
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
     - name: Show the first log message
@@ -85,7 +85,7 @@ jobs:
       witi:
         path: |
           ~/.m2/repository/
-          !~/.m2/repository/org/apache/accumulo
+          !~/.m2/repository/org/apache/accumulo-access
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
     - name: Override DNS to fix IP address for hostname
