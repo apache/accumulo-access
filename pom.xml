@@ -189,6 +189,34 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <version>4.7.3.5</version>
+        <configuration>
+          <xmlOutput>true</xmlOutput>
+          <effort>Max</effort>
+          <failOnError>true</failOnError>
+          <includeTests>true</includeTests>
+          <maxRank>17</maxRank>
+          <jvmArgs>-Dcom.overstock.findbugs.ignore=com.google.common.util.concurrent.RateLimiter,com.google.common.hash.Hasher,com.google.common.hash.HashCode,com.google.common.hash.HashFunction,com.google.common.hash.Hashing,com.google.common.cache.Cache,com.google.common.io.CountingOutputStream,com.google.common.io.ByteStreams,com.google.common.cache.LoadingCache,com.google.common.base.Stopwatch,com.google.common.cache.RemovalNotification,com.google.common.util.concurrent.Uninterruptibles,com.google.common.reflect.ClassPath,com.google.common.reflect.ClassPath$ClassInfo,com.google.common.base.Throwables,com.google.common.collect.Iterators</jvmArgs>
+          <plugins combine.children="append">
+            <plugin>
+              <groupId>com.overstock.findbugs</groupId>
+              <artifactId>library-detectors</artifactId>
+              <version>1.2.0</version>
+            </plugin>
+          </plugins>
+        </configuration>
+        <executions>
+          <execution>
+            <id>run-spotbugs</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
   <profiles>
@@ -349,6 +377,7 @@
           <plugin>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
+            <version>4.7.3.5</version>
             <configuration>
               <plugins>
                 <plugin>
@@ -377,7 +406,7 @@
                 <arg>-XDcompilePolicy=simple</arg>
                 <arg>
                   -Xplugin:ErrorProne \
-                  -XepExcludedPaths:.*/(thrift|generated-sources|src/test)/.* \
+                  -XepExcludedPaths:.*/(src/test)/.* \
                   -XepDisableWarningsInGeneratedCode \
                   -XepDisableAllWarnings \
                   <!-- ERROR patterns to specifically ignore -->

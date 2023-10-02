@@ -31,7 +31,7 @@ If you believe that you have found a [bug](https://github.com/apache/accumulo-ac
 
 ## Patch Submission
 
-- Ensure that Accumulo-Access builds cleanly before submitting your patch using the command: `mvn clean verify -DskipITs`
+- Ensure that Accumulo-Access builds cleanly before submitting your patch using the command: `mvn clean verify`
 - Before submission please squash your commits using a message that starts with the issue number and a description of the changes.
 - Patches should be submitted in the form of Pull Requests to the Apache Accumulo-Access GitHub [repository](https://github.com/apache/accumulo-access/).
 

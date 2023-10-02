@@ -68,10 +68,9 @@ jobs:
     strategy:
       matrix:
         profile:
-          - {name: 'unit-tests',    javaver: 11, args: 'verify -PskipQA -DskipTests=false'}
-          - {name: 'qa-checks',     javaver: 11, args: 'verify javadoc:jar -Psec-bugs -DskipTests -Dspotbugs.timeout=3600000'}
-          - {name: 'errorprone',    javaver: 11, args: 'verify -Perrorprone,skipQA'}
-          - {name: 'jdk17',         javaver: 17, args: 'verify -DskipITs'}
+          - {name: 'unit-tests',    javaver: 11, args: 'verify -PskipQA'}
+          - {name: 'qa-checks',     javaver: 11, args: 'verify javadoc:jar -Psec-bugs,errorprone'}
+          - {name: 'jdk17',         javaver: 17, args: 'verify javadoc:jar -Psec-bugs,errorprone'}
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
