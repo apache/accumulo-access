@@ -26,8 +26,6 @@ ALLOWED=()
 
 ALLOWED_PIPE_SEP=$({ for x in "${ALLOWED[@]}"; do echo "$x"; done; } | paste -sd'|')
 
-set -x
-
 function findalljunitproblems() {
   # -P for perl matching, -R for recursive, -l for matching files
   local opts='-PRl'
