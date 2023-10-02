@@ -70,7 +70,7 @@ jobs:
         profile:
           - {name: 'unit-tests',    javaver: 11, args: 'verify -PskipQA'}
           - {name: 'qa-checks',     javaver: 11, args: 'verify javadoc:jar -Psec-bugs,errorprone'}
-          - {name: 'jdk17',         javaver: 17, args: 'verify javadoc:jar -Psec-bugs,errorprone'}
+          - {name: 'jdk17',         javaver: 17, args: 'verify'}
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
