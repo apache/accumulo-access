@@ -48,7 +48,7 @@ jobs:
       with:
         path: |
           ~/.m2/repository/
-          !~/.m2/repository/org/apache/accumulo-access
+          !~/.m2/repository/org/apache/accumulo
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
     - name: Show the first log message
@@ -82,10 +82,10 @@ jobs:
         java-version: ${{ matrix.profile.javaver }}
     - name: Cache local maven repository
       uses: actions/cache@v3
-      witi:
+      with:
         path: |
           ~/.m2/repository/
-          !~/.m2/repository/org/apache/accumulo-access
+          !~/.m2/repository/org/apache/accumulo
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
     - name: Override DNS to fix IP address for hostname
@@ -121,12 +121,5 @@ jobs:
       with:
         name: failsafe-reports-${{ matrix.profile.name }}
         path: ./**/target/failsafe-reports/
-        if-no-files-found: ignore
-    - name: Upload mini test logs
-      if: ${{ failure() }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: mini-tests-logs-${{ matrix.profile.name }}
-        path: ./**/target/**/mini-tests/**/logs/
         if-no-files-found: ignore
 
