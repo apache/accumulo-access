@@ -39,6 +39,21 @@ abstract class AeNode implements Comparable<AeNode> {
 
   abstract int ordinal();
 
+  @Override
+  public boolean equals(Object o) {
+    if (o instanceof AeNode) {
+      return compareTo((AeNode) o) == 0;
+    }
+
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public int compareTo(AeNode o) {
     return ordinal() - o.ordinal();
   }
@@ -224,6 +239,7 @@ abstract class AeNode implements Comparable<AeNode> {
       }
     }
 
+    @Override
     int ordinal() {
       return 3;
     }
@@ -272,6 +288,7 @@ abstract class AeNode implements Comparable<AeNode> {
       }
     }
 
+    @Override
     int ordinal() {
       return 2;
     }

@@ -39,6 +39,8 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * Benchmarks Access Expressions using JMH. To run, use the following commands.
  *
@@ -69,6 +71,8 @@ public class AccessExpressionBenchmark {
 
     private ArrayList<EvaluatorTests> evaluatorTests;
 
+    @SuppressFBWarnings(value = {"UWF_UNWRITTEN_FIELD", "NP_UNWRITTEN_FIELD"},
+        justification = "Field is written by Gson")
     @Setup
     public void loadData() throws IOException {
       List<AccessEvaluatorTest.TestDataSet> testData = AccessEvaluatorTest.readTestData();
