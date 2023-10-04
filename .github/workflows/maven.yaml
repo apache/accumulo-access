@@ -70,8 +70,8 @@ jobs:
         profile:
           - {name: 'unit-tests',    distribution: adopt,  javaver: 11, args: 'verify -PskipQA'}
           - {name: 'qa-checks',     distribution: adopt,  javaver: 11, args: 'verify javadoc:jar -Psec-bugs,errorprone'}
-          - {name: 'jdk17',         distribution: adopt,  javaver: 17, args: '-Dmaven.compiler.source=17 -Dmaven.compiler.target=17 verify'}
-          - {name: 'jdk21',         distribution: oracle, javaver: 21, args: '-Dmaven.compiler.source=21 -Dmaven.compiler.target=21 verify'}
+          - {name: 'jdk17',         distribution: adopt,  javaver: 17, args: 'verify'}
+          - {name: 'jdk21',         distribution: oracle, javaver: 21, args: 'verify'}
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
