@@ -82,6 +82,7 @@ public class AccessEvaluatorTest {
     assertFalse(testData.isEmpty());
 
     for (var testSet : testData) {
+      System.out.println("runTestCases for " + testSet.description);
       AccessEvaluator evaluator;
       assertTrue(testSet.auths.length >= 1);
       if (testSet.auths.length == 1) {

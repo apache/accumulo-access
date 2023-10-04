@@ -21,6 +21,6 @@
 -->
 <FindBugsFilter>
 <Match>
-  <Class name="~.*\.jmh_generated\..*" />
+  <Class name="~.*[.]jmh_generated[.].*" />
 </Match>
 </FindBugsFilter>
