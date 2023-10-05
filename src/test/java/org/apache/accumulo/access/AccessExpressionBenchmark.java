@@ -118,8 +118,8 @@ public class AccessExpressionBenchmark {
       return allTestExpressionsStr;
     }
 
-    public List<EvaluatorTests> getEvaluatorTests() {
-      return Collections.unmodifiableList(evaluatorTests);
+    List<EvaluatorTests> getEvaluatorTests() {
+      return evaluatorTests;
     }
 
   }
