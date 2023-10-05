@@ -117,7 +117,7 @@ public class AccessExpressionBenchmark {
       return allTestExpressionsStr;
     }
 
-    public ArrayList<EvaluatorTests> getEvaluatorTests() {
+    List<EvaluatorTests> getEvaluatorTests() {
       return evaluatorTests;
     }
 

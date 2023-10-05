@@ -41,11 +41,7 @@ abstract class AeNode implements Comparable<AeNode> {
 
   @Override
   public boolean equals(Object o) {
-    if (o instanceof AeNode) {
-      return compareTo((AeNode) o) == 0;
-    }
-
-    return false;
+    return o instanceof AeNode && compareTo((AeNode) o) == 0;
   }
 
   @Override

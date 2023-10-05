@@ -34,6 +34,8 @@ class CachingAccessEvaluator implements AccessEvaluator {
     }
     this.accessEvaluator = accessEvaluator;
     this.cache = new LinkedHashMap<>(cacheSize, 0.75f, true) {
+      private static final long serialVersionUID = 1L;
+
       @Override
       public boolean removeEldestEntry(Map.Entry<String,Boolean> entry) {
         return size() > cacheSize;
