@@ -24,8 +24,16 @@ import java.util.Collection;
  * <p>
  * Used to decide if an entity with one more sets of authorizations can access zero or more access
  * expression.
- *
  * <p>
+ * <p>
+ * Note: For performance improvements, especially in cases where expressions are expected to repeat,
+ * it's recommended to wrap this evaluator with an external caching mechanism, such as Guava's
+ * cache, to leverage its extensive caching options. Caching is only safe under the assumption that
+ * for an AccessEvaluator instance, evaluating the same expression multiple times will always yield
+ * the same result. When considering caching, any environmental factors that might change this
+ * assumption may need to be mitigated.
+ * </p>
+ *
  * Below is an example that should print false and then print true.
  *
  * <pre>
@@ -78,7 +86,7 @@ public interface AccessEvaluator {
 
   interface AuthorizationsBuilder {
 
-    OptionalBuilder authorizations(Authorizations authorizations);
+    FinalBuilder authorizations(Authorizations authorizations);
 
     /**
      * Allows providing multiple sets of authorizations. Each expression will be evaluated
@@ -131,31 +139,17 @@ public interface AccessEvaluator {
      *
      *
      */
-    OptionalBuilder authorizations(Collection<Authorizations> authorizations);
+    FinalBuilder authorizations(Collection<Authorizations> authorizations);
 
     /**
      * Allows specifying a single set of authorizations.
      */
-    OptionalBuilder authorizations(String... authorizations);
+    FinalBuilder authorizations(String... authorizations);
 
     /**
      * Allows specifying an authorizer that is analogous to a single set of authorization.
      */
-    OptionalBuilder authorizations(Authorizer authorizer);
-  }
-
-  interface OptionalBuilder extends FinalBuilder {
-
-    /**
-     * When set to a value greater than zero, the result of evaluating expressions will be
-     * remembered and if the same expression is seen it again the remembered result will be used
-     * instead of reevaluating it. If this method is not called on the builder then no caching is
-     * done. When the same expressions can occur repeatedly caching can greatly increase
-     * performance.
-     *
-     * @param cacheSize the number of expressions evaluations to remember in an LRU cache.
-     */
-    OptionalBuilder cacheSize(int cacheSize);
+    FinalBuilder authorizations(Authorizer authorizer);
   }
 
   interface FinalBuilder {
