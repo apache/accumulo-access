@@ -28,7 +28,7 @@ import java.util.Collection;
  * <p>
  * Note: For performance improvements, especially in cases where expressions are expected to repeat,
  * it's recommended to wrap this evaluator with an external caching mechanism, such as Guava's
- * cache, to leverage its extensive caching options.
+ * cache, to leverage its extensive caching options.  Caching is only safe under the assumption that for an AccessEvaluator instance that evaluating the same expression multiple times will always yield the same result. When considering caching, may need to mitigate any environmental factors that could change this assumption.
  * </p>
  *
  * Below is an example that should print false and then print true.
