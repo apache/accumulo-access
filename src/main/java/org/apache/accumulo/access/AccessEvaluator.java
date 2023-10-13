@@ -78,7 +78,7 @@ public interface AccessEvaluator {
 
   interface AuthorizationsBuilder {
 
-    OptionalBuilder authorizations(Authorizations authorizations);
+    FinalBuilder authorizations(Authorizations authorizations);
 
     /**
      * Allows providing multiple sets of authorizations. Each expression will be evaluated
@@ -131,31 +131,17 @@ public interface AccessEvaluator {
      *
      *
      */
-    OptionalBuilder authorizations(Collection<Authorizations> authorizations);
+    FinalBuilder authorizations(Collection<Authorizations> authorizations);
 
     /**
      * Allows specifying a single set of authorizations.
      */
-    OptionalBuilder authorizations(String... authorizations);
+    FinalBuilder authorizations(String... authorizations);
 
     /**
      * Allows specifying an authorizer that is analogous to a single set of authorization.
      */
-    OptionalBuilder authorizations(Authorizer authorizer);
-  }
-
-  interface OptionalBuilder extends FinalBuilder {
-
-    /**
-     * When set to a value greater than zero, the result of evaluating expressions will be
-     * remembered and if the same expression is seen it again the remembered result will be used
-     * instead of reevaluating it. If this method is not called on the builder then no caching is
-     * done. When the same expressions can occur repeatedly caching can greatly increase
-     * performance.
-     *
-     * @param cacheSize the number of expressions evaluations to remember in an LRU cache.
-     */
-    OptionalBuilder cacheSize(int cacheSize);
+    FinalBuilder authorizations(Authorizer authorizer);
   }
 
   interface FinalBuilder {

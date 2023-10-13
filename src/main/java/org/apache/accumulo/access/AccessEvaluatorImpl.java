@@ -152,12 +152,11 @@ class AccessEvaluatorImpl implements AccessEvaluator {
     return authorizedPredicates.stream().allMatch(accessExpression.aeNode::canAccess);
   }
 
-  private static class BuilderImpl implements AuthorizationsBuilder, FinalBuilder, OptionalBuilder {
+  private static class BuilderImpl implements AuthorizationsBuilder, FinalBuilder {
 
     private Authorizer authorizationsChecker;
 
     private Collection<List<byte[]>> authorizationSets;
-    private int cacheSize = 0;
 
     private void setAuthorizations(List<byte[]> auths) {
       setAuthorizations(Collections.singletonList(auths));
@@ -179,14 +178,14 @@ class AccessEvaluatorImpl implements AccessEvaluator {
     }
 
     @Override
-    public OptionalBuilder authorizations(Authorizations authorizations) {
+    public FinalBuilder authorizations(Authorizations authorizations) {
       setAuthorizations(authorizations.asSet().stream().map(auth -> auth.getBytes(UTF_8))
           .collect(toUnmodifiableList()));
       return this;
     }
 
     @Override
-    public OptionalBuilder authorizations(Collection<Authorizations> authorizationSets) {
+    public FinalBuilder authorizations(Collection<Authorizations> authorizationSets) {
       setAuthorizations(authorizationSets
           .stream().map(authorizations -> authorizations.asSet().stream()
               .map(auth -> auth.getBytes(UTF_8)).collect(toUnmodifiableList()))
@@ -195,27 +194,18 @@ class AccessEvaluatorImpl implements AccessEvaluator {
     }
 
     @Override
-    public OptionalBuilder authorizations(String... authorizations) {
+    public FinalBuilder authorizations(String... authorizations) {
       setAuthorizations(Stream.of(authorizations).map(auth -> auth.getBytes(UTF_8))
           .collect(toUnmodifiableList()));
       return this;
     }
 
     @Override
-    public OptionalBuilder authorizations(Authorizer authorizationChecker) {
+    public FinalBuilder authorizations(Authorizer authorizationChecker) {
       if (authorizationSets != null) {
         throw new IllegalStateException("Cannot set checker and authorizations");
       }
       this.authorizationsChecker = authorizationChecker;
-      return this;
-    }
-
-    @Override
-    public OptionalBuilder cacheSize(int cacheSize) {
-      if (cacheSize < 0) {
-        throw new IllegalArgumentException();
-      }
-      this.cacheSize = cacheSize;
       return this;
     }
 
@@ -232,9 +222,6 @@ class AccessEvaluatorImpl implements AccessEvaluator {
         accessEvaluator = new AccessEvaluatorImpl(authorizationSets);
       }
 
-      if (cacheSize > 0) {
-        accessEvaluator = new CachingAccessEvaluator(accessEvaluator, cacheSize);
-      }
       return accessEvaluator;
     }
 
