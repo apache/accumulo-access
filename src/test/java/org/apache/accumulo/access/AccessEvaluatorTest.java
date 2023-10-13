@@ -89,12 +89,6 @@ public class AccessEvaluatorTest {
         evaluator = AccessEvaluator.builder().authorizations(testSet.auths[0]).build();
         runTestCases(testSet, evaluator);
 
-        evaluator = AccessEvaluator.builder().authorizations(testSet.auths[0]).build();
-        runTestCases(testSet, evaluator);
-
-        evaluator = AccessEvaluator.builder().authorizations(testSet.auths[0]).build();
-        runTestCases(testSet, evaluator);
-
         Set<String> auths = Stream.of(testSet.auths[0]).collect(Collectors.toSet());
         evaluator = AccessEvaluator.builder().authorizations(auths::contains).build();
         runTestCases(testSet, evaluator);
