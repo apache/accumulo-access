@@ -21,15 +21,16 @@
 
 # AccessExpression Specification
 
-This document specifies the format of an Apache Accumulo AccessExpression. An AccessExpression
-is an encoding of a boolean expression of the attributes that an entity is required to have to
-access a particular piece of data.
+This document specifies the format of an Apache Accumulo AccessExpression. An AccessExpression is an
+encoding of a boolean expression that defines the attributes an entity requires to access specific 
+data.
 
 ## Concepts
 
-* AccessExpression - a boolean expression of attributes required to access an object (e.g. Key/Value pair in Accumulo).
-* Authorizations - a set of attributes, typically attributed to the entity trying to access an object.
-* AccessEvaluator - An object that determines if the entity can access the object using the entity's Authorizations and the objects AccessExpression.
+* AccessExpression - A boolean expression detailing the attributes needed to access an object (e.g. Key/Value pair in Accumulo).
+* Authorizations - A set of attributes, typically attributed to the entity trying to access an object.
+* AccessEvaluator - An object that determines if an entity can access an object based on the 
+entity's Authorizations and the object's AccessExpression.
 
 ## Syntax
 
@@ -56,19 +57,19 @@ escaped                 = "\" DQUOTE / "\\"
 slash                   = "/"
 ```
 
-The following are examples of proper expressions that the above rules would match.
+### Examples of Proper Expressions
 
  * `BLUE`
  * `RED&BLUE`
  * `RED&BLUE&GREEN`
  * `(RED&BLUE)|(GREEN&(PINK|PURPLE))`
 
-The following are example of improper expressions that the rules would not match and reasons they do not match.
+### Examples of Improper Expressions
 
-* `&BLUE` : Must start with an access token or a paren expression
-* `(RED&BLUE)|` : An access token or paren expression must follow a `|`
-* `RED&BLUE|GREEN` : Once a `&` is seen then can only have `&` and not `|`, unless using parenthesis. 
-* `RED|BLUE&GREEN` : Once a `|` is seen then can only have `|`and not `&`, unless using parenthesis.
+* `&BLUE` : Must start with an access token or a paren expression.
+* `(RED&BLUE)|` : An access token or paren expression must follow a `|`.
+* `RED&BLUE|GREEN` : Once a `&` is seen, then can only have `&` and not `|`, unless using parenthesis. 
+* `RED|BLUE&GREEN` : Once a `|` is seen, then can only have `|`and not `&`, unless using parenthesis.
 
 ## Serialization
 
@@ -77,56 +78,53 @@ can be deserialized back into the same UTF-8 string.
 
 ## Evaluation
 
-Evaluation of access expressions performs a combination of [set][2] existence
-checks and [boolean algebra][3]. Access expression use the following from
-boolean algebra.
+The evaluation process combines [set][2] existence checks with [boolean algebra][3]. Specifically, 
+AccessExpressions use:
 
- * The symbol `&` in an access expression represents [logical conjunction][4]
-   which is represented in a boolean algebra as `∧`.
- * The symbol `|` in an access expression represents [logical disjunction][5]
-   which is represented in a boolean algebra as `∨`.
+ * The symbol `&` for [logical conjunction][4] (`∧` in boolean algebra).
+ * The symbol `|` for [logical disjunction][5] (`∨` in boolean algebra).
 
-When evaluating an access expression set existence checks are done against an
-entities set of authorizations. The following is an algorithm for evaluation an
-access expression.
+When evaluating an AccessExpression, existence checks are done against an
+entities Authorizations. The following is the algorithm for evaluation of an
+AccessExpression.
 
- 1. For each access-token in an access expression check if it exists in the
-    entities set of authorizations. Replace the access-token with `true` if it
+ 1. For each access-token in an AccessExpression check if it exists in the
+    entities Authorizations. Replace the access-token with `true` if it
     exists in the set and `false` otherwise.
- 2. Evaluate the expression using boolean algebra and only if its true can the
-    entity access the data labeled with the access expression.
+ 2. Evaluate the resulting expression using boolean algebra. If the result is true, the entity can
+    access the data associated with the AccessExpression.
 
-The following is an example of evaluating the access expression
-`RED&(BLUE|GREEN)` using boolean algebra for an entity with the authorization
-set `{RED,GREEN}`. In the example below `RED ∈ {RED,GREEN}` translates to does
+The following is an example of evaluating the AccessExpression
+`RED&(BLUE|GREEN)` using boolean algebra for an entity with the Authorizations
+ `{RED,GREEN}`. In the example below `RED ∈ {RED,GREEN}` translates to does
 `RED` exist in the set `{RED,GREEN}` which it does, so it is true.
 
  1. RED ∈ {RED,GREEN} ∧ ( BLUE ∈ {RED,GREEN} ∨ GREEN ∈ {RED,GREEN} )
  2. true  ∧ ( false ∨ true )
 
-Since `true  ∧ ( false ∨ true )` is true then the entity with authorizations
-`{RED,GREEN}` can access data labeled with the access expression
-`RED&(BLUE|GREEN)`. The access expression `(RED&BLUE)|(GREEN&PINK)` is an
-example of an access expression that is false for an entity with authorizations
+Since `true  ∧ ( false ∨ true )` is true then the entity with Authorizations of
+`{RED,GREEN}` can access data labeled with the AccessExpression
+`RED&(BLUE|GREEN)`. The AccessExpression `(RED&BLUE)|(GREEN&PINK)` is an
+example of an AccessExpression that is false for an entity with Authorizations of
 `{RED,GREEN}` and it would look like the following using boolean algebra.
 
  1. ( RED ∈ {RED,GREEN} ∧ BLUE ∈ {RED,GREEN} ) ∨ ( GREEN ∈ {RED,GREEN} ∧ PINK ∈
     {RED,GREEN} )
  2. ( true ∧ false ) ∨ ( true ∧ false )
 
-An empty access expression always evaluates to true and this is only thing a
-entity with the empty set of authorizations can access.
+An entity with empty Authorizations can only access data associated with an empty access 
+expression. This is because an empty AccessExpression always evaluates to true.
 
 ## Escaping
 
-Access tokens can only contain alpha numeric characters or the characters
-`_`,`-`,`.`,`:`, or `/` unless quoted using `"`. Within quotes the characters
-`"` and `\` must escaped by prefixing with `\`. For example to use `abc\xyz` as
-an access-token it would need to be quoted and escaped like `"abc\\xyz"`. When
-checking if an access-token exists in the entities authorizations set it must
+Access tokens can only contain alphanumeric characters or the characters
+`_`,`-`,`.`,`:`, or `/` unless quoted using `"`. Within quotes, the characters
+`"` and `\` must escaped by prefixing them with `\`. For example, to use `abc\xyz` as
+an access-token, it would need to be quoted and escaped like `"abc\\xyz"`. When
+checking if an access-token exists in the entities Authorizations, it must
 be unquoted and unescaped.
 
-Evaluating `"abc!12"&"abc\\xyz"&GHI`for an entity with authorizations
+Evaluating `"abc!12"&"abc\\xyz"&GHI` for an entity with Authorizations of
 `{abc\xyz,abc!12}` looks like the following in boolean algebra which evaluates
 to `false`.
 
@@ -134,8 +132,8 @@ to `false`.
     {abc\xyz,abc!12}
  2. true ∧ true ∧ false
 
-Notice above when checking if `"abc\\xyz"` exist in the set that it is unquoted
-and the `\` character is unescaped.
+It's important to note that when verifying the existence of "abc\\xyz" in the set of authorizations
+within the Authorizations object, the token is unquoted, and the `\` character is unescaped.
 
 [1]: https://www.rfc-editor.org/rfc/rfc5234
 [2]: https://en.wikipedia.org/wiki/Set_(mathematics)
