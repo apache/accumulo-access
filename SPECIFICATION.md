@@ -84,7 +84,7 @@ AccessExpressions use:
  * The symbol `&` for [logical conjunction][4] (`∧` in boolean algebra).
  * The symbol `|` for [logical disjunction][5] (`∨` in boolean algebra).
 
-When evaluating an AccessExpression set, existence checks are done against an
+When evaluating an AccessExpression, existence checks are done against an
 entities Authorizations. The following is the algorithm for evaluation of an
 AccessExpression.
 
