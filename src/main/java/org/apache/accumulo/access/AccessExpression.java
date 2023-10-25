@@ -77,8 +77,8 @@ public interface AccessExpression {
   String normalize();
 
   /**
-   * @return the unique authorizations that occur in the expression. For example, for the expression
-   *         {@code (A&B)|(A&C)|(A&D)} this method would return {@code [A,B,C,D]]}
+   * @return the unique set of authorizations that occur in the expression. For example, for the
+   *         expression {@code (A&B)|(A&C)|(A&D)}, this method would return {@code [A,B,C,D]}.
    */
   Authorizations getAuthorizations();
 
@@ -94,7 +94,7 @@ public interface AccessExpression {
   }
 
   /**
-   * @return an empty VisibilityExpression.
+   * @return an empty AccessExpression.
    */
   static AccessExpression of() {
     return AccessExpressionImpl.EMPTY;
@@ -104,8 +104,8 @@ public interface AccessExpression {
    * Authorizations occurring in an access expression can only contain the characters listed in the
    * <a href=
    * "https://github.com/apache/accumulo-access/blob/main/SPECIFICATION.md">specification</a> unless
-   * quoted. Use this method to quote authorizations that occur in an access expression. This method
-   * will only quote if it is needed.
+   * quoted (surrounded by quotation marks). Use this method to quote authorizations that occur in
+   * an access expression. This method will only quote if it is needed.
    */
   static byte[] quote(byte[] authorization) {
     return AccessExpressionImpl.quote(authorization);
@@ -115,8 +115,8 @@ public interface AccessExpression {
    * Authorizations occurring in an access expression can only contain the characters listed in the
    * <a href=
    * "https://github.com/apache/accumulo-access/blob/main/SPECIFICATION.md">specification</a> unless
-   * quoted. Use this method to quote authorizations that occur in an access expression. This method
-   * will only quote if it is needed.
+   * quoted (surrounded by quotation marks). Use this method to quote authorizations that occur in
+   * an access expression. This method will only quote if it is needed.
    */
   static String quote(String authorization) {
     return AccessExpressionImpl.quote(authorization);

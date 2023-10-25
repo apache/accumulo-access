@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 //this class is intentionally package private and should never be made public
 class AccessEvaluatorImpl implements AccessEvaluator {
   private final Collection<Predicate<BytesWrapper>> authorizedPredicates;
+  static Predicate<Byte> IS_QUOTE_OR_SLASH = value1 -> value1 == '"' || value1 == '\\';
 
   private AccessEvaluatorImpl(Authorizer authorizationChecker) {
     this.authorizedPredicates = List.of(auth -> authorizationChecker.isAuthorized(unescape(auth)));
@@ -50,7 +51,7 @@ class AccessEvaluatorImpl implements AccessEvaluator {
     int escapeCharCount = 0;
     for (int i = 0; i < auth.length(); i++) {
       byte b = auth.byteAt(i);
-      if (b == '"' || b == '\\') {
+      if (IS_QUOTE_OR_SLASH.test(b)) {
         escapeCharCount++;
       }
     }
@@ -67,12 +68,13 @@ class AccessEvaluatorImpl implements AccessEvaluator {
         if (b == '\\') {
           i++;
           b = auth.byteAt(i);
-          if (b != '"' && b != '\\') {
+          if (IS_QUOTE_OR_SLASH.negate().test(b)) {
             throw new IllegalArgumentException("Illegal escape sequence in auth : " + auth);
           }
         } else if (b == '"') {
           // should only see quote after a slash
-          throw new IllegalArgumentException("Illegal escape sequence in auth : " + auth);
+          throw new IllegalArgumentException(
+              "Illegal character after slash in auth String : " + auth);
         }
 
         unescapedCopy[pos++] = b;
@@ -88,29 +90,29 @@ class AccessEvaluatorImpl implements AccessEvaluator {
    * Properly escapes an authorization string. The string can be quoted if desired.
    *
    * @param auth authorization string, as UTF-8 encoded bytes
-   * @param quote true to wrap escaped authorization in quotes
+   * @param shouldQuote true to wrap escaped authorization in quotes
    * @return escaped authorization string
    */
-  static byte[] escape(byte[] auth, boolean quote) {
+  static byte[] escape(byte[] auth, boolean shouldQuote) {
     int escapeCount = 0;
 
     for (byte value : auth) {
-      if (value == '"' || value == '\\') {
+      if (IS_QUOTE_OR_SLASH.test(value)) {
         escapeCount++;
       }
     }
 
-    if (escapeCount > 0 || quote) {
-      byte[] escapedAuth = new byte[auth.length + escapeCount + (quote ? 2 : 0)];
-      int index = quote ? 1 : 0;
+    if (escapeCount > 0 || shouldQuote) {
+      byte[] escapedAuth = new byte[auth.length + escapeCount + (shouldQuote ? 2 : 0)];
+      int index = shouldQuote ? 1 : 0;
       for (byte b : auth) {
-        if (b == '"' || b == '\\') {
+        if (IS_QUOTE_OR_SLASH.test(b)) {
           escapedAuth[index++] = '\\';
         }
         escapedAuth[index++] = b;
       }
 
-      if (quote) {
+      if (shouldQuote) {
         escapedAuth[0] = '"';
         escapedAuth[escapedAuth.length - 1] = '"';
       }
@@ -122,24 +124,18 @@ class AccessEvaluatorImpl implements AccessEvaluator {
 
   @Override
   public boolean canAccess(String expression) throws IllegalArgumentException {
-
     return evaluate(new AccessExpressionImpl(expression));
-
   }
 
   @Override
   public boolean canAccess(byte[] expression) throws IllegalArgumentException {
-
     return evaluate(new AccessExpressionImpl(expression));
-
   }
 
   @Override
   public boolean canAccess(AccessExpression expression) throws IllegalArgumentException {
     if (expression instanceof AccessExpressionImpl) {
-
       return evaluate((AccessExpressionImpl) expression);
-
     } else {
       return canAccess(expression.getExpression());
     }
