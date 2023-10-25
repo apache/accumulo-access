@@ -32,7 +32,8 @@ import java.util.stream.Stream;
 //this class is intentionally package private and should never be made public
 class AccessEvaluatorImpl implements AccessEvaluator {
   private final Collection<Predicate<BytesWrapper>> authorizedPredicates;
-  static Predicate<Byte> IS_QUOTE_OR_SLASH = value1 -> value1 == '"' || value1 == '\\';
+  private final static Predicate<Byte> IS_QUOTE_OR_SLASH =
+      value1 -> value1 == '"' || value1 == '\\';
 
   private AccessEvaluatorImpl(Authorizer authorizationChecker) {
     this.authorizedPredicates = List.of(auth -> authorizationChecker.isAuthorized(unescape(auth)));
@@ -44,7 +45,7 @@ class AccessEvaluatorImpl implements AccessEvaluator {
             .map(auth -> AccessEvaluatorImpl.escape(auth, false)).map(BytesWrapper::new)
             .collect(toSet()))
         .map(escapedAuths -> (Predicate<BytesWrapper>) escapedAuths::contains)
-        .collect(Collectors.toList());
+        .collect(Collectors.toUnmodifiableList());
   }
 
   static String unescape(BytesWrapper auth) {
@@ -123,17 +124,17 @@ class AccessEvaluatorImpl implements AccessEvaluator {
   }
 
   @Override
-  public boolean canAccess(String expression) throws IllegalArgumentException {
+  public boolean canAccess(String expression) throws IllegalAccessExpressionException {
     return evaluate(new AccessExpressionImpl(expression));
   }
 
   @Override
-  public boolean canAccess(byte[] expression) throws IllegalArgumentException {
+  public boolean canAccess(byte[] expression) throws IllegalAccessExpressionException {
     return evaluate(new AccessExpressionImpl(expression));
   }
 
   @Override
-  public boolean canAccess(AccessExpression expression) throws IllegalArgumentException {
+  public boolean canAccess(AccessExpression expression) throws IllegalAccessExpressionException {
     if (expression instanceof AccessExpressionImpl) {
       return evaluate((AccessExpressionImpl) expression);
     } else {
@@ -143,12 +144,12 @@ class AccessEvaluatorImpl implements AccessEvaluator {
 
   public boolean evaluate(AccessExpressionImpl accessExpression)
       throws IllegalAccessExpressionException {
-    // The VisibilityEvaluator computes a trie from the given Authorizations, that ColumnVisibility
-    // expressions can be evaluated against.
+    // The AccessEvaluator computes a tree from the given Authorizations, that AccessExpressions can
+    // be evaluated against.
     return authorizedPredicates.stream().allMatch(accessExpression.aeNode::canAccess);
   }
 
-  private static class BuilderImpl implements AuthorizationsBuilder, FinalBuilder {
+  private static class BuilderImpl implements AuthorizationsBuilder, EvaluatorBuilder {
 
     private Authorizer authorizationsChecker;
 
@@ -174,14 +175,14 @@ class AccessEvaluatorImpl implements AccessEvaluator {
     }
 
     @Override
-    public FinalBuilder authorizations(Authorizations authorizations) {
+    public EvaluatorBuilder authorizations(Authorizations authorizations) {
       setAuthorizations(authorizations.asSet().stream().map(auth -> auth.getBytes(UTF_8))
           .collect(toUnmodifiableList()));
       return this;
     }
 
     @Override
-    public FinalBuilder authorizations(Collection<Authorizations> authorizationSets) {
+    public EvaluatorBuilder authorizations(Collection<Authorizations> authorizationSets) {
       setAuthorizations(authorizationSets
           .stream().map(authorizations -> authorizations.asSet().stream()
               .map(auth -> auth.getBytes(UTF_8)).collect(toUnmodifiableList()))
@@ -190,14 +191,14 @@ class AccessEvaluatorImpl implements AccessEvaluator {
     }
 
     @Override
-    public FinalBuilder authorizations(String... authorizations) {
+    public EvaluatorBuilder authorizations(String... authorizations) {
       setAuthorizations(Stream.of(authorizations).map(auth -> auth.getBytes(UTF_8))
           .collect(toUnmodifiableList()));
       return this;
     }
 
     @Override
-    public FinalBuilder authorizations(Authorizer authorizationChecker) {
+    public EvaluatorBuilder authorizations(Authorizer authorizationChecker) {
       if (authorizationSets != null) {
         throw new IllegalStateException("Cannot set checker and authorizations");
       }
@@ -208,7 +209,8 @@ class AccessEvaluatorImpl implements AccessEvaluator {
     @Override
     public AccessEvaluator build() {
       if (authorizationSets != null ^ authorizationsChecker == null) {
-        throw new IllegalStateException();
+        throw new IllegalStateException(
+            "Exactly one of authorizationSets or authorizationsChecker must be set, not both or none.");
       }
 
       AccessEvaluator accessEvaluator;

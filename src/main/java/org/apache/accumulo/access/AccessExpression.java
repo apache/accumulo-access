@@ -71,8 +71,8 @@ public interface AccessExpression {
    * <p>
    * As an example of deduplication, the expression {@code X&Y&X} is equivalent to {@code X&Y}
    *
-   * @return A normalized version of the visibility expression that removes duplicates and orders
-   *         the expression in a consistent way.
+   * @return A normalized version of the access expression that removes duplicates and orders the
+   *         expression in a consistent way.
    */
   String normalize();
 

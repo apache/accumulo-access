@@ -26,7 +26,7 @@ Apache Accumulo [ColumnVisibility][1] and [VisibilityEvaluator][2] classes.
 This functionality is provided in a standalone java library that has no
 dependencies (for example no Hadoop, Zookeeper, Thrift, etc dependencies).
 
-For a conceptual overview of what an access expression is see the
+For a conceptual overview of what an access expression is, see the
 [specification](SPECIFICATION.md) document. See the [getting started
 guide](contrib/getting-started/README.md) for an example of how to use
 this java library.

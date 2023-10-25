@@ -86,7 +86,7 @@ public interface AccessEvaluator {
 
   interface AuthorizationsBuilder {
 
-    FinalBuilder authorizations(Authorizations authorizations);
+    EvaluatorBuilder authorizations(Authorizations authorizations);
 
     /**
      * Allows providing multiple sets of authorizations. Each expression will be evaluated
@@ -139,20 +139,20 @@ public interface AccessEvaluator {
      *
      *
      */
-    FinalBuilder authorizations(Collection<Authorizations> authorizations);
+    EvaluatorBuilder authorizations(Collection<Authorizations> authorizations);
 
     /**
      * Allows specifying a single set of authorizations.
      */
-    FinalBuilder authorizations(String... authorizations);
+    EvaluatorBuilder authorizations(String... authorizations);
 
     /**
      * Allows specifying an authorizer that is analogous to a single set of authorization.
      */
-    FinalBuilder authorizations(Authorizer authorizer);
+    EvaluatorBuilder authorizations(Authorizer authorizer);
   }
 
-  interface FinalBuilder {
+  interface EvaluatorBuilder {
     AccessEvaluator build();
   }
 
