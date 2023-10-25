@@ -34,6 +34,11 @@ class AccessExpressionImpl implements AccessExpression {
 
   @Override
   public String getExpression() {
+    var expStr = expressionString.get();
+    if (expStr != null) {
+      return expStr;
+    }
+
     return expressionString.updateAndGet(es -> es == null ? new String(expression, UTF_8) : es);
   }
 

@@ -144,7 +144,7 @@ class AccessEvaluatorImpl implements AccessEvaluator {
 
   public boolean evaluate(AccessExpressionImpl accessExpression)
       throws IllegalAccessExpressionException {
-    // The AccessEvaluator computes a tree from the given Authorizations, that AccessExpressions can
+    // The AccessEvaluator computes a trie from the given Authorizations, that AccessExpressions can
     // be evaluated against.
     return authorizedPredicates.stream().allMatch(accessExpression.aeNode::canAccess);
   }
