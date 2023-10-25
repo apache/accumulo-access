@@ -55,7 +55,7 @@ class AccessExpressionImpl implements AccessExpression {
   }
 
   /**
-   * Creates an AccessExpression for a Mutation.
+   * Creates an AccessExpression.
    *
    * @param expression An expression of the rights needed to see this mutation. The expression
    *        syntax is defined at the class-level documentation
