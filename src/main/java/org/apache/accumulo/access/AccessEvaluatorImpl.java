@@ -32,9 +32,6 @@ import java.util.stream.Stream;
 //this class is intentionally package private and should never be made public
 class AccessEvaluatorImpl implements AccessEvaluator {
   private final Collection<Predicate<BytesWrapper>> authorizedPredicates;
-  private static boolean isQuoteOrSlash(byte b) {
-     return b == '"' || b == '\\';
-  }
 
   private AccessEvaluatorImpl(Authorizer authorizationChecker) {
     this.authorizedPredicates = List.of(auth -> authorizationChecker.isAuthorized(unescape(auth)));
@@ -53,7 +50,7 @@ class AccessEvaluatorImpl implements AccessEvaluator {
     int escapeCharCount = 0;
     for (int i = 0; i < auth.length(); i++) {
       byte b = auth.byteAt(i);
-      if (IS_QUOTE_OR_SLASH.test(b)) {
+      if (isQuoteOrSlash(b)) {
         escapeCharCount++;
       }
     }
@@ -70,7 +67,7 @@ class AccessEvaluatorImpl implements AccessEvaluator {
         if (b == '\\') {
           i++;
           b = auth.byteAt(i);
-          if (IS_QUOTE_OR_SLASH.negate().test(b)) {
+          if (!isQuoteOrSlash(b)) {
             throw new IllegalArgumentException("Illegal escape sequence in auth : " + auth);
           }
         } else if (b == '"') {
@@ -99,7 +96,7 @@ class AccessEvaluatorImpl implements AccessEvaluator {
     int escapeCount = 0;
 
     for (byte value : auth) {
-      if (IS_QUOTE_OR_SLASH.test(value)) {
+      if (isQuoteOrSlash(value)) {
         escapeCount++;
       }
     }
@@ -108,7 +105,7 @@ class AccessEvaluatorImpl implements AccessEvaluator {
       byte[] escapedAuth = new byte[auth.length + escapeCount + (shouldQuote ? 2 : 0)];
       int index = shouldQuote ? 1 : 0;
       for (byte b : auth) {
-        if (IS_QUOTE_OR_SLASH.test(b)) {
+        if (isQuoteOrSlash(b)) {
           escapedAuth[index++] = '\\';
         }
         escapedAuth[index++] = b;
@@ -228,5 +225,9 @@ class AccessEvaluatorImpl implements AccessEvaluator {
 
   public static AuthorizationsBuilder builder() {
     return new BuilderImpl();
+  }
+
+  private static boolean isQuoteOrSlash(byte b) {
+    return b == '"' || b == '\\';
   }
 }
