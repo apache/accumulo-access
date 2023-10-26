@@ -68,7 +68,7 @@ class AccessEvaluatorImpl implements AccessEvaluator {
       int pos = 0;
       for (int i = 0; i < auth.length(); i++) {
         byte b = auth.byteAt(i);
-        if (b == '\\') {
+        if (b == BACKSLASH) {
           i++;
           b = auth.byteAt(i);
           if (!isQuoteOrSlash(b)) {
