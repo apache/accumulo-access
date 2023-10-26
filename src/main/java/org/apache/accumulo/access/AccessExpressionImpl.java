@@ -62,8 +62,10 @@ class AccessExpressionImpl implements AccessExpression {
   /**
    * Creates an AccessExpression.
    *
-   * @param expression An expression of the rights needed to see this mutation. The expression
-   *        syntax is defined at the class-level documentation
+   * @param expression An expression of the rights needed to see specific data. The expression
+   *        syntax is defined within the <a href=
+   *        "https://github.com/apache/accumulo-access/blob/main/SPECIFICATION.md">specification
+   *        doc</a>
    */
   AccessExpressionImpl(String expression) {
     this(expression.getBytes(UTF_8));
@@ -71,7 +73,7 @@ class AccessExpressionImpl implements AccessExpression {
   }
 
   /**
-   * Creates an AccessExpression for a Mutation from a string already encoded in UTF-8 bytes.
+   * Creates an AccessExpression from a string already encoded in UTF-8 bytes.
    *
    * @param expression AccessExpression, encoded as UTF-8 bytes
    * @see #AccessExpressionImpl(String)
