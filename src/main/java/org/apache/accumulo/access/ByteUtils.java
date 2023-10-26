@@ -31,28 +31,4 @@ public final class ByteUtils {
   private ByteUtils() {
     // private constructor to prevent instantiation
   }
-
-  public static boolean isQuoteSymbol(byte b) {
-    return b == QUOTE;
-  }
-
-  public static boolean isBackslashSymbol(byte b) {
-    return b == BACKSLASH;
-  }
-
-  public static boolean isQuoteOrSlash(byte b) {
-    return isQuoteSymbol(b) || isBackslashSymbol(b);
-  }
-
-  public static boolean isAndOperator(byte b) {
-    return b == AND_OPERATOR;
-  }
-
-  public static boolean isOrOperator(byte b) {
-    return b == OR_OPERATOR;
-  }
-
-  public static boolean isAndOrOperator(byte b) {
-    return isAndOperator(b) || isOrOperator(b);
-  }
 }

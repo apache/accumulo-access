@@ -18,7 +18,8 @@
  */
 package org.apache.accumulo.access;
 
-import static org.apache.accumulo.access.ByteUtils.isAndOrOperator;
+import static org.apache.accumulo.access.ByteUtils.AND_OPERATOR;
+import static org.apache.accumulo.access.ByteUtils.OR_OPERATOR;
 
 import java.util.ArrayList;
 
@@ -52,7 +53,8 @@ final class Parser {
 
     AeNode first = parseParenExpressionOrAuthorization(tokenizer);
 
-    if (tokenizer.hasNext() && isAndOrOperator(tokenizer.peek())) {
+    if (tokenizer.hasNext()
+        && (tokenizer.peek() == AND_OPERATOR || tokenizer.peek() == OR_OPERATOR)) {
       var nodes = new ArrayList<AeNode>();
       nodes.add(first);
 
@@ -65,7 +67,8 @@ final class Parser {
 
       } while (tokenizer.hasNext() && tokenizer.peek() == operator);
 
-      if (tokenizer.hasNext() && isAndOrOperator(tokenizer.peek())) {
+      if (tokenizer.hasNext()
+          && (tokenizer.peek() == OR_OPERATOR || tokenizer.peek() == AND_OPERATOR)) {
         // A case of mixed operators, lets give a clear error message
         tokenizer.error("Cannot mix '|' and '&'");
       }

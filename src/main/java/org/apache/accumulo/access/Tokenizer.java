@@ -19,9 +19,8 @@
 package org.apache.accumulo.access;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.accumulo.access.ByteUtils.isBackslashSymbol;
-import static org.apache.accumulo.access.ByteUtils.isQuoteOrSlash;
-import static org.apache.accumulo.access.ByteUtils.isQuoteSymbol;
+import static org.apache.accumulo.access.ByteUtils.BACKSLASH;
+import static org.apache.accumulo.access.ByteUtils.QUOTE;
 
 import java.util.stream.IntStream;
 
@@ -97,13 +96,14 @@ final class Tokenizer {
   }
 
   AuthorizationToken nextAuthorization() {
-    if (isQuoteSymbol(expression[index])) {
+    if (expression[index] == QUOTE) {
       int start = ++index;
 
-      while (index < expression.length && !isQuoteSymbol(expression[index])) {
-        if (isBackslashSymbol(expression[index])) {
+      while (index < expression.length && expression[index] != QUOTE) {
+        if (expression[index] == BACKSLASH) {
           index++;
-          if (index == expression.length || !isQuoteOrSlash(expression[index])) {
+          if (index == expression.length
+              || (expression[index] != BACKSLASH && expression[index] != QUOTE)) {
             error("Invalid escaping within quotes", index - 1);
           }
         }

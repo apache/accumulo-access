@@ -23,8 +23,6 @@ import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Collectors.toUnmodifiableList;
 import static org.apache.accumulo.access.ByteUtils.BACKSLASH;
 import static org.apache.accumulo.access.ByteUtils.QUOTE;
-import static org.apache.accumulo.access.ByteUtils.isQuoteOrSlash;
-import static org.apache.accumulo.access.ByteUtils.isQuoteSymbol;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -47,14 +45,14 @@ class AccessEvaluatorImpl implements AccessEvaluator {
             .map(auth -> AccessEvaluatorImpl.escape(auth, false)).map(BytesWrapper::new)
             .collect(toSet()))
         .map(escapedAuths -> (Predicate<BytesWrapper>) escapedAuths::contains)
-        .collect(Collectors.toUnmodifiableList());
+        .collect(Collectors.toList());
   }
 
   static String unescape(BytesWrapper auth) {
     int escapeCharCount = 0;
     for (int i = 0; i < auth.length(); i++) {
       byte b = auth.byteAt(i);
-      if (isQuoteOrSlash(b)) {
+      if (b == QUOTE || b == BACKSLASH) {
         escapeCharCount++;
       }
     }
@@ -68,13 +66,13 @@ class AccessEvaluatorImpl implements AccessEvaluator {
       int pos = 0;
       for (int i = 0; i < auth.length(); i++) {
         byte b = auth.byteAt(i);
-        if (b == '\\') {
+        if (b == BACKSLASH) {
           i++;
           b = auth.byteAt(i);
-          if (!isQuoteOrSlash(b)) {
+          if (b != QUOTE && b != BACKSLASH) {
             throw new IllegalArgumentException("Illegal escape sequence in auth : " + auth);
           }
-        } else if (isQuoteSymbol(b)) {
+        } else if (b == QUOTE) {
           // should only see quote after a slash
           throw new IllegalArgumentException(
               "Illegal character after slash in auth String : " + auth);
@@ -100,7 +98,7 @@ class AccessEvaluatorImpl implements AccessEvaluator {
     int escapeCount = 0;
 
     for (byte value : auth) {
-      if (isQuoteOrSlash(value)) {
+      if (value == QUOTE || value == BACKSLASH) {
         escapeCount++;
       }
     }
@@ -109,7 +107,7 @@ class AccessEvaluatorImpl implements AccessEvaluator {
       byte[] escapedAuth = new byte[auth.length + escapeCount + (shouldQuote ? 2 : 0)];
       int index = shouldQuote ? 1 : 0;
       for (byte b : auth) {
-        if (isQuoteOrSlash(b)) {
+        if (b == QUOTE || b == BACKSLASH) {
           escapedAuth[index++] = BACKSLASH;
         }
         escapedAuth[index++] = b;
