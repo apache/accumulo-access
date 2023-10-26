@@ -203,7 +203,7 @@ abstract class AeNode implements Comparable<AeNode> {
 
     @Override
     char operator() {
-      return AND_OPERATOR;
+      return '&';
     }
 
     @Override
@@ -252,7 +252,7 @@ abstract class AeNode implements Comparable<AeNode> {
 
     @Override
     char operator() {
-      return OR_OPERATOR;
+      return '|';
     }
 
     @Override
