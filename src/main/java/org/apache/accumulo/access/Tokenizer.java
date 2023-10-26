@@ -19,6 +19,11 @@
 package org.apache.accumulo.access;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.accumulo.access.ByteUtils.isBackslashSymbol;
+import static org.apache.accumulo.access.ByteUtils.isQuoteOrSlash;
+import static org.apache.accumulo.access.ByteUtils.isQuoteSymbol;
+
+import java.util.stream.IntStream;
 
 /**
  * A simple wrapper around a byte array that keeps some state and provides high level operations to
@@ -30,37 +35,24 @@ final class Tokenizer {
   private static final boolean[] validAuthChars = new boolean[256];
 
   static {
-    for (int i = 0; i < 256; i++) {
-      validAuthChars[i] = false;
-    }
+    IntStream.range(0, 256).forEach(i -> validAuthChars[i] = false);
 
-    for (int i = 'a'; i <= 'z'; i++) {
-      validAuthChars[i] = true;
-    }
+    IntStream numbers = IntStream.rangeClosed('0', '9');
+    IntStream letters =
+        IntStream.concat(IntStream.rangeClosed('A', 'Z'), IntStream.rangeClosed('a', 'z'));
+    IntStream.concat(numbers, letters).forEach(i -> validAuthChars[i] = true);
 
-    for (int i = 'A'; i <= 'Z'; i++) {
-      validAuthChars[i] = true;
-    }
-
-    for (int i = '0'; i <= '9'; i++) {
-      validAuthChars[i] = true;
-    }
-
-    validAuthChars['_'] = true;
-    validAuthChars['-'] = true;
-    validAuthChars[':'] = true;
-    validAuthChars['.'] = true;
-    validAuthChars['/'] = true;
+    "_-:./".chars().forEach(c -> validAuthChars[c] = true);
   }
 
   static boolean isValidAuthChar(byte b) {
     return validAuthChars[0xff & b];
   }
 
-  private byte[] expression;
+  private final byte[] expression;
   private int index;
 
-  private AuthorizationToken authorizationToken = new AuthorizationToken();
+  private final AuthorizationToken authorizationToken = new AuthorizationToken();
 
   static class AuthorizationToken {
     byte[] data;
@@ -81,13 +73,13 @@ final class Tokenizer {
     index++;
   }
 
-  public void next(char expected) {
+  public void next(byte expected) {
     if (!hasNext()) {
-      error("Expected '" + expected + "' instead saw end of input");
+      error("Expected '" + (char) expected + "' instead saw end of input");
     }
 
     if (expression[index] != expected) {
-      error("Expected '" + expected + "' instead saw '" + (char) (expression[index]) + "'");
+      error("Expected '" + (char) expected + "' instead saw '" + (char) (expression[index]) + "'");
     }
     index++;
   }
@@ -105,14 +97,13 @@ final class Tokenizer {
   }
 
   AuthorizationToken nextAuthorization() {
-    if (expression[index] == '"') {
+    if (isQuoteSymbol(expression[index])) {
       int start = ++index;
 
-      while (index < expression.length && expression[index] != '"') {
-        if (expression[index] == '\\') {
+      while (index < expression.length && !isQuoteSymbol(expression[index])) {
+        if (isBackslashSymbol(expression[index])) {
           index++;
-          if (index == expression.length
-              || (expression[index] != '\\' && expression[index] != '"')) {
+          if (index == expression.length || !isQuoteOrSlash(expression[index])) {
             error("Invalid escaping within quotes", index - 1);
           }
         }

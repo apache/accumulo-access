@@ -53,9 +53,17 @@ class BytesWrapper implements Comparable<BytesWrapper> {
    */
   public BytesWrapper(byte[] data, int offset, int length) {
 
-    if (offset < 0 || offset > data.length || length < 0 || (offset + length) > data.length) {
-      throw new IllegalArgumentException(" Bad offset and/or length data.length = " + data.length
-          + " offset = " + offset + " length = " + length);
+    if (offset < 0 || offset > data.length) {
+      throw new IllegalArgumentException(
+          "Offset out of bounds. data.length = " + data.length + ", offset = " + offset);
+    }
+    if (length < 0) {
+      throw new IllegalArgumentException("Length cannot be negative. length = " + length);
+    }
+    if ((offset + length) > data.length) {
+      throw new IllegalArgumentException(
+          "Sum of offset and length exceeds data length. data.length = " + data.length
+              + ", offset = " + offset + ", length = " + length);
     }
 
     this.data = data;

@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
+ * A collection of authorization strings.
  *
  * @since 1.0.0
  */

@@ -60,10 +60,12 @@ class AccessExpressionImpl implements AccessExpression {
   }
 
   /**
-   * Creates a column visibility for a Mutation.
+   * Creates an AccessExpression.
    *
-   * @param expression An expression of the rights needed to see this mutation. The expression
-   *        syntax is defined at the class-level documentation
+   * @param expression An expression of the rights needed to see specific data. The expression
+   *        syntax is defined within the <a href=
+   *        "https://github.com/apache/accumulo-access/blob/main/SPECIFICATION.md">specification
+   *        doc</a>
    */
   AccessExpressionImpl(String expression) {
     this(expression.getBytes(UTF_8));
@@ -71,9 +73,9 @@ class AccessExpressionImpl implements AccessExpression {
   }
 
   /**
-   * Creates a column visibility for a Mutation from a string already encoded in UTF-8 bytes.
+   * Creates an AccessExpression from a string already encoded in UTF-8 bytes.
    *
-   * @param expression visibility expression, encoded as UTF-8 bytes
+   * @param expression AccessExpression, encoded as UTF-8 bytes
    * @see #AccessExpressionImpl(String)
    */
   AccessExpressionImpl(byte[] expression) {
@@ -98,11 +100,11 @@ class AccessExpressionImpl implements AccessExpression {
   }
 
   /**
-   * Compares two ColumnVisibilities for string equivalence, not as a meaningful comparison of terms
+   * Compares two AccessExpressions for string equivalence, not as a meaningful comparison of terms
    * and conditions.
    *
-   * @param otherLe other column visibility
-   * @return true if this visibility equals the other via string comparison
+   * @param otherLe other AccessExpression
+   * @return true if this AccessExpression equals the other via string comparison
    */
   boolean equals(AccessExpressionImpl otherLe) {
     return Arrays.equals(expression, otherLe.expression);
@@ -118,8 +120,7 @@ class AccessExpressionImpl implements AccessExpression {
   }
 
   /**
-   * Properly quotes terms in a column visibility expression. If no quoting is needed, then nothing
-   * is done.
+   * Properly quotes terms in an AccessExpression. If no quoting is needed, then nothing is done.
    *
    * @param term term to quote, encoded as UTF-8 bytes
    * @return quoted term (unquoted if unnecessary), encoded as UTF-8 bytes

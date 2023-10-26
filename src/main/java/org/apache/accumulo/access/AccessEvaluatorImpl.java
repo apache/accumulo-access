@@ -21,6 +21,10 @@ package org.apache.accumulo.access;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Collectors.toUnmodifiableList;
+import static org.apache.accumulo.access.ByteUtils.BACKSLASH;
+import static org.apache.accumulo.access.ByteUtils.QUOTE;
+import static org.apache.accumulo.access.ByteUtils.isQuoteOrSlash;
+import static org.apache.accumulo.access.ByteUtils.isQuoteSymbol;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -43,14 +47,14 @@ class AccessEvaluatorImpl implements AccessEvaluator {
             .map(auth -> AccessEvaluatorImpl.escape(auth, false)).map(BytesWrapper::new)
             .collect(toSet()))
         .map(escapedAuths -> (Predicate<BytesWrapper>) escapedAuths::contains)
-        .collect(Collectors.toList());
+        .collect(Collectors.toUnmodifiableList());
   }
 
   static String unescape(BytesWrapper auth) {
     int escapeCharCount = 0;
     for (int i = 0; i < auth.length(); i++) {
       byte b = auth.byteAt(i);
-      if (b == '"' || b == '\\') {
+      if (isQuoteOrSlash(b)) {
         escapeCharCount++;
       }
     }
@@ -67,12 +71,13 @@ class AccessEvaluatorImpl implements AccessEvaluator {
         if (b == '\\') {
           i++;
           b = auth.byteAt(i);
-          if (b != '"' && b != '\\') {
+          if (!isQuoteOrSlash(b)) {
             throw new IllegalArgumentException("Illegal escape sequence in auth : " + auth);
           }
-        } else if (b == '"') {
+        } else if (isQuoteSymbol(b)) {
           // should only see quote after a slash
-          throw new IllegalArgumentException("Illegal escape sequence in auth : " + auth);
+          throw new IllegalArgumentException(
+              "Illegal character after slash in auth String : " + auth);
         }
 
         unescapedCopy[pos++] = b;
@@ -88,31 +93,31 @@ class AccessEvaluatorImpl implements AccessEvaluator {
    * Properly escapes an authorization string. The string can be quoted if desired.
    *
    * @param auth authorization string, as UTF-8 encoded bytes
-   * @param quote true to wrap escaped authorization in quotes
+   * @param shouldQuote true to wrap escaped authorization in quotes
    * @return escaped authorization string
    */
-  static byte[] escape(byte[] auth, boolean quote) {
+  static byte[] escape(byte[] auth, boolean shouldQuote) {
     int escapeCount = 0;
 
     for (byte value : auth) {
-      if (value == '"' || value == '\\') {
+      if (isQuoteOrSlash(value)) {
         escapeCount++;
       }
     }
 
-    if (escapeCount > 0 || quote) {
-      byte[] escapedAuth = new byte[auth.length + escapeCount + (quote ? 2 : 0)];
-      int index = quote ? 1 : 0;
+    if (escapeCount > 0 || shouldQuote) {
+      byte[] escapedAuth = new byte[auth.length + escapeCount + (shouldQuote ? 2 : 0)];
+      int index = shouldQuote ? 1 : 0;
       for (byte b : auth) {
-        if (b == '"' || b == '\\') {
-          escapedAuth[index++] = '\\';
+        if (isQuoteOrSlash(b)) {
+          escapedAuth[index++] = BACKSLASH;
         }
         escapedAuth[index++] = b;
       }
 
-      if (quote) {
-        escapedAuth[0] = '"';
-        escapedAuth[escapedAuth.length - 1] = '"';
+      if (shouldQuote) {
+        escapedAuth[0] = QUOTE;
+        escapedAuth[escapedAuth.length - 1] = QUOTE;
       }
 
       auth = escapedAuth;
@@ -121,25 +126,19 @@ class AccessEvaluatorImpl implements AccessEvaluator {
   }
 
   @Override
-  public boolean canAccess(String expression) throws IllegalArgumentException {
-
+  public boolean canAccess(String expression) throws IllegalAccessExpressionException {
     return evaluate(new AccessExpressionImpl(expression));
-
   }
 
   @Override
-  public boolean canAccess(byte[] expression) throws IllegalArgumentException {
-
+  public boolean canAccess(byte[] expression) throws IllegalAccessExpressionException {
     return evaluate(new AccessExpressionImpl(expression));
-
   }
 
   @Override
-  public boolean canAccess(AccessExpression expression) throws IllegalArgumentException {
+  public boolean canAccess(AccessExpression expression) throws IllegalAccessExpressionException {
     if (expression instanceof AccessExpressionImpl) {
-
       return evaluate((AccessExpressionImpl) expression);
-
     } else {
       return canAccess(expression.getExpression());
     }
@@ -147,12 +146,12 @@ class AccessEvaluatorImpl implements AccessEvaluator {
 
   public boolean evaluate(AccessExpressionImpl accessExpression)
       throws IllegalAccessExpressionException {
-    // The VisibilityEvaluator computes a trie from the given Authorizations, that ColumnVisibility
-    // expressions can be evaluated against.
+    // The AccessEvaluator computes a trie from the given Authorizations, that AccessExpressions can
+    // be evaluated against.
     return authorizedPredicates.stream().allMatch(accessExpression.aeNode::canAccess);
   }
 
-  private static class BuilderImpl implements AuthorizationsBuilder, FinalBuilder {
+  private static class BuilderImpl implements AuthorizationsBuilder, EvaluatorBuilder {
 
     private Authorizer authorizationsChecker;
 
@@ -178,14 +177,14 @@ class AccessEvaluatorImpl implements AccessEvaluator {
     }
 
     @Override
-    public FinalBuilder authorizations(Authorizations authorizations) {
+    public EvaluatorBuilder authorizations(Authorizations authorizations) {
       setAuthorizations(authorizations.asSet().stream().map(auth -> auth.getBytes(UTF_8))
           .collect(toUnmodifiableList()));
       return this;
     }
 
     @Override
-    public FinalBuilder authorizations(Collection<Authorizations> authorizationSets) {
+    public EvaluatorBuilder authorizations(Collection<Authorizations> authorizationSets) {
       setAuthorizations(authorizationSets
           .stream().map(authorizations -> authorizations.asSet().stream()
               .map(auth -> auth.getBytes(UTF_8)).collect(toUnmodifiableList()))
@@ -194,14 +193,14 @@ class AccessEvaluatorImpl implements AccessEvaluator {
     }
 
     @Override
-    public FinalBuilder authorizations(String... authorizations) {
+    public EvaluatorBuilder authorizations(String... authorizations) {
       setAuthorizations(Stream.of(authorizations).map(auth -> auth.getBytes(UTF_8))
           .collect(toUnmodifiableList()));
       return this;
     }
 
     @Override
-    public FinalBuilder authorizations(Authorizer authorizationChecker) {
+    public EvaluatorBuilder authorizations(Authorizer authorizationChecker) {
       if (authorizationSets != null) {
         throw new IllegalStateException("Cannot set checker and authorizations");
       }
@@ -212,7 +211,8 @@ class AccessEvaluatorImpl implements AccessEvaluator {
     @Override
     public AccessEvaluator build() {
       if (authorizationSets != null ^ authorizationsChecker == null) {
-        throw new IllegalStateException();
+        throw new IllegalStateException(
+            "Exactly one of authorizationSets or authorizationsChecker must be set, not both or none.");
       }
 
       AccessEvaluator accessEvaluator;
@@ -230,4 +230,5 @@ class AccessEvaluatorImpl implements AccessEvaluator {
   public static AuthorizationsBuilder builder() {
     return new BuilderImpl();
   }
+
 }
