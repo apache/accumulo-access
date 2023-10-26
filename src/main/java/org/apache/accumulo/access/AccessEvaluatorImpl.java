@@ -32,8 +32,9 @@ import java.util.stream.Stream;
 //this class is intentionally package private and should never be made public
 class AccessEvaluatorImpl implements AccessEvaluator {
   private final Collection<Predicate<BytesWrapper>> authorizedPredicates;
-  private final static Predicate<Byte> IS_QUOTE_OR_SLASH =
-      value1 -> value1 == '"' || value1 == '\\';
+  private static boolean isQuoteOrSlash(byte b) {
+     return b == '"' || b == '\\';
+  }
 
   private AccessEvaluatorImpl(Authorizer authorizationChecker) {
     this.authorizedPredicates = List.of(auth -> authorizationChecker.isAuthorized(unescape(auth)));
