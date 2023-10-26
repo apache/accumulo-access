@@ -18,12 +18,18 @@
  */
 package org.apache.accumulo.access;
 
+import static org.apache.accumulo.access.ByteUtils.isAndOrOperator;
+
 import java.util.ArrayList;
 
 /**
  * Code for parsing an access expression and creating a parse tree of type {@link AeNode}
  */
 final class Parser {
+
+  public static final byte OPEN_PAREN = (byte) '(';
+  public static final byte CLOSE_PAREN = (byte) ')';
+
   public static AeNode parseAccessExpression(byte[] expression) {
 
     Tokenizer tokenizer = new Tokenizer(expression);
@@ -46,7 +52,7 @@ final class Parser {
 
     AeNode first = parseParenExpressionOrAuthorization(tokenizer);
 
-    if (tokenizer.hasNext() && (tokenizer.peek() == '&' || tokenizer.peek() == '|')) {
+    if (tokenizer.hasNext() && isAndOrOperator(tokenizer.peek())) {
       var nodes = new ArrayList<AeNode>();
       nodes.add(first);
 
@@ -59,7 +65,7 @@ final class Parser {
 
       } while (tokenizer.hasNext() && tokenizer.peek() == operator);
 
-      if (tokenizer.hasNext() && (tokenizer.peek() == '|' || tokenizer.peek() == '&')) {
+      if (tokenizer.hasNext() && isAndOrOperator(tokenizer.peek())) {
         // A case of mixed operators, lets give a clear error message
         tokenizer.error("Cannot mix '|' and '&'");
       }
@@ -76,10 +82,10 @@ final class Parser {
           .error("Expected a '(' character or an authorization token instead saw end of input");
     }
 
-    if (tokenizer.peek() == '(') {
+    if (tokenizer.peek() == OPEN_PAREN) {
       tokenizer.advance();
       var node = parseExpression(tokenizer);
-      tokenizer.next(')');
+      tokenizer.next(CLOSE_PAREN);
       return node;
     } else {
       return AeNode.of(tokenizer.nextAuthorization());

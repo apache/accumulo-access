@@ -21,6 +21,10 @@ package org.apache.accumulo.access;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Collectors.toUnmodifiableList;
+import static org.apache.accumulo.access.ByteUtils.BACKSLASH;
+import static org.apache.accumulo.access.ByteUtils.QUOTE;
+import static org.apache.accumulo.access.ByteUtils.isQuoteOrSlash;
+import static org.apache.accumulo.access.ByteUtils.isQuoteSymbol;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -70,7 +74,7 @@ class AccessEvaluatorImpl implements AccessEvaluator {
           if (!isQuoteOrSlash(b)) {
             throw new IllegalArgumentException("Illegal escape sequence in auth : " + auth);
           }
-        } else if (b == '"') {
+        } else if (isQuoteSymbol(b)) {
           // should only see quote after a slash
           throw new IllegalArgumentException(
               "Illegal character after slash in auth String : " + auth);
@@ -106,14 +110,14 @@ class AccessEvaluatorImpl implements AccessEvaluator {
       int index = shouldQuote ? 1 : 0;
       for (byte b : auth) {
         if (isQuoteOrSlash(b)) {
-          escapedAuth[index++] = '\\';
+          escapedAuth[index++] = BACKSLASH;
         }
         escapedAuth[index++] = b;
       }
 
       if (shouldQuote) {
-        escapedAuth[0] = '"';
-        escapedAuth[escapedAuth.length - 1] = '"';
+        escapedAuth[0] = QUOTE;
+        escapedAuth[escapedAuth.length - 1] = QUOTE;
       }
 
       auth = escapedAuth;
@@ -227,7 +231,4 @@ class AccessEvaluatorImpl implements AccessEvaluator {
     return new BuilderImpl();
   }
 
-  private static boolean isQuoteOrSlash(byte b) {
-    return b == '"' || b == '\\';
-  }
 }

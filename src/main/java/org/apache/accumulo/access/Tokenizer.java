@@ -19,6 +19,9 @@
 package org.apache.accumulo.access;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.accumulo.access.ByteUtils.isBackslashSymbol;
+import static org.apache.accumulo.access.ByteUtils.isQuoteOrSlash;
+import static org.apache.accumulo.access.ByteUtils.isQuoteSymbol;
 
 import java.util.stream.IntStream;
 
@@ -70,13 +73,13 @@ final class Tokenizer {
     index++;
   }
 
-  public void next(char expected) {
+  public void next(byte expected) {
     if (!hasNext()) {
-      error("Expected '" + expected + "' instead saw end of input");
+      error("Expected '" + (char) expected + "' instead saw end of input");
     }
 
     if (expression[index] != expected) {
-      error("Expected '" + expected + "' instead saw '" + (char) (expression[index]) + "'");
+      error("Expected '" + (char) expected + "' instead saw '" + (char) (expression[index]) + "'");
     }
     index++;
   }
@@ -94,14 +97,13 @@ final class Tokenizer {
   }
 
   AuthorizationToken nextAuthorization() {
-    if (expression[index] == '"') {
+    if (isQuoteSymbol(expression[index])) {
       int start = ++index;
 
-      while (index < expression.length && expression[index] != '"') {
-        if (expression[index] == '\\') {
+      while (index < expression.length && !isQuoteSymbol(expression[index])) {
+        if (isBackslashSymbol(expression[index])) {
           index++;
-          if (index == expression.length
-              || (expression[index] != '\\' && expression[index] != '"')) {
+          if (index == expression.length || !isQuoteOrSlash(expression[index])) {
             error("Invalid escaping within quotes", index - 1);
           }
         }

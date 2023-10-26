@@ -18,6 +18,9 @@
  */
 package org.apache.accumulo.access;
 
+import static org.apache.accumulo.access.ByteUtils.AND_OPERATOR;
+import static org.apache.accumulo.access.ByteUtils.OR_OPERATOR;
+
 import java.util.List;
 import java.util.TreeSet;
 import java.util.function.Consumer;
@@ -200,7 +203,7 @@ abstract class AeNode implements Comparable<AeNode> {
 
     @Override
     char operator() {
-      return '&';
+      return AND_OPERATOR;
     }
 
     @Override
@@ -249,7 +252,7 @@ abstract class AeNode implements Comparable<AeNode> {
 
     @Override
     char operator() {
-      return '|';
+      return OR_OPERATOR;
     }
 
     @Override
@@ -300,9 +303,9 @@ abstract class AeNode implements Comparable<AeNode> {
 
   static AeNode of(byte operator, List<AeNode> children) {
     switch (operator) {
-      case '&':
+      case AND_OPERATOR:
         return new AndNode(children);
-      case '|':
+      case OR_OPERATOR:
         return new OrNode(children);
       default:
         throw new IllegalArgumentException();
