@@ -126,7 +126,7 @@ public class AccessExpressionBenchmark {
   /**
    * Measures the time it takes to parse an expression stored in byte[] and produce a parse tree.
    */
-  // @Benchmark
+  @Benchmark
   public void measureBytesParsing(BenchmarkState state, Blackhole blackhole) {
     for (byte[] accessExpression : state.getBytesExpressions()) {
       blackhole.consume(AccessExpression.of(accessExpression));
