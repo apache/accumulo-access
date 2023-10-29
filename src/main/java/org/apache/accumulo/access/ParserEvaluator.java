@@ -23,7 +23,7 @@ import static org.apache.accumulo.access.ByteUtils.isAndOrOperator;
 import java.util.function.Predicate;
 
 /**
- * Code for parsing an access expression and creating a parse tree of type {@link AeNode}
+ * Code for parsing and evaluating an access expression at the same time.
  */
 final class ParserEvaluator {
 
