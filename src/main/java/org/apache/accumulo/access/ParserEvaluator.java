@@ -35,6 +35,7 @@ final class ParserEvaluator {
   private static final ThreadLocal<Tokenizer> tokenizers =
       ThreadLocal.withInitial(() -> new Tokenizer(EMPTY));
 
+  // TODO would be cleaner to have AccessEvaluatorImpl pass these in rather than use thread locals.
   private static final Predicate<BytesWrapper> TRUE_AUTH_PREDICATE = bw -> true;
   private static final Predicate<BytesWrapper> FALSE_AUTH_PREDICATE = bw -> false;
 
