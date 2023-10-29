@@ -148,7 +148,12 @@ class AccessEvaluatorImpl implements AccessEvaluator {
       throws IllegalAccessExpressionException {
     // The AccessEvaluator computes a trie from the given Authorizations, that AccessExpressions can
     // be evaluated against.
-    return authorizedPredicates.stream().allMatch(accessExpression.aeNode::canAccess);
+    for(var auths : authorizedPredicates) {
+      if(!accessExpression.aeNode.canAccess(auths)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private static class BuilderImpl implements AuthorizationsBuilder, EvaluatorBuilder {
