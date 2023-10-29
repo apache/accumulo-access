@@ -49,7 +49,7 @@ final class Tokenizer {
     return validAuthChars[0xff & b];
   }
 
-  private final byte[] expression;
+  private byte[] expression;
   private int index;
 
   private final AuthorizationToken authorizationToken = new AuthorizationToken();
@@ -63,6 +63,12 @@ final class Tokenizer {
   Tokenizer(byte[] expression) {
     this.expression = expression;
     authorizationToken.data = expression;
+  }
+
+  public void reset(byte[] expression) {
+    this.expression = expression;
+    authorizationToken.data = expression;
+    this.index = 0;
   }
 
   boolean hasNext() {

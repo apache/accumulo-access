@@ -127,12 +127,12 @@ class AccessEvaluatorImpl implements AccessEvaluator {
 
   @Override
   public boolean canAccess(String expression) throws IllegalAccessExpressionException {
-    return evaluate(new AccessExpressionImpl(expression));
+    return evaluate(expression.getBytes(UTF_8));
   }
 
   @Override
   public boolean canAccess(byte[] expression) throws IllegalAccessExpressionException {
-    return evaluate(new AccessExpressionImpl(expression));
+    return evaluate(expression);
   }
 
   @Override
@@ -142,6 +142,15 @@ class AccessEvaluatorImpl implements AccessEvaluator {
     } else {
       return canAccess(expression.getExpression());
     }
+  }
+
+  public boolean evaluate(byte[] accessExpression) throws IllegalAccessExpressionException {
+    for (var auths : authorizedPredicates) {
+      if (!ParserEvaluator.parseAccessExpression(accessExpression, auths)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public boolean evaluate(AccessExpressionImpl accessExpression)

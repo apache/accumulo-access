@@ -131,4 +131,14 @@ class BytesWrapper implements Comparable<BytesWrapper> {
   public String toString() {
     return new String(data, offset, length, UTF_8);
   }
+
+  public void set(byte[] data, int offset, int length) {
+    if (offset < 0 || length < 0 || (offset + length) > data.length) {
+      throw new IllegalArgumentException();
+    }
+    this.data = data;
+    this.offset = offset;
+    this.length = length;
+  }
+
 }
