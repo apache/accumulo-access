@@ -68,13 +68,13 @@ final class ParserEvaluator {
 
     if (tokenizer.hasNext()) {
       var operator = tokenizer.peek();
-      if (operator == '&') {
+      if (operator == ByteUtils.AND_OPERATOR) {
         result = parseAndExpression(result, tokenizer, authorizedPredicate, lookupWrapper);
         if (tokenizer.hasNext() && isAndOrOperator(tokenizer.peek())) {
           // A case of mixed operators, lets give a clear error message
           tokenizer.error("Cannot mix '|' and '&'");
         }
-      } else if (operator == '|') {
+      } else if (operator == ByteUtils.OR_OPERATOR) {
         result = parseOrExpression(result, tokenizer, authorizedPredicate, lookupWrapper);
         if (tokenizer.hasNext() && isAndOrOperator(tokenizer.peek())) {
           // A case of mixed operators, lets give a clear error message
@@ -98,7 +98,7 @@ final class ParserEvaluator {
       var nextResult =
           parseParenExpressionOrAuthorization(tokenizer, authorizedPredicate, lookupWrapper);
       result &= nextResult;
-    } while (tokenizer.hasNext() && tokenizer.peek() == '&');
+    } while (tokenizer.hasNext() && tokenizer.peek() == ByteUtils.AND_OPERATOR);
     return result;
   }
 
@@ -114,7 +114,7 @@ final class ParserEvaluator {
       var nextResult =
           parseParenExpressionOrAuthorization(tokenizer, authorizedPredicate, lookupWrapper);
       result |= nextResult;
-    } while (tokenizer.hasNext() && tokenizer.peek() == '|');
+    } while (tokenizer.hasNext() && tokenizer.peek() == ByteUtils.OR_OPERATOR);
     return result;
   }
 

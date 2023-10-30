@@ -51,28 +51,11 @@ class BytesWrapper implements Comparable<BytesWrapper> {
    * @throws IllegalArgumentException if the offset or length are out of bounds for the given byte
    *         array
    */
-  public BytesWrapper(byte[] data, int offset, int length) {
-
-    if (offset < 0 || offset > data.length) {
-      throw new IllegalArgumentException(
-          "Offset out of bounds. data.length = " + data.length + ", offset = " + offset);
-    }
-    if (length < 0) {
-      throw new IllegalArgumentException("Length cannot be negative. length = " + length);
-    }
-    if ((offset + length) > data.length) {
-      throw new IllegalArgumentException(
-          "Sum of offset and length exceeds data length. data.length = " + data.length
-              + ", offset = " + offset + ", length = " + length);
-    }
-
-    this.data = data;
-    this.offset = offset;
-    this.length = length;
-
+  BytesWrapper(byte[] data, int offset, int length) {
+    set(data, offset, length);
   }
 
-  public byte byteAt(int i) {
+  byte byteAt(int i) {
 
     if (i < 0) {
       throw new IllegalArgumentException("i < 0, " + i);
@@ -132,10 +115,19 @@ class BytesWrapper implements Comparable<BytesWrapper> {
     return new String(data, offset, length, UTF_8);
   }
 
-  public void set(byte[] data, int offset, int length) {
-    if (offset < 0 || length < 0 || (offset + length) > data.length) {
-      throw new IllegalArgumentException();
+  void set(byte[] data, int offset, int length) {
+    if (offset < 0) {
+      throw new IllegalArgumentException("Offset cannot be negative. length = " + offset);
     }
+    if (length < 0) {
+      throw new IllegalArgumentException("Length cannot be negative. length = " + length);
+    }
+    if ((offset + length) > data.length) {
+      throw new IllegalArgumentException(
+          "Sum of offset and length exceeds data length. data.length = " + data.length
+              + ", offset = " + offset + ", length = " + length);
+    }
+
     this.data = data;
     this.offset = offset;
     this.length = length;
