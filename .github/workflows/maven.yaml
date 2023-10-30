@@ -57,6 +57,8 @@ jobs:
       run: src/build/ci/find-unapproved-chars.sh
     - name: Check for unapproved JUnit API usage
       run: src/build/ci/find-unapproved-junit.sh
+    - name: Check for unapproved public classes
+      run: src/build/ci/find-unapproved-public.sh
     - name: Build with Maven (Fast Build)
       timeout-minutes: 20
       run: mvn -B -V -e -ntp "-Dstyle.color=always" clean package dependency:resolve -DskipTests -DskipFormat -DverifyFormat

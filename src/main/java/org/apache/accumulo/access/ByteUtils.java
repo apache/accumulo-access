@@ -22,37 +22,37 @@ package org.apache.accumulo.access;
  * This class exists to avoid repeat conversions from byte to char as well as to provide helper
  * methods for comparing them.
  */
-public final class ByteUtils {
-  public static final byte QUOTE = (byte) '"';
-  public static final byte BACKSLASH = (byte) '\\';
-  public static final byte AND_OPERATOR = (byte) '&';
-  public static final byte OR_OPERATOR = (byte) '|';
+final class ByteUtils {
+  static final byte QUOTE = (byte) '"';
+  static final byte BACKSLASH = (byte) '\\';
+  static final byte AND_OPERATOR = (byte) '&';
+  static final byte OR_OPERATOR = (byte) '|';
 
   private ByteUtils() {
     // private constructor to prevent instantiation
   }
 
-  public static boolean isQuoteSymbol(byte b) {
+  static boolean isQuoteSymbol(byte b) {
     return b == QUOTE;
   }
 
-  public static boolean isBackslashSymbol(byte b) {
+  static boolean isBackslashSymbol(byte b) {
     return b == BACKSLASH;
   }
 
-  public static boolean isQuoteOrSlash(byte b) {
+  static boolean isQuoteOrSlash(byte b) {
     return isQuoteSymbol(b) || isBackslashSymbol(b);
   }
 
-  public static boolean isAndOperator(byte b) {
+  static boolean isAndOperator(byte b) {
     return b == AND_OPERATOR;
   }
 
-  public static boolean isOrOperator(byte b) {
+  static boolean isOrOperator(byte b) {
     return b == OR_OPERATOR;
   }
 
-  public static boolean isAndOrOperator(byte b) {
+  static boolean isAndOrOperator(byte b) {
     return isAndOperator(b) || isOrOperator(b);
   }
 }
