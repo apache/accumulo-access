@@ -57,7 +57,6 @@ public class AccessExpressionBenchmark {
 
   public static class EvaluatorTests {
     AccessEvaluator evaluator;
-    List<AccessExpression> parsedExpressions;
 
     List<byte[]> expressions;
   }
@@ -82,7 +81,6 @@ public class AccessExpressionBenchmark {
 
       for (var testDataSet : testData) {
         EvaluatorTests et = new EvaluatorTests();
-        et.parsedExpressions = new ArrayList<>();
         et.expressions = new ArrayList<>();
 
         if (testDataSet.auths.length == 1) {
@@ -100,7 +98,6 @@ public class AccessExpressionBenchmark {
               byte[] byteExp = exp.getBytes(UTF_8);
               allTestExpressions.add(byteExp);
               et.expressions.add(byteExp);
-              et.parsedExpressions.add(AccessExpression.of(exp));
             }
           }
         }
@@ -126,32 +123,20 @@ public class AccessExpressionBenchmark {
   /**
    * Measures the time it takes to parse an expression stored in byte[] and produce a parse tree.
    */
-  // @Benchmark
-  public void measureBytesParsing(BenchmarkState state, Blackhole blackhole) {
+  @Benchmark
+  public void measureBytesValidation(BenchmarkState state, Blackhole blackhole) {
     for (byte[] accessExpression : state.getBytesExpressions()) {
-      blackhole.consume(AccessExpression.of(accessExpression));
+      AccessExpression.validate(accessExpression);
     }
   }
 
   /**
    * Measures the time it takes to parse an expression stored in a String and produce a parse tree.
    */
-  // @Benchmark
-  public void measureStringParsing(BenchmarkState state, Blackhole blackhole) {
+  @Benchmark
+  public void measureStringValidation(BenchmarkState state, Blackhole blackhole) {
     for (String accessExpression : state.getStringExpressions()) {
-      blackhole.consume(AccessExpression.of(accessExpression));
-    }
-  }
-
-  /**
-   * Measures the time it takes to evaluate a previously parsed expression.
-   */
-  // @Benchmark
-  public void measureEvaluation(BenchmarkState state, Blackhole blackhole) {
-    for (EvaluatorTests evaluatorTests : state.getEvaluatorTests()) {
-      for (AccessExpression expression : evaluatorTests.parsedExpressions) {
-        blackhole.consume(evaluatorTests.evaluator.canAccess(expression));
-      }
+      AccessExpression.validate(accessExpression);
     }
   }
 
@@ -160,7 +145,7 @@ public class AccessExpressionBenchmark {
    * tree an operate on it.
    */
   @Benchmark
-  public void measureEvaluationAndParsing(BenchmarkState state, Blackhole blackhole) {
+  public void measureEvaluation(BenchmarkState state, Blackhole blackhole) {
     for (EvaluatorTests evaluatorTests : state.getEvaluatorTests()) {
       for (byte[] expression : evaluatorTests.expressions) {
         blackhole.consume(evaluatorTests.evaluator.canAccess(expression));
@@ -181,7 +166,6 @@ public class AccessExpressionBenchmark {
         .mode(Mode.Throughput).operationsPerInvocation(numExpressions)
         .timeUnit(TimeUnit.MICROSECONDS).warmupTime(TimeValue.seconds(5)).warmupIterations(3)
         .measurementIterations(4).forks(3).build();
-
     new Runner(opt).run();
   }
 }

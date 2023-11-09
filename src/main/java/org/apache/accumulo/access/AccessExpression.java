@@ -18,12 +18,8 @@
  */
 package org.apache.accumulo.access;
 
-import java.util.Arrays;
-
 /**
- * An opaque type that contains a parsed access expression. When this type is constructed with
- * {@link #of(String)} and then used with {@link AccessEvaluator#canAccess(AccessExpression)} it can
- * be more efficient and avoid re-parsing the expression.
+ * A set of utility methods for operating on Access Expressions.
  *
  * Below is an example of using this API.
  *
@@ -34,9 +30,8 @@ import java.util.Arrays;
  * var auth3 = AccessExpression.quote("🦖");
  * var visExp = AccessExpression
  *     .of("(" + auth1 + "&" + auth3 + ")|(" + auth1 + "&" + auth2 + "&" + auth1 + ")");
- * System.out.println(visExp.getExpression());
- * System.out.println(visExp.normalize());
- * System.out.println(visExp.getAuthorizations());
+ * System.out.println(visExp);
+ * System.out.println(AccessExpression.getAuthorizations(visExp));
  * }
  * </pre>
  *
@@ -44,60 +39,52 @@ import java.util.Arrays;
  *
  * <pre>
  * (CAT&amp;"🦖")|(CAT&amp;"🦕"&amp;CAT)
- * ("🦕"&amp;CAT)|("🦖"&amp;CAT)
  * [🦖, CAT, 🦕]
  * </pre>
  *
+ * The following code will throw an {@link IllegalAccessExpressionException} because the expression is not valid.
+ *
+ * <pre>
+ *     {@code
+ * AccessExpression.validate("A&B|C");
+ * }
+ * </pre>
+
+
  * @see <a href="https://github.com/apache/accumulo-access">Accumulo Access Documentation</a>
  * @since 1.0.0
  */
 public interface AccessExpression {
 
   /**
-   * @return the expression that was used to create this object.
-   */
-  String getExpression();
-
-  /**
-   * Deduplicate, sort, and flatten expressions.
-   *
-   * <p>
-   * As an example of flattening, the expression {@code A&(B&C)} can be flattened to {@code A&B&C}.
-   *
-   * <p>
-   * As an example of sorting, the expression {@code (Z&Y)|(C&B)} can be sorted to
-   * {@code (B&C)|(Y&Z)}
-   *
-   * <p>
-   * As an example of deduplication, the expression {@code X&Y&X} is equivalent to {@code X&Y}
-   *
-   * @return A normalized version of the access expression that removes duplicates and orders the
-   *         expression in a consistent way.
-   */
-  String normalize();
-
-  /**
    * @return the unique set of authorizations that occur in the expression. For example, for the
    *         expression {@code (A&B)|(A&C)|(A&D)}, this method would return {@code [A,B,C,D]}.
    */
-  Authorizations getAuthorizations();
-
-  static AccessExpression of(String expression) throws IllegalAccessExpressionException {
-    return new AccessExpressionImpl(expression);
+  static Authorizations getAuthorizations(byte[] expression) {
+    return AccessExpressionImpl.getAuthorizations(expression);
   }
 
   /**
-   * @param expression is expected to be encoded using UTF-8
+   * @see #getAuthorizations(byte[])
    */
-  static AccessExpression of(byte[] expression) throws IllegalAccessExpressionException {
-    return new AccessExpressionImpl(Arrays.copyOf(expression, expression.length));
+  static Authorizations getAuthorizations(String expression) {
+    return AccessExpressionImpl.getAuthorizations(expression);
   }
 
   /**
-   * @return an empty AccessExpression.
+   * Quickly validates that an access expression is properly formed.
+   *
+   * @throws IllegalAccessExpressionException if the given expression is not valid
    */
-  static AccessExpression of() {
-    return AccessExpressionImpl.EMPTY;
+  static void validate(byte[] expression) throws IllegalAccessExpressionException {
+    AccessExpressionImpl.validate(expression);
+  }
+
+  /**
+   * @see #validate(byte[])
+   */
+  static void validate(String expression) throws IllegalAccessExpressionException {
+    AccessExpressionImpl.validate(expression);
   }
 
   /**
@@ -121,5 +108,4 @@ public interface AccessExpression {
   static String quote(String authorization) {
     return AccessExpressionImpl.quote(authorization);
   }
-
 }

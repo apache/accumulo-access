@@ -37,6 +37,13 @@ import java.util.stream.Stream;
 class AccessEvaluatorImpl implements AccessEvaluator {
   private final Collection<Predicate<BytesWrapper>> authorizedPredicates;
 
+  private static final byte[] EMPTY = new byte[0];
+
+  private final ThreadLocal<BytesWrapper> lookupWrappers =
+      ThreadLocal.withInitial(() -> new BytesWrapper(EMPTY));
+  private final ThreadLocal<Tokenizer> tokenizers =
+      ThreadLocal.withInitial(() -> new Tokenizer(EMPTY));
+
   private AccessEvaluatorImpl(Authorizer authorizationChecker) {
     this.authorizedPredicates = List.of(auth -> authorizationChecker.isAuthorized(unescape(auth)));
   }
@@ -135,29 +142,20 @@ class AccessEvaluatorImpl implements AccessEvaluator {
     return evaluate(expression);
   }
 
-  @Override
-  public boolean canAccess(AccessExpression expression) throws IllegalAccessExpressionException {
-    if (expression instanceof AccessExpressionImpl) {
-      return evaluate((AccessExpressionImpl) expression);
-    } else {
-      return canAccess(expression.getExpression());
-    }
-  }
-
-  public boolean evaluate(byte[] accessExpression) throws IllegalAccessExpressionException {
+  boolean evaluate(byte[] accessExpression) throws IllegalAccessExpressionException {
+    var bytesWrapper = lookupWrappers.get();
+    ParserEvaluator.BytesWrapperFactory bwf = (bytes, offset, len) -> {
+      bytesWrapper.set(bytes, offset, len);
+      return bytesWrapper;
+    };
     for (var auths : authorizedPredicates) {
-      if (!ParserEvaluator.parseAccessExpression(accessExpression, auths)) {
+      var tokenizer = tokenizers.get();
+      tokenizer.reset(accessExpression);
+      if (!ParserEvaluator.parseAccessExpression(auths, tokenizer, bwf)) {
         return false;
       }
     }
     return true;
-  }
-
-  public boolean evaluate(AccessExpressionImpl accessExpression)
-      throws IllegalAccessExpressionException {
-    // The AccessEvaluator computes a trie from the given Authorizations, that AccessExpressions can
-    // be evaluated against.
-    return authorizedPredicates.stream().allMatch(accessExpression.aeNode::canAccess);
   }
 
   private static class BuilderImpl implements AuthorizationsBuilder, EvaluatorBuilder {

@@ -32,11 +32,6 @@ import org.junit.jupiter.api.Test;
 public class AccessExpressionTest {
 
   @Test
-  public void testEmptyExpression() {
-    assertEquals("", AccessExpression.of().getExpression());
-  }
-
-  @Test
   public void testGetAuthorizations() {
     // Test data pairs where the first entry of each pair is an expression to normalize and second
     // is the expected authorization in the expression
@@ -55,69 +50,33 @@ public class AccessExpressionTest {
       assertEquals(2, testCase.size());
       var expression = testCase.get(0);
       var expected = testCase.get(1);
-      var actual = AccessExpression.of(expression).getAuthorizations().asSet().stream().sorted()
+      var actual = AccessExpression.getAuthorizations(expression).asSet().stream().sorted()
           .collect(Collectors.joining(","));
       assertEquals(expected, actual);
-      actual = AccessExpression.of(expression.getBytes(UTF_8)).getAuthorizations().asSet().stream()
+      actual = AccessExpression.getAuthorizations(expression.getBytes(UTF_8)).asSet().stream()
           .sorted().collect(Collectors.joining(","));
       assertEquals(expected, actual);
-    }
-
-  }
-
-  @Test
-  public void testNormalize() {
-    // Test data pairs where the first entry of each pair is an expression to normalize and second
-    // is the expected normalized value.
-    var testData = new ArrayList<List<String>>();
-
-    testData.add(List.of("", ""));
-    testData.add(List.of("a", "a"));
-    testData.add(List.of("(a)", "a"));
-    testData.add(List.of("b|a", "a|b"));
-    testData.add(List.of("(b)|a", "a|b"));
-    testData.add(List.of("(b)|((a))", "a|b"));
-    testData.add(List.of("(b|(a|c))&x", "x&(a|b|c)"));
-    testData.add(List.of("(((a)))", "a"));
-    testData.add(List.of("Z|M|A", "A|M|Z"));
-    testData.add(List.of("Z&M&A", "A&M&Z"));
-    testData.add(List.of("(Y&B)|(Z&A)", "(A&Z)|(B&Y)"));
-    testData.add(List.of("(Y&B&Y)|(Z&A&Z)", "(A&Z)|(B&Y)"));
-    testData.add(List.of("(Y|B)&(Z|A)", "(A|Z)&(B|Y)"));
-    testData.add(List.of("(Y|B|Y)&(Z|A|Z)", "(A|Z)&(B|Y)"));
-    testData.add(List.of("((Z&B)|(Y&C))&((V&D)|(X&A))", "((A&X)|(D&V))&((B&Z)|(C&Y))"));
-    testData.add(List.of("((Z&B&B)|(Y&C&Y))&((V&D)|(X&A))", "((A&X)|(D&V))&((B&Z)|(C&Y))"));
-    testData.add(List.of("((Z&B)|(Y&C))&((V&D&D)|(X&A))", "((A&X)|(D&V))&((B&Z)|(C&Y))"));
-    testData.add(List.of("((Z|B)&(Y|C))|((V|D)&(X|A))", "((A|X)&(D|V))|((B|Z)&(C|Y))"));
-    testData.add(List.of("bz1|bm3|c9|ba4|am", "am|ba4|bm3|bz1|c9"));
-    testData.add(List.of("bz1&bm3&c9&ba4&am", "am&ba4&bm3&bz1&c9"));
-    testData.add(List.of("((V&D)|(X&A))&A", "A&((A&X)|(D&V))"));
-    testData.add(List.of("((V|D)&(X|A))|A", "A|((A|X)&(D|V))"));
-    testData.add(List.of("(Z|(X|M))|C|(A|B)", "A|B|C|M|X|Z"));
-    testData.add(List.of("(Z&(X&M))&C&(A&B)", "A&B&C&M&X&Z"));
-    testData.add(List.of("(Z&(X&(M|L)))&C&(A&B)", "A&B&C&X&Z&(L|M)"));
-    testData.add(List.of("(Z|(X|(M&L)))|C|(A|B)", "A|B|C|X|Z|(L&M)"));
-    testData.add(List.of("(A&(C&B)&C)|((A&C)&(B&C))", "A&B&C"));
-    testData.add(List.of("(A|(C|B)|C)&((A|C)|(B|C))", "A|B|C"));
-    testData.add(List.of("a|a|a|a", "a"));
-    testData.add(List.of("a&a&a&a", "a"));
-    testData.add(List.of("(a|a)|(a|a)", "a"));
-    testData.add(List.of("(a&a)&(a&a)", "a"));
-
-    for (var testCase : testData) {
-      assertEquals(2, testCase.size());
-      var expression = testCase.get(0);
-      var expected = testCase.get(1);
-      var normalized = AccessExpression.of(expression).normalize();
-      assertEquals(expected, normalized);
-      assertEquals(expected, AccessExpression.of(expression.getBytes(UTF_8)).normalize());
-      assertEquals(expected, AccessExpression.of(normalized).normalize());
     }
   }
 
   void checkError(String expression, String expected, int index) {
-    var exception =
-        assertThrows(IllegalAccessExpressionException.class, () -> AccessExpression.of(expression));
+    var exception = assertThrows(IllegalAccessExpressionException.class,
+        () -> AccessExpression.validate(expression));
+    assertTrue(exception.getMessage().contains(expected));
+    assertEquals(index, exception.getIndex());
+
+    exception = assertThrows(IllegalAccessExpressionException.class,
+        () -> AccessExpression.validate(expression.getBytes(UTF_8)));
+    assertTrue(exception.getMessage().contains(expected));
+    assertEquals(index, exception.getIndex());
+
+    exception = assertThrows(IllegalAccessExpressionException.class,
+        () -> AccessExpression.getAuthorizations(expression));
+    assertTrue(exception.getMessage().contains(expected));
+    assertEquals(index, exception.getIndex());
+
+    exception = assertThrows(IllegalAccessExpressionException.class,
+        () -> AccessExpression.getAuthorizations(expression.getBytes(UTF_8)));
     assertTrue(exception.getMessage().contains(expected));
     assertEquals(index, exception.getIndex());
   }

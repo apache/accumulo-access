@@ -29,27 +29,22 @@ final class ParserEvaluator {
 
   public static final byte OPEN_PAREN = (byte) '(';
   public static final byte CLOSE_PAREN = (byte) ')';
-  private static final byte[] EMPTY = new byte[0];
-  private static final ThreadLocal<BytesWrapper> lookupWrappers =
-      ThreadLocal.withInitial(() -> new BytesWrapper(EMPTY));
-  private static final ThreadLocal<Tokenizer> tokenizers =
-      ThreadLocal.withInitial(() -> new Tokenizer(EMPTY));
 
   // TODO would be cleaner to have AccessEvaluatorImpl pass these in rather than use thread locals.
   private static final Predicate<BytesWrapper> TRUE_AUTH_PREDICATE = bw -> true;
   private static final Predicate<BytesWrapper> FALSE_AUTH_PREDICATE = bw -> false;
 
-  public static boolean parseAccessExpression(byte[] expression,
-      Predicate<BytesWrapper> authorizedPredicate) {
+  interface BytesWrapperFactory {
+    BytesWrapper wrap(byte[] data, int offset, int length);
+  }
 
-    Tokenizer tokenizer = tokenizers.get();
-    tokenizer.reset(expression);
+  public static boolean parseAccessExpression(Predicate<BytesWrapper> authorizedPredicate,
+      Tokenizer tokenizer, BytesWrapperFactory lookupWrapper) {
 
     if (!tokenizer.hasNext()) {
       return true;
     }
 
-    BytesWrapper lookupWrapper = lookupWrappers.get();
     var node = parseExpression(tokenizer, authorizedPredicate, lookupWrapper);
 
     if (tokenizer.hasNext()) {
@@ -61,7 +56,7 @@ final class ParserEvaluator {
   }
 
   private static boolean parseExpression(Tokenizer tokenizer,
-      Predicate<BytesWrapper> authorizedPredicate, BytesWrapper lookupWrapper) {
+      Predicate<BytesWrapper> authorizedPredicate, BytesWrapperFactory lookupWrapper) {
 
     boolean result =
         parseParenExpressionOrAuthorization(tokenizer, authorizedPredicate, lookupWrapper);
@@ -87,7 +82,7 @@ final class ParserEvaluator {
   }
 
   private static boolean parseAndExpression(boolean result, Tokenizer tokenizer,
-      Predicate<BytesWrapper> authorizedPredicate, BytesWrapper lookupWrapper) {
+      Predicate<BytesWrapper> authorizedPredicate, BytesWrapperFactory lookupWrapper) {
     do {
       if (!result) {
         // Once the "and" expression is false, can avoid doing set lookups and only validate the
@@ -103,7 +98,7 @@ final class ParserEvaluator {
   }
 
   private static boolean parseOrExpression(boolean result, Tokenizer tokenizer,
-      Predicate<BytesWrapper> authorizedPredicate, BytesWrapper lookupWrapper) {
+      Predicate<BytesWrapper> authorizedPredicate, BytesWrapperFactory lookupWrapper) {
     do {
       if (result) {
         // Once the "or" expression is true, can avoid doing set lookups and only validate the rest
@@ -119,7 +114,7 @@ final class ParserEvaluator {
   }
 
   private static boolean parseParenExpressionOrAuthorization(Tokenizer tokenizer,
-      Predicate<BytesWrapper> authorizedPredicate, BytesWrapper lookupWrapper) {
+      Predicate<BytesWrapper> authorizedPredicate, BytesWrapperFactory lookupWrapper) {
     if (!tokenizer.hasNext()) {
       tokenizer
           .error("Expected a '(' character or an authorization token instead saw end of input");
@@ -132,9 +127,7 @@ final class ParserEvaluator {
       return node;
     } else {
       var auth = tokenizer.nextAuthorization();
-      // TODO could avoid this set when in validation only mode
-      lookupWrapper.set(auth.data, auth.start, auth.len);
-      return authorizedPredicate.test(lookupWrapper);
+      return authorizedPredicate.test(lookupWrapper.wrap(auth.data, auth.start, auth.len));
     }
   }
 }
