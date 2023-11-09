@@ -42,15 +42,16 @@ package org.apache.accumulo.access;
  * [🦖, CAT, 🦕]
  * </pre>
  *
- * The following code will throw an {@link IllegalAccessExpressionException} because the expression is not valid.
+ * The following code will throw an {@link IllegalAccessExpressionException} because the expression
+ * is not valid.
  *
  * <pre>
  *     {@code
  * AccessExpression.validate("A&B|C");
  * }
  * </pre>
-
-
+ *
+ *
  * @see <a href="https://github.com/apache/accumulo-access">Accumulo Access Documentation</a>
  * @since 1.0.0
  */
