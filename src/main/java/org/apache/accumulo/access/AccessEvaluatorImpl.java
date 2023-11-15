@@ -144,14 +144,15 @@ class AccessEvaluatorImpl implements AccessEvaluator {
 
   boolean evaluate(byte[] accessExpression) throws IllegalAccessExpressionException {
     var bytesWrapper = lookupWrappers.get();
-    ParserEvaluator.BytesWrapperFactory bwf = (bytes, offset, len) -> {
-      bytesWrapper.set(bytes, offset, len);
-      return bytesWrapper;
-    };
+
     for (var auths : authorizedPredicates) {
       var tokenizer = tokenizers.get();
       tokenizer.reset(accessExpression);
-      if (!ParserEvaluator.parseAccessExpression(auths, tokenizer, bwf)) {
+      Predicate<Tokenizer.AuthorizationToken> atp = authToken -> {
+        bytesWrapper.set(authToken.data, authToken.start, authToken.len);
+        return auths.test(bytesWrapper);
+      };
+      if (!ParserEvaluator.parseAccessExpression(tokenizer, atp, authToken -> true)) {
         return false;
       }
     }

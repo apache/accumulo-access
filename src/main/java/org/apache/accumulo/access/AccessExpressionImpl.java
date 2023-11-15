@@ -28,12 +28,11 @@ class AccessExpressionImpl implements AccessExpression {
   static Authorizations getAuthorizations(byte[] expression) {
     HashSet<String> auths = new HashSet<>();
     Tokenizer tokenizer = new Tokenizer(expression);
-    Predicate<BytesWrapper> predicate = bw -> true;
-    ParserEvaluator.BytesWrapperFactory lookupWrapper = (bytes, offset, len) -> {
-      auths.add(new String(bytes, offset, len, UTF_8));
-      return null;
+    Predicate<Tokenizer.AuthorizationToken> atp = authToken -> {
+      auths.add(new String(authToken.data, authToken.start, authToken.len, UTF_8));
+      return true;
     };
-    ParserEvaluator.parseAccessExpression(predicate, tokenizer, lookupWrapper);
+    ParserEvaluator.parseAccessExpression(tokenizer, atp, atp);
     return Authorizations.of(auths);
   }
 
@@ -71,9 +70,8 @@ class AccessExpressionImpl implements AccessExpression {
 
   static void validate(byte[] expression) throws IllegalAccessExpressionException {
     Tokenizer tokenizer = new Tokenizer(expression);
-    Predicate<BytesWrapper> predicate = bw -> true;
-    ParserEvaluator.BytesWrapperFactory lookupWrapper = (bytes, offset, len) -> null;
-    ParserEvaluator.parseAccessExpression(predicate, tokenizer, lookupWrapper);
+    Predicate<Tokenizer.AuthorizationToken> atp = authToken -> true;
+    ParserEvaluator.parseAccessExpression(tokenizer, atp, atp);
   }
 
   static void validate(String expression) throws IllegalAccessExpressionException {

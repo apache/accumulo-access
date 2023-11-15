@@ -30,22 +30,15 @@ final class ParserEvaluator {
   public static final byte OPEN_PAREN = (byte) '(';
   public static final byte CLOSE_PAREN = (byte) ')';
 
-  // TODO would be cleaner to have AccessEvaluatorImpl pass these in rather than use thread locals.
-  private static final Predicate<BytesWrapper> TRUE_AUTH_PREDICATE = bw -> true;
-  private static final Predicate<BytesWrapper> FALSE_AUTH_PREDICATE = bw -> false;
-
-  interface BytesWrapperFactory {
-    BytesWrapper wrap(byte[] data, int offset, int length);
-  }
-
-  public static boolean parseAccessExpression(Predicate<BytesWrapper> authorizedPredicate,
-      Tokenizer tokenizer, BytesWrapperFactory lookupWrapper) {
+  public static boolean parseAccessExpression(Tokenizer tokenizer,
+      Predicate<Tokenizer.AuthorizationToken> authorizedPredicate,
+      Predicate<Tokenizer.AuthorizationToken> shortCircuitPredicate) {
 
     if (!tokenizer.hasNext()) {
       return true;
     }
 
-    var node = parseExpression(tokenizer, authorizedPredicate, lookupWrapper);
+    var node = parseExpression(tokenizer, authorizedPredicate, shortCircuitPredicate);
 
     if (tokenizer.hasNext()) {
       // not all input was read, so not a valid expression
@@ -56,21 +49,22 @@ final class ParserEvaluator {
   }
 
   private static boolean parseExpression(Tokenizer tokenizer,
-      Predicate<BytesWrapper> authorizedPredicate, BytesWrapperFactory lookupWrapper) {
+      Predicate<Tokenizer.AuthorizationToken> authorizedPredicate,
+      Predicate<Tokenizer.AuthorizationToken> shortCircuitPredicate) {
 
     boolean result =
-        parseParenExpressionOrAuthorization(tokenizer, authorizedPredicate, lookupWrapper);
+        parseParenExpressionOrAuthorization(tokenizer, authorizedPredicate, shortCircuitPredicate);
 
     if (tokenizer.hasNext()) {
       var operator = tokenizer.peek();
       if (operator == ByteUtils.AND_OPERATOR) {
-        result = parseAndExpression(result, tokenizer, authorizedPredicate, lookupWrapper);
+        result = parseAndExpression(result, tokenizer, authorizedPredicate, shortCircuitPredicate);
         if (tokenizer.hasNext() && isAndOrOperator(tokenizer.peek())) {
           // A case of mixed operators, lets give a clear error message
           tokenizer.error("Cannot mix '|' and '&'");
         }
       } else if (operator == ByteUtils.OR_OPERATOR) {
-        result = parseOrExpression(result, tokenizer, authorizedPredicate, lookupWrapper);
+        result = parseOrExpression(result, tokenizer, authorizedPredicate, shortCircuitPredicate);
         if (tokenizer.hasNext() && isAndOrOperator(tokenizer.peek())) {
           // A case of mixed operators, lets give a clear error message
           tokenizer.error("Cannot mix '|' and '&'");
@@ -82,39 +76,42 @@ final class ParserEvaluator {
   }
 
   private static boolean parseAndExpression(boolean result, Tokenizer tokenizer,
-      Predicate<BytesWrapper> authorizedPredicate, BytesWrapperFactory lookupWrapper) {
+      Predicate<Tokenizer.AuthorizationToken> authorizedPredicate,
+      Predicate<Tokenizer.AuthorizationToken> shortCircuitPredicate) {
     do {
       if (!result) {
         // Once the "and" expression is false, can avoid doing set lookups and only validate the
         // rest of the expression.
-        authorizedPredicate = FALSE_AUTH_PREDICATE;
+        authorizedPredicate = shortCircuitPredicate;
       }
       tokenizer.advance();
-      var nextResult =
-          parseParenExpressionOrAuthorization(tokenizer, authorizedPredicate, lookupWrapper);
+      var nextResult = parseParenExpressionOrAuthorization(tokenizer, authorizedPredicate,
+          shortCircuitPredicate);
       result &= nextResult;
     } while (tokenizer.hasNext() && tokenizer.peek() == ByteUtils.AND_OPERATOR);
     return result;
   }
 
   private static boolean parseOrExpression(boolean result, Tokenizer tokenizer,
-      Predicate<BytesWrapper> authorizedPredicate, BytesWrapperFactory lookupWrapper) {
+      Predicate<Tokenizer.AuthorizationToken> authorizedPredicate,
+      Predicate<Tokenizer.AuthorizationToken> shortCircuitPredicate) {
     do {
       if (result) {
         // Once the "or" expression is true, can avoid doing set lookups and only validate the rest
         // of the expression.
-        authorizedPredicate = TRUE_AUTH_PREDICATE;
+        authorizedPredicate = shortCircuitPredicate;
       }
       tokenizer.advance();
-      var nextResult =
-          parseParenExpressionOrAuthorization(tokenizer, authorizedPredicate, lookupWrapper);
+      var nextResult = parseParenExpressionOrAuthorization(tokenizer, authorizedPredicate,
+          shortCircuitPredicate);
       result |= nextResult;
     } while (tokenizer.hasNext() && tokenizer.peek() == ByteUtils.OR_OPERATOR);
     return result;
   }
 
   private static boolean parseParenExpressionOrAuthorization(Tokenizer tokenizer,
-      Predicate<BytesWrapper> authorizedPredicate, BytesWrapperFactory lookupWrapper) {
+      Predicate<Tokenizer.AuthorizationToken> authorizedPredicate,
+      Predicate<Tokenizer.AuthorizationToken> shortCircuitPredicate) {
     if (!tokenizer.hasNext()) {
       tokenizer
           .error("Expected a '(' character or an authorization token instead saw end of input");
@@ -122,12 +119,12 @@ final class ParserEvaluator {
 
     if (tokenizer.peek() == OPEN_PAREN) {
       tokenizer.advance();
-      var node = parseExpression(tokenizer, authorizedPredicate, lookupWrapper);
+      var node = parseExpression(tokenizer, authorizedPredicate, shortCircuitPredicate);
       tokenizer.next(CLOSE_PAREN);
       return node;
     } else {
       var auth = tokenizer.nextAuthorization();
-      return authorizedPredicate.test(lookupWrapper.wrap(auth.data, auth.start, auth.len));
+      return authorizedPredicate.test(auth);
     }
   }
 }
