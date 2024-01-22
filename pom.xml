@@ -24,17 +24,72 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>30</version>
+    <version>31</version>
   </parent>
   <groupId>org.apache.accumulo</groupId>
   <artifactId>accumulo-access</artifactId>
   <version>1.0.0-SNAPSHOT</version>
-  <name>Apache Accumulo Access</name>
+  <name>Apache Accumulo Access Project</name>
+  <url>https://accumulo.apache.org</url>
+  <organization>
+    <name>The Apache Software Foundation</name>
+    <url>https://www.apache.org</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>Apache-2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+    </license>
+  </licenses>
+  <mailingLists>
+    <mailingList>
+      <name>User</name>
+      <subscribe>user-subscribe@accumulo.apache.org</subscribe>
+      <unsubscribe>user-unsubscribe@accumulo.apache.org</unsubscribe>
+      <post>user@accumulo.apache.org</post>
+      <archive>https://lists.apache.org/list.html?user@accumulo.apache.org</archive>
+    </mailingList>
+    <mailingList>
+      <name>Dev</name>
+      <subscribe>dev-subscribe@accumulo.apache.org</subscribe>
+      <unsubscribe>dev-unsubscribe@accumulo.apache.org</unsubscribe>
+      <post>dev@accumulo.apache.org</post>
+      <archive>https://lists.apache.org/list.html?dev@accumulo.apache.org</archive>
+    </mailingList>
+    <mailingList>
+      <name>Commits</name>
+      <subscribe>commits-subscribe@accumulo.apache.org</subscribe>
+      <unsubscribe>commits-unsubscribe@accumulo.apache.org</unsubscribe>
+      <archive>https://lists.apache.org/list.html?commits@accumulo.apache.org</archive>
+    </mailingList>
+    <mailingList>
+      <name>Notifications</name>
+      <subscribe>notifications-subscribe@accumulo.apache.org</subscribe>
+      <unsubscribe>notifications-unsubscribe@accumulo.apache.org</unsubscribe>
+      <archive>https://lists.apache.org/list.html?notifications@accumulo.apache.org</archive>
+    </mailingList>
+  </mailingLists>
+  <scm>
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/accumulo-access.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/accumulo-access.git</developerConnection>
+    <tag>HEAD</tag>
+    <url>https://gitbox.apache.org/repos/asf?p=accumulo-access.git</url>
+  </scm>
+  <issueManagement>
+    <system>GitHub Issues</system>
+    <url>https://github.com/apache/accumulo-access/issues</url>
+  </issueManagement>
+  <ciManagement>
+    <system>GitHub Actions</system>
+    <url>https://github.com/apache/accumulo-access/actions</url>
+  </ciManagement>
   <properties>
     <maven.compiler.release>11</maven.compiler.release>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
+    <maven.javadoc.failOnWarnings>true</maven.javadoc.failOnWarnings>
     <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
+    <minimalJavaBuildVersion>17</minimalJavaBuildVersion>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <version.errorprone>2.20.0</version.errorprone>
     <version.jmh>1.36</version.jmh>
@@ -82,7 +137,6 @@
             <licenseSet>
               <header>src/build/license-header.txt</header>
               <excludes combine.children="append">
-                <exclude>contrib/antlr4/src/test/resources/specification.abnf</exclude>
                 <exclude>contrib/antlr4/src/main/antlr4/Abnf.g4</exclude>
                 <exclude>**/DEPENDENCIES</exclude>
                 <exclude>**/LICENSE</exclude>
@@ -93,14 +147,9 @@
           </licenseSets>
           <mapping combine.children="append">
             <!-- general mappings; module-specific mappings appear in their respective pom -->
-            <Makefile>SCRIPT_STYLE</Makefile>
-            <c>SLASHSTAR_STYLE</c>
-            <cc>SLASHSTAR_STYLE</cc>
-            <css>SLASHSTAR_STYLE</css>
+            <abnf>SEMICOLON_STYLE</abnf>
             <g4>SLASHSTAR_STYLE</g4>
-            <h>SLASHSTAR_STYLE</h>
             <java>SLASHSTAR_STYLE</java>
-            <thrift>SLASHSTAR_STYLE</thrift>
           </mapping>
         </configuration>
       </plugin>
@@ -191,6 +240,14 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.gaul</groupId>
+        <artifactId>modernizer-maven-plugin</artifactId>
+        <version>2.7.0</version>
+        <configuration>
+          <javaVersion>${maven.compiler.target}</javaVersion>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-maven-plugin</artifactId>
         <version>4.7.3.6</version>
@@ -216,6 +273,216 @@
             <goals>
               <goal>check</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <checkstyleRules>
+            <module name="Checker">
+              <property name="charset" value="UTF-8" />
+              <property name="severity" value="warning" />
+              <!-- Checks for whitespace                               -->
+              <!-- See https://checkstyle.sourceforge.io/config_whitespace.html -->
+              <module name="FileTabCharacter" />
+              <module name="TreeWalker">
+                <module name="OneTopLevelClass" />
+                <module name="RegexpSinglelineJava">
+                  <property name="format" value="\s+$" />
+                  <property name="message" value="Line has trailing whitespace." />
+                </module>
+                <module name="RegexpSinglelineJava">
+                  <property name="format" value="[@]Deprecated([^)]*forRemoval[^)]*)" />
+                  <property name="message" value="forRemoval should not be used." />
+                </module>
+                <module name="RegexpSinglelineJava">
+                  <property name="format" value="[@]see\s+[{][@]link" />
+                  <property name="message" value="Javadoc @see does not need @link: pick one or the other." />
+                </module>
+                <module name="RegexpSinglelineJava">
+                  <property name="format" value="jline[.]internal[.]Preconditions" />
+                  <property name="message" value="Please use Guava Preconditions not JLine" />
+                </module>
+                <module name="RegexpSinglelineJava">
+                  <property name="format" value="org[.]apache[.]commons[.]math[.]" />
+                  <property name="message" value="Use commons-math3 (org.apache.commons.math3.*)" />
+                </module>
+                <module name="RegexpSinglelineJava">
+                  <property name="format" value="import org[.]apache[.]accumulo[.]core[.]util[.]LazySingletons;" />
+                  <property name="message" value="Use static imports for LazySingletons for consistency" />
+                </module>
+                <module name="RegexpSinglelineJava">
+                  <property name="format" value="org[.]junit[.]jupiter[.]api[.]Assertions;" />
+                  <property name="message" value="Use static imports for Assertions.* methods for consistency" />
+                </module>
+                <module name="RegexpSinglelineJava">
+                  <property name="format" value="org[.]junit[.]jupiter[.]api[.]Assumptions;" />
+                  <property name="message" value="Use static imports for Assumptions.* methods for consistency" />
+                </module>
+                <module name="RegexpSinglelineJava">
+                  <property name="format" value="import java[.]nio[.]charset[.]StandardCharsets;" />
+                  <property name="message" value="Use static imports for StandardCharsets.* constants for consistency" />
+                </module>
+                <module name="RegexpSinglelineJava">
+                  <!-- double escape quotes because checkstyle passes these through another xml parser -->
+                  <property name="format" value="&amp;quot; [+] &amp;quot;" />
+                  <property name="message" value="Unnecessary concatenation of string literals" />
+                </module>
+                <module name="RegexpSinglelineJava">
+                  <property name="format" value="com[.]google[.]common[.]cache[.]" />
+                  <property name="message" value="Please use Caffeine Cache, not Guava" />
+                </module>
+                <module name="OuterTypeFilename" />
+                <module name="AvoidStarImport" />
+                <module name="NoLineWrap" />
+                <module name="LeftCurly" />
+                <module name="RightCurly">
+                  <property name="tokens" value="LITERAL_TRY, LITERAL_CATCH, LITERAL_FINALLY, LITERAL_IF, LITERAL_ELSE, CLASS_DEF, METHOD_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, LITERAL_DO, STATIC_INIT, INSTANCE_INIT" />
+                </module>
+                <module name="SeparatorWrap">
+                  <property name="tokens" value="DOT" />
+                  <property name="option" value="nl" />
+                </module>
+                <module name="SeparatorWrap">
+                  <property name="tokens" value="COMMA" />
+                  <property name="option" value="EOL" />
+                </module>
+                <module name="PackageName">
+                  <property name="format" value="^[a-z]+(\.[a-z][a-zA-Z0-9]*)*$" />
+                </module>
+                <module name="MethodTypeParameterName">
+                  <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)" />
+                </module>
+                <module name="NonEmptyAtclauseDescription" />
+                <module name="JavadocMethod">
+                  <property name="allowMissingParamTags" value="true" />
+                  <property name="allowMissingReturnTag" value="true" />
+                  <property name="allowedAnnotations" value="Override,Test,BeforeClass,AfterClass,Before,After,BeforeAll,AfterAll,BeforeEach,AfterEach" />
+                </module>
+                <module name="MissingOverrideCheck" />
+                <!--Require braces for all control statements -->
+                <module name="NeedBraces" />
+              </module>
+            </module>
+          </checkstyleRules>
+          <violationSeverity>warning</violationSeverity>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+          <excludes>**/jmh_generated/</excludes>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>com.puppycrawl.tools</groupId>
+            <artifactId>checkstyle</artifactId>
+            <version>10.12.6</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>check-style</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <showDeprecation>true</showDeprecation>
+          <showWarnings>true</showWarnings>
+          <compilerArgs>
+            <arg>-Xlint:all</arg>
+            <arg>-Xlint:-processing</arg>
+            <!-- suppress try to ignore unused variable in try-with-resources -->
+            <arg>-Xlint:-try</arg>
+            <arg>-Xmaxwarns</arg>
+            <arg>5</arg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <Automatic-Module-Name>${accumulo.module.name}</Automatic-Module-Name>
+              <Implementation-Build>${mvngit.commit.id}</Implementation-Build>
+              <Sealed>true</Sealed>
+            </manifestEntries>
+          </archive>
+          <excludes>
+            <exclude>**/log4j2-test.properties</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <quiet>true</quiet>
+          <additionalJOption>-J-Xmx512m</additionalJOption>
+          <doclint>all,-missing</doclint>
+          <legacyMode>true</legacyMode>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <configuration>
+          <arguments>-P !autoformat,verifyformat -DskipTests</arguments>
+          <autoVersionSubmodules>true</autoVersionSubmodules>
+          <goals>clean deploy</goals>
+          <preparationGoals>clean package</preparationGoals>
+          <tagNameFormat>rel/@{project.version}</tagNameFormat>
+          <releaseProfiles>apache-release,accumulo-release</releaseProfiles>
+          <useReleaseProfile>false</useReleaseProfile>
+          <pushChanges>false</pushChanges>
+          <localCheckout>true</localCheckout>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <configuration>
+          <excludes combine.children="append">
+            <exclude>contrib/antlr4/src/main/antlr4/Abnf.g4</exclude>
+            <exclude>src/test/resources/testdata.json</exclude>
+            <exclude>**/target/</exclude>
+            <exclude>**/.project</exclude>
+            <exclude>**/.classpath</exclude>
+            <exclude>**/.settings/</exclude>
+          </excludes>
+        </configuration>
+        <executions>
+          <execution>
+            <id>check-licenses</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>prepare-package</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.5.0</version>
+        <executions>
+          <execution>
+            <id>create-automatic-module-name</id>
+            <goals>
+              <goal>regex-property</goal>
+            </goals>
+            <configuration>
+              <name>accumulo.module.name</name>
+              <regex>-</regex>
+              <replacement>.</replacement>
+              <value>org-apache-${project.artifactId}</value>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -398,6 +665,10 @@
       compile time. Auto-generated code is not checked.
       See: https://errorprone.info/bugpatterns for list of available bug patterns.-->
       <id>errorprone</id>
+      <properties>
+        <!-- forking is required for -J options to take effect -->
+        <maven.compiler.fork>true</maven.compiler.fork>
+      </properties>
       <build>
         <plugins>
           <plugin>

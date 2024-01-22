@@ -24,7 +24,7 @@ import java.util.Collection;
  * <p>
  * Used to decide if an entity with one more sets of authorizations can access zero or more access
  * expression.
- * <p>
+ * </p>
  * <p>
  * Note: For performance improvements, especially in cases where expressions are expected to repeat,
  * it's recommended to wrap this evaluator with an external caching mechanism, such as Guava's
