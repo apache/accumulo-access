@@ -19,7 +19,7 @@
 
 -->
 
-Apache Accumulo depends on artifacts which can be found in Maven Central.
+Apache Accumulo Access depends on artifacts which can be found in Maven Central.
 
 Each module has its own dependencies. Please refer to the individual
 modules' pom.xml files for a comprehensive listing.
