@@ -20,4 +20,12 @@ This contrib example contains an [ANTLRv4](https://www.antlr.org/) grammar file 
 
 An example [parser](src/test/java/org/apache/accumulo/access/grammar/antlr/AccessExpressionAntlrParser.java) and [evaluator](src/test/java/org/apache/accumulo/access/grammar/antlr/AccessExpressionAntlrEvaluator.java) are used when building this project to confirm that the parsing and evaluation are consistent with the reference Java implementation.
 
+## Running the Benchmark
+
 ANTLR was evaluated as a replacement for the existing custom Java parser, but it doesn't parse as fast as the custom implementation. You can view the performance differences by running the JMH benchmark in this contrib project and the one in the main project.
+
+To run the benchmark in this project:
+```
+mvn clean package
+mvn exec:exec -Dexec.executable="java" -Dexec.classpathScope=test -Dexec.args="-classpath %classpath org.apache.accumulo.access.grammar.antlr.AccessExpressionAntlrBenchmark"
+```

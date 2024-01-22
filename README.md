@@ -41,5 +41,13 @@ are package private and are not part of the public API.
   * [AccessExpression](src/main/java/org/apache/accumulo/access/AccessExpression.java).
   * [Authorizations](src/main/java/org/apache/accumulo/access/Authorizations.java).
 
+## Running the Benchmark
+
+This project includes a JMH Benchmark. To run it:
+```
+mvn clean package
+mvn exec:exec -Dexec.executable="java" -Dexec.classpathScope=test -Dexec.args="-classpath %classpath org.apache.accumulo.access.AccessExpressionBenchmark"
+```
+
 [1]:https://github.com/apache/accumulo/blob/rel/2.1.2/core/src/main/java/org/apache/accumulo/core/security/ColumnVisibility.java
 [2]:https://github.com/apache/accumulo/blob/rel/2.1.2/core/src/main/java/org/apache/accumulo/core/security/VisibilityEvaluator.java
