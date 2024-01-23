@@ -63,10 +63,6 @@ package org.apache.accumulo.access;
  * }
  * </pre>
  *
- * <p>
- *
- * </p>
- *
  * @see <a href="https://github.com/apache/accumulo-access">Accumulo Access Documentation</a>
  * @since 1.0.0
  */
