@@ -114,22 +114,43 @@ public class AccessEvaluatorTest {
       assertTrue(tests.expressions.length > 0);
 
       for (var expression : tests.expressions) {
+
+        // Call various APIs with well-formed access expressions to ensure they do not throw an
+        // exception
+        if (tests.expectedResult == ExpectedResult.ACCESSIBLE
+            || tests.expectedResult == ExpectedResult.INACCESSIBLE) {
+          AccessExpression.validate(expression);
+          AccessExpression.validate(expression.getBytes(UTF_8));
+          assertEquals(expression, AccessExpression.of(expression).getExpression());
+          assertEquals(expression, AccessExpression.of(expression, false).getExpression());
+          assertEquals(expression, AccessExpression.of(expression.getBytes(UTF_8)).getExpression());
+          assertEquals(expression,
+              AccessExpression.of(expression.getBytes(UTF_8), false).getExpression());
+          Objects.requireNonNull(AccessExpression.of(expression).getAuthorizations());
+          Objects
+              .requireNonNull(AccessExpression.of(expression.getBytes(UTF_8)).getAuthorizations());
+        }
+
         switch (tests.expectedResult) {
           case ACCESSIBLE:
             assertTrue(evaluator.canAccess(expression), expression);
             assertTrue(evaluator.canAccess(expression.getBytes(UTF_8)), expression);
-            AccessExpression.validate(expression);
-            AccessExpression.validate(expression.getBytes(UTF_8));
-            Objects.requireNonNull(AccessExpression.getAuthorizations(expression));
-            Objects.requireNonNull(AccessExpression.getAuthorizations(expression.getBytes(UTF_8)));
+            assertTrue(evaluator.canAccess(AccessExpression.of(expression, true).getExpression()),
+                expression);
+            assertTrue(
+                evaluator.canAccess(
+                    AccessExpression.of(expression.getBytes(UTF_8), true).getExpression()),
+                expression);
             break;
           case INACCESSIBLE:
             assertFalse(evaluator.canAccess(expression), expression);
             assertFalse(evaluator.canAccess(expression.getBytes(UTF_8)), expression);
-            AccessExpression.validate(expression);
-            AccessExpression.validate(expression.getBytes(UTF_8));
-            Objects.requireNonNull(AccessExpression.getAuthorizations(expression));
-            Objects.requireNonNull(AccessExpression.getAuthorizations(expression.getBytes(UTF_8)));
+            assertFalse(evaluator.canAccess(AccessExpression.of(expression, true).getExpression()),
+                expression);
+            assertFalse(
+                evaluator.canAccess(
+                    AccessExpression.of(expression.getBytes(UTF_8), true).getExpression()),
+                expression);
             break;
           case ERROR:
             assertThrows(IllegalAccessExpressionException.class,
@@ -141,9 +162,17 @@ public class AccessEvaluatorTest {
             assertThrows(IllegalAccessExpressionException.class,
                 () -> AccessExpression.validate(expression.getBytes(UTF_8)), expression);
             assertThrows(IllegalAccessExpressionException.class,
-                () -> AccessExpression.getAuthorizations(expression), expression);
+                () -> AccessExpression.of(expression), expression);
             assertThrows(IllegalAccessExpressionException.class,
-                () -> AccessExpression.getAuthorizations(expression.getBytes(UTF_8)), expression);
+                () -> AccessExpression.of(expression, false), expression);
+            assertThrows(IllegalAccessExpressionException.class,
+                () -> AccessExpression.of(expression, true), expression);
+            assertThrows(IllegalAccessExpressionException.class,
+                () -> AccessExpression.of(expression.getBytes(UTF_8)), expression);
+            assertThrows(IllegalAccessExpressionException.class,
+                () -> AccessExpression.of(expression.getBytes(UTF_8), false), expression);
+            assertThrows(IllegalAccessExpressionException.class,
+                () -> AccessExpression.of(expression.getBytes(UTF_8), true), expression);
             break;
           default:
             throw new IllegalArgumentException();

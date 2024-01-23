@@ -25,6 +25,59 @@ import java.util.function.Predicate;
 
 class AccessExpressionImpl implements AccessExpression {
 
+  public static final AccessExpression EMPTY = new AccessExpressionImpl("", false);
+
+  private final String expression;
+
+  AccessExpressionImpl(String expression, boolean normalize) {
+    if (normalize) {
+      // validate and normalize expression
+      this.expression = normalize(expression);
+    } else {
+      validate(expression);
+      this.expression = expression;
+    }
+  }
+
+  AccessExpressionImpl(byte[] expression, boolean normalize) {
+    if (normalize) {
+      // validate and normalize expression
+      this.expression = normalize(expression);
+    } else {
+      validate(expression);
+      this.expression = new String(expression, UTF_8);
+    }
+  }
+
+  @Override
+  public String getExpression() {
+    return expression;
+  }
+
+  @Override
+  public String toString() {
+    return expression;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o instanceof AccessExpressionImpl) {
+      return ((AccessExpressionImpl) o).expression.equals(expression);
+    }
+
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return expression.hashCode();
+  }
+
+  @Override
+  public Authorizations getAuthorizations() {
+    return AccessExpressionImpl.getAuthorizations(expression);
+  }
+
   static Authorizations getAuthorizations(byte[] expression) {
     HashSet<String> auths = new HashSet<>();
     Tokenizer tokenizer = new Tokenizer(expression);
@@ -76,5 +129,15 @@ class AccessExpressionImpl implements AccessExpression {
 
   static void validate(String expression) throws IllegalAccessExpressionException {
     validate(expression.getBytes(UTF_8));
+  }
+
+  static String normalize(String expression) throws IllegalAccessExpressionException {
+    Tokenizer tokenizer = new Tokenizer(expression.getBytes(UTF_8));
+    return Normalizer.normalize(tokenizer);
+  }
+
+  static String normalize(byte[] expression) throws IllegalAccessExpressionException {
+    Tokenizer tokenizer = new Tokenizer(expression);
+    return Normalizer.normalize(tokenizer);
   }
 }

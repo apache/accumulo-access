@@ -19,19 +19,30 @@
 package org.apache.accumulo.access;
 
 /**
- * A set of utility methods for operating on Access Expressions.
+ * This class offers the ability to validate, build, and normalize access expressions. An instance
+ * of this class should wrap an immutable, validated access expression. If passing access
+ * expressions as arguments in code, consider using this type instead of a String. The advantage of
+ * passing this type over a String is that its known to be a valid expression.
  *
- * Below is an example of using this API.
+ * <p>
+ * >Below is an example of using this API.
  *
  * <pre>
  *     {@code
+ * // The following authorization does not need quoting, so the return value is the same as the
+ * // input.
  * var auth1 = AccessExpression.quote("CAT");
+ * // The following two authorizations need quoting and the return values will be quoted.
  * var auth2 = AccessExpression.quote("🦕");
  * var auth3 = AccessExpression.quote("🦖");
- * var visExp = AccessExpression
- *     .of("(" + auth1 + "&" + auth3 + ")|(" + auth1 + "&" + auth2 + "&" + auth1 + ")");
- * System.out.println(visExp);
- * System.out.println(AccessExpression.getAuthorizations(visExp));
+ * var exp = "(" + auth1 + "&" + auth3 + ")|(" + auth1 + "&" + auth2 + "&" + auth1 + ")";
+ * // Validate the expression, but do not normalize it
+ * var visExp = AccessExpression.of(exp);
+ * System.out.println(visExp.getExpression());
+ * // Validate and normalize the expression.
+ * System.out.println(AccessExpression.of(exp, true).getExpression());
+ * // Print the unique authorization in the expression
+ * System.out.println(visExp.getAuthorizations());
  * }
  * </pre>
  *
@@ -39,6 +50,7 @@ package org.apache.accumulo.access;
  *
  * <pre>
  * (CAT&amp;"🦖")|(CAT&amp;"🦕"&amp;CAT)
+ * ("🦕"&amp;CAT)|("🦖"&amp;CAT)
  * [🦖, CAT, 🦕]
  * </pre>
  *
@@ -51,6 +63,9 @@ package org.apache.accumulo.access;
  * }
  * </pre>
  *
+ * <p>
+ *
+ * </p>
  *
  * @see <a href="https://github.com/apache/accumulo-access">Accumulo Access Documentation</a>
  * @since 1.0.0
@@ -58,23 +73,95 @@ package org.apache.accumulo.access;
 public interface AccessExpression {
 
   /**
+   * @return the expression that was used to create this object.
+   */
+  String getExpression();
+
+  /**
    * @return the unique set of authorizations that occur in the expression. For example, for the
    *         expression {@code (A&B)|(A&C)|(A&D)}, this method would return {@code [A,B,C,D]}.
    */
-  static Authorizations getAuthorizations(byte[] expression) {
-    return AccessExpressionImpl.getAuthorizations(expression);
+  Authorizations getAuthorizations();
+
+  /**
+   * This is equivalent to calling {@code AccessExpression.of(expression, false);}
+   */
+  static AccessExpression of(String expression) throws IllegalAccessExpressionException {
+    return new AccessExpressionImpl(expression, false);
   }
 
   /**
-   * @see #getAuthorizations(byte[])
+   * <p>
+   * Validates an access expression and creates an immutable AccessExpression object.
+   *
+   * <p>
+   * When the {@code normalize} parameter is true, then will deduplicate, sort, flatten, and remove
+   * unneeded parens in the expressions. Normalization is done in addition to validation. The
+   * following list gives examples of what each normalization step does.
+   *
+   * <ul>
+   * <li>As an example of flattening, the expression {@code A&(B&C)} can be flattened to
+   * {@code A&B&C}.</li>
+   * <li>As an example of sorting, the expression {@code (Z&Y)|(C&B)} can be sorted to
+   * {@code (B&C)|(Y&Z)}</li>
+   * <li>As an example of deduplication, the expression {@code X&Y&X} is equivalent to
+   * {@code X&Y}</li>
+   * <li>As an example of unneed parens, the expression {@code "ABC"&"XYZ"} is equivalent to
+   * {@code ABC&XYZ}</li>
+   * </ul>
+   *
+   * @param expression an access expression
+   * @param normalize If true then the expression will be normalized, if false the expression will
+   *        only be validated. Normalization is expensive so only use when needed. If repeatedly
+   *        normalizing expressions, consider using a cache that maps un-normalized expressions to
+   *        normalized ones. Since the normalization process is deterministic, the computation can
+   *        be cached.
+   * @throws IllegalAccessExpressionException when the expression is not valid.
    */
-  static Authorizations getAuthorizations(String expression) {
-    return AccessExpressionImpl.getAuthorizations(expression);
+  static AccessExpression of(String expression, boolean normalize)
+      throws IllegalAccessExpressionException {
+    return new AccessExpressionImpl(expression, normalize);
+  }
+
+  /**
+   * <p>
+   * This is equivalent to calling {@code AccessExpression.of(expression, false);}
+   */
+  static AccessExpression of(byte[] expression) throws IllegalAccessExpressionException {
+    return new AccessExpressionImpl(expression, false);
+  }
+
+  /**
+   * <p>
+   * Validates an access expression and creates an immutable AccessExpression object.
+   *
+   * <p>
+   * If only validation is needed, then call {@link #validate(byte[])} because it will avoid copying
+   * the expression like this method does. This method must copy the byte array into a String
+   * inorder to create an immutable AccessExpression.
+   *
+   * @see #of(String, boolean) for information about normlization.
+   * @param expression an access expression that is expected to be encoded using UTF-8
+   * @param normalize If true then the expression will be normalized, if false the expression will
+   *        only be validated. Normalization is expensive so only use when needed.
+   * @throws IllegalAccessExpressionException when the expression is not valid.
+   */
+  static AccessExpression of(byte[] expression, boolean normalize)
+      throws IllegalAccessExpressionException {
+    return new AccessExpressionImpl(expression, normalize);
+  }
+
+  /**
+   * @return an empty AccessExpression that is immutable.
+   */
+  static AccessExpression of() {
+    return AccessExpressionImpl.EMPTY;
   }
 
   /**
    * Quickly validates that an access expression is properly formed.
    *
+   * @param expression a potential access expression that is expected to be encoded using UTF-8
    * @throws IllegalAccessExpressionException if the given expression is not valid
    */
   static void validate(byte[] expression) throws IllegalAccessExpressionException {
@@ -109,4 +196,5 @@ public interface AccessExpression {
   static String quote(String authorization) {
     return AccessExpressionImpl.quote(authorization);
   }
+
 }

@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
- * A collection of authorization strings.
+ * An immutable collection of authorization strings.
  *
  * @since 1.0.0
  */
@@ -50,6 +50,11 @@ public class Authorizations {
   @Override
   public int hashCode() {
     return authorizations.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return authorizations.toString();
   }
 
   public static Authorizations of(String... authorizations) {

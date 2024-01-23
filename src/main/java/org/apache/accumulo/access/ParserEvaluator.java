@@ -27,10 +27,10 @@ import java.util.function.Predicate;
  */
 final class ParserEvaluator {
 
-  public static final byte OPEN_PAREN = (byte) '(';
-  public static final byte CLOSE_PAREN = (byte) ')';
+  static final byte OPEN_PAREN = (byte) '(';
+  static final byte CLOSE_PAREN = (byte) ')';
 
-  public static boolean parseAccessExpression(Tokenizer tokenizer,
+  static boolean parseAccessExpression(Tokenizer tokenizer,
       Predicate<Tokenizer.AuthorizationToken> authorizedPredicate,
       Predicate<Tokenizer.AuthorizationToken> shortCircuitPredicate) {
 
