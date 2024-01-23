@@ -50,8 +50,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * <pre>
  * mvn clean package
  * mvn exec:exec -Dexec.executable="java" -Dexec.classpathScope=test -Dexec.args="-classpath %classpath org.apache.accumulo.access.AccessExpressionBenchmark"
- * </code></blockquote>
  * </pre>
+ *
+ * </blockquote>
  */
 public class AccessExpressionBenchmark {
 
