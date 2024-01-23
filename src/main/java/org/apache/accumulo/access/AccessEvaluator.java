@@ -67,6 +67,13 @@ public interface AccessEvaluator {
   boolean canAccess(byte[] accessExpression) throws IllegalAccessExpressionException;
 
   /**
+   * @param accessExpression previously validated access expression
+   * @return true if the expression is visible using the authorizations supplied at creation, false
+   *         otherwise
+   */
+  boolean canAccess(AccessExpression accessExpression);
+
+  /**
    * An interface that is used to check if an authorization seen in an access expression is
    * authorized.
    *

@@ -133,6 +133,11 @@ class AccessEvaluatorImpl implements AccessEvaluator {
   }
 
   @Override
+  public boolean canAccess(AccessExpression expression) {
+    return canAccess(expression.getExpression());
+  }
+
+  @Override
   public boolean canAccess(String expression) throws IllegalAccessExpressionException {
     return evaluate(expression.getBytes(UTF_8));
   }

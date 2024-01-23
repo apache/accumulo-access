@@ -135,6 +135,8 @@ public class AccessEvaluatorTest {
           case ACCESSIBLE:
             assertTrue(evaluator.canAccess(expression), expression);
             assertTrue(evaluator.canAccess(expression.getBytes(UTF_8)), expression);
+            assertTrue(evaluator.canAccess(AccessExpression.of(expression)), expression);
+            assertTrue(evaluator.canAccess(AccessExpression.of(expression, true)), expression);
             assertTrue(evaluator.canAccess(AccessExpression.of(expression, true).getExpression()),
                 expression);
             assertTrue(
@@ -145,6 +147,8 @@ public class AccessEvaluatorTest {
           case INACCESSIBLE:
             assertFalse(evaluator.canAccess(expression), expression);
             assertFalse(evaluator.canAccess(expression.getBytes(UTF_8)), expression);
+            assertFalse(evaluator.canAccess(AccessExpression.of(expression)), expression);
+            assertFalse(evaluator.canAccess(AccessExpression.of(expression, true)), expression);
             assertFalse(evaluator.canAccess(AccessExpression.of(expression, true).getExpression()),
                 expression);
             assertFalse(
