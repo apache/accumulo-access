@@ -92,18 +92,18 @@ public interface AccessExpression {
    *
    * <p>
    * When the {@code normalize} parameter is true, then will deduplicate, sort, flatten, and remove
-   * unneeded parens in the expressions. Normalization is done in addition to validation. The
-   * following list gives examples of what each normalization step does.
+   * unneeded parens or quotes in the expressions. Normalization is done in addition to validation.
+   * The following list gives examples of what each normalization step does.
    *
    * <ul>
-   * <li>As an example of flattening, the expression {@code A&(B&C)} can be flattened to
-   * {@code A&B&C}.</li>
-   * <li>As an example of sorting, the expression {@code (Z&Y)|(C&B)} can be sorted to
+   * <li>As an example of flattening, the expression {@code A&(B&C)} flattens to {@code A&B&C}.</li>
+   * <li>As an example of sorting, the expression {@code (Z&Y)|(C&B)} sorts to
    * {@code (B&C)|(Y&Z)}</li>
-   * <li>As an example of deduplication, the expression {@code X&Y&X} is equivalent to
-   * {@code X&Y}</li>
-   * <li>As an example of unneed parens, the expression {@code "ABC"&"XYZ"} is equivalent to
+   * <li>As an example of deduplication, the expression {@code X&Y&X} normalizes to {@code X&Y}</li>
+   * <li>As an example of unneed quotes, the expression {@code "ABC"&"XYZ"} normalizes to
    * {@code ABC&XYZ}</li>
+   * <li>As an example of unneed parens, the expression {@code (((ABC)|(XYZ)))} normalizes to *
+   * {@code ABC|XYZ}</li>
    * </ul>
    *
    * @param expression an access expression

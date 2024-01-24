@@ -27,8 +27,8 @@ import java.util.stream.IntStream;
 
 /**
  * A simple wrapper around a byte array that keeps some state and provides high level operations to
- * the {@link Parser} class. The purpose of this class is to make {@link Parser} as simple and easy
- * to understand as possible while still being performant.
+ * the {@link ParserEvaluator} class. The purpose of this class is to make {@link ParserEvaluator}
+ * as simple and easy to understand as possible while still being performant.
  */
 final class Tokenizer {
 
