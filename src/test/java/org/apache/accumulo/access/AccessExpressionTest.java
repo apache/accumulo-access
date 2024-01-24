@@ -20,6 +20,7 @@ package org.apache.accumulo.access;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -28,13 +29,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 public class AccessExpressionTest {
-
-  @Test
-  public void testEmptyExpression() {
-    assertEquals("", AccessExpression.of().getExpression());
-  }
 
   @Test
   public void testGetAuthorizations() {
@@ -73,6 +70,7 @@ public class AccessExpressionTest {
 
     testData.add(List.of("", ""));
     testData.add(List.of("a", "a"));
+    testData.add(List.of("\"a\"", "a"));
     testData.add(List.of("(a)", "a"));
     testData.add(List.of("b|a", "a|b"));
     testData.add(List.of("(b)|a", "a|b"));
@@ -103,21 +101,42 @@ public class AccessExpressionTest {
     testData.add(List.of("a&a&a&a", "a"));
     testData.add(List.of("(a|a)|(a|a)", "a"));
     testData.add(List.of("(a&a)&(a&a)", "a"));
+    var auth1 = "\"ABC\"";
+    var auth2 = "\"QRS\"";
+    var auth3 = "\"X&Z\"";
+    testData.add(List.of(
+        "(" + auth1 + "&" + auth2 + "&" + auth3 + ")|(" + auth3 + "&" + auth1 + "&" + auth2 + ")",
+        "ABC&QRS&\"X&Z\""));
 
     for (var testCase : testData) {
       assertEquals(2, testCase.size());
       var expression = testCase.get(0);
       var expected = testCase.get(1);
-      var normalized = AccessExpression.of(expression).normalize();
-      assertEquals(expected, normalized);
-      assertEquals(expected, AccessExpression.of(expression.getBytes(UTF_8)).normalize());
-      assertEquals(expected, AccessExpression.of(normalized).normalize());
+      assertEquals(expected, AccessExpression.of(expression, true).getExpression());
+      assertEquals(expected, AccessExpression.of(expression.getBytes(UTF_8), true).getExpression());
+
+      // when not normalizing should see the original expression
+      assertEquals(expression, AccessExpression.of(expression).getExpression());
+      assertEquals(expression, AccessExpression.of(expression, false).getExpression());
+      assertEquals(expression, AccessExpression.of(expression.getBytes(UTF_8)).getExpression());
+      assertEquals(expression,
+          AccessExpression.of(expression.getBytes(UTF_8), false).getExpression());
     }
   }
 
   void checkError(String expression, String expected, int index) {
-    var exception =
-        assertThrows(IllegalAccessExpressionException.class, () -> AccessExpression.of(expression));
+    checkError(() -> AccessExpression.validate(expression), expected, index);
+    checkError(() -> AccessExpression.validate(expression.getBytes(UTF_8)), expected, index);
+    checkError(() -> AccessExpression.of(expression), expected, index);
+    checkError(() -> AccessExpression.of(expression, true), expected, index);
+    checkError(() -> AccessExpression.of(expression, false), expected, index);
+    checkError(() -> AccessExpression.of(expression.getBytes(UTF_8)), expected, index);
+    checkError(() -> AccessExpression.of(expression.getBytes(UTF_8), true), expected, index);
+    checkError(() -> AccessExpression.of(expression.getBytes(UTF_8), false), expected, index);
+  }
+
+  void checkError(Executable executable, String expected, int index) {
+    var exception = assertThrows(IllegalAccessExpressionException.class, executable);
     assertTrue(exception.getMessage().contains(expected));
     assertEquals(index, exception.getIndex());
   }
@@ -155,5 +174,19 @@ public class AccessExpressionTest {
 
     checkError("\"\\9\"", "Invalid escaping within quotes", 1);
     checkError("ERR&\"\\9\"", "Invalid escaping within quotes", 5);
+  }
+
+  @Test
+  public void testEqualsHashcode() {
+    var ae1 = AccessExpression.of("A&B");
+    var ae2 = AccessExpression.of("A&C");
+    var ae3 = AccessExpression.of("B&A", true);
+
+    assertEquals(ae1, ae3);
+    assertNotEquals(ae1, ae2);
+    assertNotEquals(ae3, ae2);
+
+    assertEquals(ae1.hashCode(), ae3.hashCode());
+    assertNotEquals(ae1.hashCode(), ae2.hashCode());
   }
 }

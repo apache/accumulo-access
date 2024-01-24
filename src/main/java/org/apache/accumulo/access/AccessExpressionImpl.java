@@ -20,99 +20,77 @@ package org.apache.accumulo.access;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 
 class AccessExpressionImpl implements AccessExpression {
 
-  private final byte[] expression;
+  public static final AccessExpression EMPTY = new AccessExpressionImpl("", false);
 
-  final AeNode aeNode;
+  private final String expression;
 
-  private final AtomicReference<String> expressionString = new AtomicReference<>(null);
+  AccessExpressionImpl(String expression, boolean normalize) {
+    if (normalize) {
+      // validate and normalize expression
+      this.expression = normalize(expression);
+    } else {
+      validate(expression);
+      this.expression = expression;
+    }
+  }
+
+  AccessExpressionImpl(byte[] expression, boolean normalize) {
+    if (normalize) {
+      // validate and normalize expression
+      this.expression = normalize(expression);
+    } else {
+      validate(expression);
+      this.expression = new String(expression, UTF_8);
+    }
+  }
 
   @Override
   public String getExpression() {
-    var expStr = expressionString.get();
-    if (expStr != null) {
-      return expStr;
-    }
-
-    return expressionString.updateAndGet(es -> es == null ? new String(expression, UTF_8) : es);
-  }
-
-  // must create this after creating EMPTY_NODE
-  static final AccessExpression EMPTY = new AccessExpressionImpl("");
-
-  @Override
-  public String normalize() {
-    StringBuilder builder = new StringBuilder();
-    aeNode.normalize().stringify(builder, false);
-    return builder.toString();
-  }
-
-  @Override
-  public Authorizations getAuthorizations() {
-    HashSet<String> auths = new HashSet<>();
-    aeNode.getAuthorizations(auths::add);
-    return Authorizations.of(auths);
-  }
-
-  /**
-   * Creates an AccessExpression.
-   *
-   * @param expression An expression of the rights needed to see specific data. The expression
-   *        syntax is defined within the <a href=
-   *        "https://github.com/apache/accumulo-access/blob/main/SPECIFICATION.md">specification
-   *        doc</a>
-   */
-  AccessExpressionImpl(String expression) {
-    this(expression.getBytes(UTF_8));
-    expressionString.set(expression);
-  }
-
-  /**
-   * Creates an AccessExpression from a string already encoded in UTF-8 bytes.
-   *
-   * @param expression AccessExpression, encoded as UTF-8 bytes
-   * @see #AccessExpressionImpl(String)
-   */
-  AccessExpressionImpl(byte[] expression) {
-    this.expression = expression;
-    aeNode = Parser.parseAccessExpression(expression);
+    return expression;
   }
 
   @Override
   public String toString() {
-    return getExpression();
+    return expression;
   }
 
-  /**
-   * See {@link #equals(AccessExpressionImpl)}
-   */
   @Override
-  public boolean equals(Object obj) {
-    if (obj instanceof AccessExpressionImpl) {
-      return equals((AccessExpressionImpl) obj);
+  public boolean equals(Object o) {
+    if (o instanceof AccessExpressionImpl) {
+      return ((AccessExpressionImpl) o).expression.equals(expression);
     }
-    return false;
-  }
 
-  /**
-   * Compares two AccessExpressions for string equivalence, not as a meaningful comparison of terms
-   * and conditions.
-   *
-   * @param otherLe other AccessExpression
-   * @return true if this AccessExpression equals the other via string comparison
-   */
-  boolean equals(AccessExpressionImpl otherLe) {
-    return Arrays.equals(expression, otherLe.expression);
+    return false;
   }
 
   @Override
   public int hashCode() {
-    return Arrays.hashCode(expression);
+    return expression.hashCode();
+  }
+
+  @Override
+  public Authorizations getAuthorizations() {
+    return AccessExpressionImpl.getAuthorizations(expression);
+  }
+
+  static Authorizations getAuthorizations(byte[] expression) {
+    HashSet<String> auths = new HashSet<>();
+    Tokenizer tokenizer = new Tokenizer(expression);
+    Predicate<Tokenizer.AuthorizationToken> atp = authToken -> {
+      auths.add(new String(authToken.data, authToken.start, authToken.len, UTF_8));
+      return true;
+    };
+    ParserEvaluator.parseAccessExpression(tokenizer, atp, atp);
+    return Authorizations.of(auths);
+  }
+
+  static Authorizations getAuthorizations(String expression) {
+    return getAuthorizations(expression.getBytes(UTF_8));
   }
 
   static String quote(String term) {
@@ -141,5 +119,25 @@ class AccessExpressionImpl implements AccessExpression {
     }
 
     return AccessEvaluatorImpl.escape(term, true);
+  }
+
+  static void validate(byte[] expression) throws IllegalAccessExpressionException {
+    Tokenizer tokenizer = new Tokenizer(expression);
+    Predicate<Tokenizer.AuthorizationToken> atp = authToken -> true;
+    ParserEvaluator.parseAccessExpression(tokenizer, atp, atp);
+  }
+
+  static void validate(String expression) throws IllegalAccessExpressionException {
+    validate(expression.getBytes(UTF_8));
+  }
+
+  static String normalize(String expression) throws IllegalAccessExpressionException {
+    Tokenizer tokenizer = new Tokenizer(expression.getBytes(UTF_8));
+    return Normalizer.normalize(tokenizer);
+  }
+
+  static String normalize(byte[] expression) throws IllegalAccessExpressionException {
+    Tokenizer tokenizer = new Tokenizer(expression);
+    return Normalizer.normalize(tokenizer);
   }
 }

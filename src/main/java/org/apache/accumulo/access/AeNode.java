@@ -23,18 +23,12 @@ import static org.apache.accumulo.access.ByteUtils.OR_OPERATOR;
 
 import java.util.List;
 import java.util.TreeSet;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 /**
  * Contains the code for an Access Expression represented as a parse tree and all the operations on
  * a parse tree.
  */
 abstract class AeNode implements Comparable<AeNode> {
-
-  abstract boolean canAccess(Predicate<BytesWrapper> authorizedPredicate);
-
-  abstract void getAuthorizations(Consumer<String> authConsumer);
 
   abstract void stringify(StringBuilder builder, boolean addParens);
 
@@ -58,13 +52,6 @@ abstract class AeNode implements Comparable<AeNode> {
   }
 
   private static class EmptyNode extends AeNode {
-    @Override
-    boolean canAccess(Predicate<BytesWrapper> authorizedPredicate) {
-      return true;
-    }
-
-    @Override
-    void getAuthorizations(Consumer<String> authConsumer) {}
 
     @Override
     void stringify(StringBuilder builder, boolean addParens) {
@@ -92,16 +79,6 @@ abstract class AeNode implements Comparable<AeNode> {
 
     AuthNode(Tokenizer.AuthorizationToken auth) {
       authInExpression = new BytesWrapper(auth.data, auth.start, auth.len);
-    }
-
-    @Override
-    boolean canAccess(Predicate<BytesWrapper> authorizedPredicate) {
-      return authorizedPredicate.test(authInExpression);
-    }
-
-    @Override
-    void getAuthorizations(Consumer<String> authConsumer) {
-      authConsumer.accept(AccessEvaluatorImpl.unescape(authInExpression));
     }
 
     @Override
@@ -144,19 +121,27 @@ abstract class AeNode implements Comparable<AeNode> {
     }
   }
 
-  private static abstract class MultiNode extends AeNode {
+  private static class MultiNode extends AeNode {
     protected final List<AeNode> children;
 
-    private MultiNode(List<AeNode> children) {
+    private final byte operator;
+
+    private MultiNode(byte operator, List<AeNode> children) {
+      this.operator = operator;
       this.children = children;
     }
 
     @Override
-    void getAuthorizations(Consumer<String> authConsumer) {
-      children.forEach(aeNode -> aeNode.getAuthorizations(authConsumer));
+    int ordinal() {
+      switch (operator) {
+        case AND_OPERATOR:
+          return 3;
+        case OR_OPERATOR:
+          return 2;
+        default:
+          throw new IllegalStateException();
+      }
     }
-
-    abstract char operator();
 
     @Override
     void stringify(StringBuilder builder, boolean addParens) {
@@ -167,7 +152,7 @@ abstract class AeNode implements Comparable<AeNode> {
       var iter = children.iterator();
       iter.next().stringify(builder, true);
       iter.forEachRemaining(aeNode -> {
-        builder.append(operator());
+        builder.append((char) operator);
         aeNode.stringify(builder, true);
       });
 
@@ -193,34 +178,11 @@ abstract class AeNode implements Comparable<AeNode> {
       }
       return cmp;
     }
-  }
-
-  private static class AndNode extends MultiNode {
-
-    private AndNode(List<AeNode> children) {
-      super(children);
-    }
-
-    @Override
-    char operator() {
-      return '&';
-    }
-
-    @Override
-    boolean canAccess(Predicate<BytesWrapper> authorizedPredicate) {
-      for (var child : children) {
-        if (!child.canAccess(authorizedPredicate)) {
-          return false;
-        }
-      }
-
-      return true;
-    }
 
     void flatten(TreeSet<AeNode> nodes) {
       for (var child : children) {
-        if (child instanceof AndNode) {
-          ((AndNode) child).flatten(nodes);
+        if (child instanceof MultiNode && ((MultiNode) child).operator == operator) {
+          ((MultiNode) child).flatten(nodes);
         } else {
           nodes.add(child.normalize());
         }
@@ -234,67 +196,10 @@ abstract class AeNode implements Comparable<AeNode> {
       if (flattened.size() == 1) {
         return flattened.iterator().next();
       } else {
-        return new AndNode(List.copyOf(flattened));
+        return new MultiNode(operator, List.copyOf(flattened));
       }
     }
 
-    @Override
-    int ordinal() {
-      return 3;
-    }
-  }
-
-  private static class OrNode extends MultiNode {
-
-    private OrNode(List<AeNode> children) {
-      super(children);
-    }
-
-    @Override
-    char operator() {
-      return '|';
-    }
-
-    @Override
-    boolean canAccess(Predicate<BytesWrapper> authorizedPredicate) {
-      for (var child : children) {
-        if (child.canAccess(authorizedPredicate)) {
-          return true;
-        }
-      }
-
-      return false;
-    }
-
-    void flatten(TreeSet<AeNode> nodes) {
-      for (var child : children) {
-        if (child instanceof OrNode) {
-          ((OrNode) child).flatten(nodes);
-        } else {
-          nodes.add(child.normalize());
-        }
-      }
-    }
-
-    @Override
-    AeNode normalize() {
-      var flattened = new TreeSet<AeNode>();
-      flatten(flattened);
-      if (flattened.size() == 1) {
-        return flattened.iterator().next();
-      } else {
-        return new OrNode(List.copyOf(flattened));
-      }
-    }
-
-    @Override
-    int ordinal() {
-      return 2;
-    }
-  }
-
-  static AeNode of() {
-    return new EmptyNode();
   }
 
   static AeNode of(Tokenizer.AuthorizationToken auth) {
@@ -304,9 +209,8 @@ abstract class AeNode implements Comparable<AeNode> {
   static AeNode of(byte operator, List<AeNode> children) {
     switch (operator) {
       case AND_OPERATOR:
-        return new AndNode(children);
       case OR_OPERATOR:
-        return new OrNode(children);
+        return new MultiNode(operator, children);
       default:
         throw new IllegalArgumentException();
     }

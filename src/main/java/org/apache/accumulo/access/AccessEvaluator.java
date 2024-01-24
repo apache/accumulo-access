@@ -67,8 +67,7 @@ public interface AccessEvaluator {
   boolean canAccess(byte[] accessExpression) throws IllegalAccessExpressionException;
 
   /**
-   * @param accessExpression a validated and parsed access expression. The implementation of this
-   *        method may be able to reuse the internal parse tree and avoid re-parsing.
+   * @param accessExpression previously validated access expression
    * @return true if the expression is visible using the authorizations supplied at creation, false
    *         otherwise
    */

@@ -37,6 +37,13 @@ import java.util.stream.Stream;
 class AccessEvaluatorImpl implements AccessEvaluator {
   private final Collection<Predicate<BytesWrapper>> authorizedPredicates;
 
+  private static final byte[] EMPTY = new byte[0];
+
+  private final ThreadLocal<BytesWrapper> lookupWrappers =
+      ThreadLocal.withInitial(() -> new BytesWrapper(EMPTY));
+  private final ThreadLocal<Tokenizer> tokenizers =
+      ThreadLocal.withInitial(() -> new Tokenizer(EMPTY));
+
   private AccessEvaluatorImpl(Authorizer authorizationChecker) {
     this.authorizedPredicates = List.of(auth -> authorizationChecker.isAuthorized(unescape(auth)));
   }
@@ -126,30 +133,31 @@ class AccessEvaluatorImpl implements AccessEvaluator {
   }
 
   @Override
+  public boolean canAccess(AccessExpression expression) {
+    return canAccess(expression.getExpression());
+  }
+
+  @Override
   public boolean canAccess(String expression) throws IllegalAccessExpressionException {
-    return evaluate(new AccessExpressionImpl(expression));
+    return evaluate(expression.getBytes(UTF_8));
   }
 
   @Override
   public boolean canAccess(byte[] expression) throws IllegalAccessExpressionException {
-    return evaluate(new AccessExpressionImpl(expression));
+    return evaluate(expression);
   }
 
-  @Override
-  public boolean canAccess(AccessExpression expression) throws IllegalAccessExpressionException {
-    if (expression instanceof AccessExpressionImpl) {
-      return evaluate((AccessExpressionImpl) expression);
-    } else {
-      return canAccess(expression.getExpression());
-    }
-  }
+  boolean evaluate(byte[] accessExpression) throws IllegalAccessExpressionException {
+    var bytesWrapper = lookupWrappers.get();
 
-  public boolean evaluate(AccessExpressionImpl accessExpression)
-      throws IllegalAccessExpressionException {
-    // The AccessEvaluator computes a trie from the given Authorizations, that AccessExpressions can
-    // be evaluated against.
     for (var auths : authorizedPredicates) {
-      if (!accessExpression.aeNode.canAccess(auths)) {
+      var tokenizer = tokenizers.get();
+      tokenizer.reset(accessExpression);
+      Predicate<Tokenizer.AuthorizationToken> atp = authToken -> {
+        bytesWrapper.set(authToken.data, authToken.start, authToken.len);
+        return auths.test(bytesWrapper);
+      };
+      if (!ParserEvaluator.parseAccessExpression(tokenizer, atp, authToken -> true)) {
         return false;
       }
     }
