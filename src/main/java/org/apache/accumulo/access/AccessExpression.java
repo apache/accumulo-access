@@ -25,22 +25,27 @@ package org.apache.accumulo.access;
  * passing this type over a String is that its known to be a valid expression.
  *
  * <p>
- * >Below is an example of using this API.
+ * Below is an example of how to use this API.
  *
  * <pre>
- *     {@code
- * // The following authorization does not need quoting, so the return value is the same as the
- * // input.
+ * {@code
+ * // The following authorization does not need quoting
+ * // so the return value is the same as the input.
  * var auth1 = AccessExpression.quote("CAT");
+ *
  * // The following two authorizations need quoting and the return values will be quoted.
  * var auth2 = AccessExpression.quote("🦕");
  * var auth3 = AccessExpression.quote("🦖");
+ *
+ * // Create an AccessExpression using auth1, auth2, and auth3
  * var exp = "(" + auth1 + "&" + auth3 + ")|(" + auth1 + "&" + auth2 + "&" + auth1 + ")";
+ *
  * // Validate the expression, but do not normalize it
- * var visExp = AccessExpression.of(exp);
- * System.out.println(visExp.getExpression());
+ * System.out.println(AccessExpression.of(exp).getExpression());
+ *
  * // Validate and normalize the expression.
  * System.out.println(AccessExpression.of(exp, true).getExpression());
+ *
  * // Print the unique authorization in the expression
  * System.out.println(visExp.getAuthorizations());
  * }
@@ -58,10 +63,13 @@ package org.apache.accumulo.access;
  * is not valid.
  *
  * <pre>
- *     {@code
+ * {@code
  * AccessExpression.validate("A&B|C");
  * }
  * </pre>
+ *
+ * <p>
+ * Note: The underlying implementation uses UTF-8 when converting between bytes and Strings.
  *
  * @see <a href="https://github.com/apache/accumulo-access">Accumulo Access Documentation</a>
  * @since 1.0.0
@@ -92,17 +100,17 @@ public interface AccessExpression {
    *
    * <p>
    * When the {@code normalize} parameter is true, then will deduplicate, sort, flatten, and remove
-   * unneeded parens or quotes in the expressions. Normalization is done in addition to validation.
-   * The following list gives examples of what each normalization step does.
+   * unneeded parentheses or quotes in the expressions. Normalization is done in addition to
+   * validation. The following list gives examples of what each normalization step does.
    *
    * <ul>
    * <li>As an example of flattening, the expression {@code A&(B&C)} flattens to {@code A&B&C}.</li>
    * <li>As an example of sorting, the expression {@code (Z&Y)|(C&B)} sorts to
    * {@code (B&C)|(Y&Z)}</li>
    * <li>As an example of deduplication, the expression {@code X&Y&X} normalizes to {@code X&Y}</li>
-   * <li>As an example of unneed quotes, the expression {@code "ABC"&"XYZ"} normalizes to
+   * <li>As an example of unneeded quotes, the expression {@code "ABC"&"XYZ"} normalizes to
    * {@code ABC&XYZ}</li>
-   * <li>As an example of unneed parens, the expression {@code (((ABC)|(XYZ)))} normalizes to *
+   * <li>As an example of unneeded parentheses, the expression {@code (((ABC)|(XYZ)))} normalizes to
    * {@code ABC|XYZ}</li>
    * </ul>
    *
@@ -133,8 +141,8 @@ public interface AccessExpression {
    *
    * <p>
    * If only validation is needed, then call {@link #validate(byte[])} because it will avoid copying
-   * the expression like this method does. This method must copy the byte array into a String
-   * inorder to create an immutable AccessExpression.
+   * the expression like this method does. This method must copy the byte array into a String in
+   * order to create an immutable AccessExpression.
    *
    * @see #of(String, boolean) for information about normlization.
    * @param expression an access expression that is expected to be encoded using UTF-8

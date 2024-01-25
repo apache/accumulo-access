@@ -51,29 +51,6 @@ abstract class AeNode implements Comparable<AeNode> {
     return ordinal() - o.ordinal();
   }
 
-  private static class EmptyNode extends AeNode {
-
-    @Override
-    void stringify(StringBuilder builder, boolean addParens) {
-
-    }
-
-    @Override
-    AeNode normalize() {
-      return this;
-    }
-
-    @Override
-    public int compareTo(AeNode o) {
-      return super.compareTo(o);
-    }
-
-    @Override
-    int ordinal() {
-      return 0;
-    }
-  }
-
   private static class AuthNode extends AeNode {
     private final BytesWrapper authInExpression;
 

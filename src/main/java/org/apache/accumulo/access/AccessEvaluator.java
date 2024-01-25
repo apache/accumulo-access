@@ -19,11 +19,12 @@
 package org.apache.accumulo.access;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * <p>
  * Used to decide if an entity with one more sets of authorizations can access zero or more access
- * expression.
+ * expressions.
  * </p>
  * <p>
  * Note: For performance improvements, especially in cases where expressions are expected to repeat,
@@ -38,12 +39,15 @@ import java.util.Collection;
  *
  * <pre>
  * {@code
- * var evaluator = AccessEvaluator.builder().authorizations("ALPHA", "OMEGA").build();
+ * var evaluator = AccessEvaluator.of("ALPHA", "OMEGA");
  *
  * System.out.println(evaluator.canAccess("ALPHA&BETA"));
  * System.out.println(evaluator.canAccess("(ALPHA|BETA)&(OMEGA|EPSILON)"));
  * }
  * </pre>
+ *
+ * <p>
+ * Note: The underlying implementation uses UTF-8 when converting between bytes and Strings.
  *
  * @see <a href="https://github.com/apache/accumulo-access">Accumulo Access Documentation</a>
  * @since 1.0.0
@@ -74,6 +78,88 @@ public interface AccessEvaluator {
   boolean canAccess(AccessExpression accessExpression);
 
   /**
+   * Creates an AccessEvaluator from an Authorizations object
+   *
+   * @param authorizations auths to use in the AccessEvaluator
+   * @return AccessEvaluator object
+   */
+  static AccessEvaluator of(Authorizations authorizations) {
+    return new AccessEvaluatorImpl(AccessEvaluatorImpl.convert(authorizations));
+  }
+
+  /**
+   * Creates an AccessEvaluator from an Authorizer object
+   *
+   * @param authorizer authorizer to use in the AccessEvaluator
+   * @return AccessEvaluator object
+   */
+  static AccessEvaluator of(Authorizer authorizer) {
+    return new AccessEvaluatorImpl(authorizer);
+  }
+
+  /**
+   * Allows providing multiple sets of authorizations. Each expression will be evaluated
+   * independently against each set of authorizations and will only be deemed accessible if
+   * accessible for all. For example the following code would print false, true, and then false.
+   *
+   * <pre>
+   *     {@code
+   * Collection<Authorizations> authSets =
+   *     List.of(Authorizations.of("A", "B"), Authorizations.of("C", "D"));
+   * var evaluator = AccessEvaluator.of(authSets);
+   *
+   * System.out.println(evaluator.canAccess("A"));
+   * System.out.println(evaluator.canAccess("A|D"));
+   * System.out.println(evaluator.canAccess("A&D"));
+   *
+   * }
+   * </pre>
+   *
+   * <p>
+   * The following table shows how each expression in the example above will evaluate for each
+   * authorization set. In order to return true for {@code canAccess()} the expression must evaluate
+   * to true for each authorization set.
+   *
+   * <table>
+   * <caption>Evaluations</caption>
+   * <tr>
+   * <td></td>
+   * <td>[A,B]</td>
+   * <td>[C,D]</td>
+   * </tr>
+   * <tr>
+   * <td>A</td>
+   * <td>True</td>
+   * <td>False</td>
+   * </tr>
+   * <tr>
+   * <td>A|D</td>
+   * <td>True</td>
+   * <td>True</td>
+   * </tr>
+   * <tr>
+   * <td>A&amp;D</td>
+   * <td>False</td>
+   * <td>False</td>
+   * </tr>
+   *
+   * </table>
+   *
+   *
+   *
+   */
+  static AccessEvaluator of(Collection<Authorizations> authorizationSets) {
+    return new AccessEvaluatorImpl(AccessEvaluatorImpl.convert(authorizationSets));
+  }
+
+  /**
+   * Allows specifying a single set of authorizations.
+   */
+  static AccessEvaluator of(String... authorizations) {
+    return new AccessEvaluatorImpl(AccessEvaluatorImpl.convert(authorizations));
+  }
+
+  /**
    * An interface that is used to check if an authorization seen in an access expression is
    * authorized.
    *
@@ -81,81 +167,5 @@ public interface AccessEvaluator {
    */
   interface Authorizer {
     boolean isAuthorized(String auth);
-  }
-
-  interface AuthorizationsBuilder {
-
-    EvaluatorBuilder authorizations(Authorizations authorizations);
-
-    /**
-     * Allows providing multiple sets of authorizations. Each expression will be evaluated
-     * independently against each set of authorizations and will only be deemed accessible if
-     * accessible for all. For example the following code would print false, true, and then false.
-     *
-     * <pre>
-     *     {@code
-     * Collection<Authorizations> authSets =
-     *     List.of(Authorizations.of("A", "B"), Authorizations.of("C", "D"));
-     * var evaluator = AccessEvaluator.builder().authorizations(authSets).build();
-     *
-     * System.out.println(evaluator.canAccess("A"));
-     * System.out.println(evaluator.canAccess("A|D"));
-     * System.out.println(evaluator.canAccess("A&D"));
-     *
-     * }
-     * </pre>
-     *
-     * <p>
-     * The following table shows how each expression in the example above will evaluate for each
-     * authorization set. In order to return true for {@code canAccess()} the expression must
-     * evaluate to true for each authorization set.
-     *
-     * <table>
-     * <caption>Evaluations</caption>
-     * <tr>
-     * <td></td>
-     * <td>[A,B]</td>
-     * <td>[C,D]</td>
-     * </tr>
-     * <tr>
-     * <td>A</td>
-     * <td>True</td>
-     * <td>False</td>
-     * </tr>
-     * <tr>
-     * <td>A|D</td>
-     * <td>True</td>
-     * <td>True</td>
-     * </tr>
-     * <tr>
-     * <td>A&amp;D</td>
-     * <td>False</td>
-     * <td>False</td>
-     * </tr>
-     *
-     * </table>
-     *
-     *
-     *
-     */
-    EvaluatorBuilder authorizations(Collection<Authorizations> authorizations);
-
-    /**
-     * Allows specifying a single set of authorizations.
-     */
-    EvaluatorBuilder authorizations(String... authorizations);
-
-    /**
-     * Allows specifying an authorizer that is analogous to a single set of authorization.
-     */
-    EvaluatorBuilder authorizations(Authorizer authorizer);
-  }
-
-  interface EvaluatorBuilder {
-    AccessEvaluator build();
-  }
-
-  static AuthorizationsBuilder builder() {
-    return AccessEvaluatorImpl.builder();
   }
 }

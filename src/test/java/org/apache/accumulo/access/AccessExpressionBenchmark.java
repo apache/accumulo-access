@@ -85,11 +85,11 @@ public class AccessExpressionBenchmark {
         et.expressions = new ArrayList<>();
 
         if (testDataSet.auths.length == 1) {
-          et.evaluator = AccessEvaluator.builder().authorizations(testDataSet.auths[0]).build();
+          et.evaluator = AccessEvaluator.of(testDataSet.auths[0]);
         } else {
           var authSets =
               Stream.of(testDataSet.auths).map(Authorizations::of).collect(Collectors.toList());
-          et.evaluator = AccessEvaluator.builder().authorizations(authSets).build();
+          et.evaluator = AccessEvaluator.of(authSets);
         }
 
         for (var tests : testDataSet.tests) {
