@@ -19,19 +19,18 @@
 package org.apache.accumulo.access;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.stream.Collectors.toSet;
-import static java.util.stream.Collectors.toUnmodifiableList;
 import static org.apache.accumulo.access.ByteUtils.BACKSLASH;
 import static org.apache.accumulo.access.ByteUtils.QUOTE;
 import static org.apache.accumulo.access.ByteUtils.isQuoteOrSlash;
 import static org.apache.accumulo.access.ByteUtils.isQuoteSymbol;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 //this class is intentionally package private and should never be made public
 class AccessEvaluatorImpl implements AccessEvaluator {
@@ -44,17 +43,33 @@ class AccessEvaluatorImpl implements AccessEvaluator {
   private final ThreadLocal<Tokenizer> tokenizers =
       ThreadLocal.withInitial(() -> new Tokenizer(EMPTY));
 
-  private AccessEvaluatorImpl(Authorizer authorizationChecker) {
+  AccessEvaluatorImpl(Authorizer authorizationChecker) {
     this.authorizedPredicates = List.of(auth -> authorizationChecker.isAuthorized(unescape(auth)));
   }
 
-  public AccessEvaluatorImpl(Collection<List<byte[]>> authorizationSets) {
-    authorizedPredicates = authorizationSets.stream()
-        .map(authorizations -> authorizations.stream()
-            .map(auth -> AccessEvaluatorImpl.escape(auth, false)).map(BytesWrapper::new)
-            .collect(toSet()))
-        .map(escapedAuths -> (Predicate<BytesWrapper>) escapedAuths::contains)
-        .collect(Collectors.toUnmodifiableList());
+  AccessEvaluatorImpl(final List<byte[]> authorizationSet) {
+    this(Collections.singletonList(authorizationSet));
+  }
+
+  AccessEvaluatorImpl(final Collection<List<byte[]>> authorizationSets) {
+
+    for (final List<byte[]> auths : authorizationSets) {
+      for (final byte[] auth : auths) {
+        if (auth.length == 0) {
+          throw new IllegalArgumentException("Empty authorization");
+        }
+      }
+    }
+
+    final List<Predicate<BytesWrapper>> predicates = new ArrayList<>(authorizationSets.size());
+    for (final List<byte[]> authorizationList : authorizationSets) {
+      final Set<BytesWrapper> authBytes = new HashSet<>(authorizationList.size());
+      for (final byte[] authorization : authorizationList) {
+        authBytes.add(new BytesWrapper(AccessEvaluatorImpl.escape(authorization, false)));
+      }
+      predicates.add((auth) -> authBytes.contains(auth));
+    }
+    authorizedPredicates = Collections.unmodifiableList(predicates);
   }
 
   static String unescape(BytesWrapper auth) {
@@ -162,86 +177,6 @@ class AccessEvaluatorImpl implements AccessEvaluator {
       }
     }
     return true;
-  }
-
-  private static class BuilderImpl implements AuthorizationsBuilder, EvaluatorBuilder {
-
-    private Authorizer authorizationsChecker;
-
-    private Collection<List<byte[]>> authorizationSets;
-
-    private void setAuthorizations(List<byte[]> auths) {
-      setAuthorizations(Collections.singletonList(auths));
-    }
-
-    private void setAuthorizations(Collection<List<byte[]>> authSets) {
-      if (authorizationsChecker != null) {
-        throw new IllegalStateException("Cannot set checker and authorizations");
-      }
-
-      for (List<byte[]> auths : authSets) {
-        for (byte[] auth : auths) {
-          if (auth.length == 0) {
-            throw new IllegalArgumentException("Empty authorization");
-          }
-        }
-      }
-      this.authorizationSets = authSets;
-    }
-
-    @Override
-    public EvaluatorBuilder authorizations(Authorizations authorizations) {
-      setAuthorizations(authorizations.asSet().stream().map(auth -> auth.getBytes(UTF_8))
-          .collect(toUnmodifiableList()));
-      return this;
-    }
-
-    @Override
-    public EvaluatorBuilder authorizations(Collection<Authorizations> authorizationSets) {
-      setAuthorizations(authorizationSets
-          .stream().map(authorizations -> authorizations.asSet().stream()
-              .map(auth -> auth.getBytes(UTF_8)).collect(toUnmodifiableList()))
-          .collect(Collectors.toList()));
-      return this;
-    }
-
-    @Override
-    public EvaluatorBuilder authorizations(String... authorizations) {
-      setAuthorizations(Stream.of(authorizations).map(auth -> auth.getBytes(UTF_8))
-          .collect(toUnmodifiableList()));
-      return this;
-    }
-
-    @Override
-    public EvaluatorBuilder authorizations(Authorizer authorizationChecker) {
-      if (authorizationSets != null) {
-        throw new IllegalStateException("Cannot set checker and authorizations");
-      }
-      this.authorizationsChecker = authorizationChecker;
-      return this;
-    }
-
-    @Override
-    public AccessEvaluator build() {
-      if (authorizationSets != null ^ authorizationsChecker == null) {
-        throw new IllegalStateException(
-            "Exactly one of authorizationSets or authorizationsChecker must be set, not both or none.");
-      }
-
-      AccessEvaluator accessEvaluator;
-      if (authorizationsChecker != null) {
-        accessEvaluator = new AccessEvaluatorImpl(authorizationsChecker);
-      } else {
-        accessEvaluator = new AccessEvaluatorImpl(authorizationSets);
-      }
-
-      return accessEvaluator;
-    }
-
-  }
-
-  public static AuthorizationsBuilder builder() {
-    return new BuilderImpl();
   }
 
 }
