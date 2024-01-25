@@ -23,7 +23,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.util.HashSet;
 import java.util.function.Predicate;
 
-class AccessExpressionImpl implements AccessExpression {
+final class AccessExpressionImpl implements AccessExpression {
 
   public static final AccessExpression EMPTY = new AccessExpressionImpl("", false);
 
@@ -140,4 +140,5 @@ class AccessExpressionImpl implements AccessExpression {
     Tokenizer tokenizer = new Tokenizer(expression);
     return Normalizer.normalize(tokenizer);
   }
+
 }

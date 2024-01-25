@@ -22,7 +22,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.util.Arrays;
 
-class BytesWrapper implements Comparable<BytesWrapper> {
+final class BytesWrapper implements Comparable<BytesWrapper> {
 
   protected byte[] data;
   protected int offset;
