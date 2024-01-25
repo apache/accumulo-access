@@ -43,14 +43,46 @@ class AccessEvaluatorImpl implements AccessEvaluator {
   private final ThreadLocal<Tokenizer> tokenizers =
       ThreadLocal.withInitial(() -> new Tokenizer(EMPTY));
 
+  static Collection<List<byte[]>> convert(Collection<Authorizations> authorizationSets) {
+    final List<List<byte[]>> authorizationLists = new ArrayList<>(authorizationSets.size());
+    for (final Authorizations authorizations : authorizationSets) {
+      final Set<String> authSet = authorizations.asSet();
+      final List<byte[]> authList = new ArrayList<>(authSet.size());
+      for (final String auth : authSet) {
+        authList.add(auth.getBytes(UTF_8));
+      }
+      authorizationLists.add(authList);
+    }
+    return authorizationLists;
+  }
+
+  static Collection<List<byte[]>> convert(String... authorizations) {
+    final List<byte[]> authList = new ArrayList<>(authorizations.length);
+    for (final String auth : authorizations) {
+      authList.add(auth.getBytes(UTF_8));
+    }
+    return Collections.singletonList(authList);
+  }
+
+  static Collection<List<byte[]>> convert(Authorizations authorizations) {
+    final Set<String> authSet = authorizations.asSet();
+    final List<byte[]> authList = new ArrayList<>(authSet.size());
+    for (final String auth : authSet) {
+      authList.add(auth.getBytes(UTF_8));
+    }
+    return Collections.singletonList(authList);
+  }
+
+  /**
+   * Create an AccessEvaluatorImpl using an Authorizer object
+   */
   AccessEvaluatorImpl(Authorizer authorizationChecker) {
     this.authorizedPredicates = List.of(auth -> authorizationChecker.isAuthorized(unescape(auth)));
   }
 
-  AccessEvaluatorImpl(final List<byte[]> authorizationSet) {
-    this(Collections.singletonList(authorizationSet));
-  }
-
+  /**
+   * Create an AccessEvaluatorImpl using a collection of authorizations
+   */
   AccessEvaluatorImpl(final Collection<List<byte[]>> authorizationSets) {
 
     for (final List<byte[]> auths : authorizationSets) {
@@ -69,7 +101,7 @@ class AccessEvaluatorImpl implements AccessEvaluator {
       }
       predicates.add((auth) -> authBytes.contains(auth));
     }
-    authorizedPredicates = Collections.unmodifiableList(predicates);
+    authorizedPredicates = List.copyOf(predicates);
   }
 
   static String unescape(BytesWrapper auth) {

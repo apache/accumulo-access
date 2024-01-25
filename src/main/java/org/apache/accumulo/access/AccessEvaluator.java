@@ -18,12 +18,8 @@
  */
 package org.apache.accumulo.access;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * <p>
@@ -88,12 +84,7 @@ public interface AccessEvaluator {
    * @return AccessEvaluator object
    */
   static AccessEvaluator of(Authorizations authorizations) {
-    final Set<String> authSet = authorizations.asSet();
-    final List<byte[]> authList = new ArrayList<>(authSet.size());
-    for (final String auth : authSet) {
-      authList.add(auth.getBytes(UTF_8));
-    }
-    return new AccessEvaluatorImpl(authList);
+    return new AccessEvaluatorImpl(AccessEvaluatorImpl.convert(authorizations));
   }
 
   /**
@@ -158,27 +149,14 @@ public interface AccessEvaluator {
    *
    */
   static AccessEvaluator of(Collection<Authorizations> authorizationSets) {
-    final List<List<byte[]>> authorizationLists = new ArrayList<>(authorizationSets.size());
-    for (final Authorizations authorizations : authorizationSets) {
-      final Set<String> authSet = authorizations.asSet();
-      final List<byte[]> authList = new ArrayList<>(authSet.size());
-      for (final String auth : authSet) {
-        authList.add(auth.getBytes(UTF_8));
-      }
-      authorizationLists.add(authList);
-    }
-    return new AccessEvaluatorImpl(authorizationLists);
+    return new AccessEvaluatorImpl(AccessEvaluatorImpl.convert(authorizationSets));
   }
 
   /**
    * Allows specifying a single set of authorizations.
    */
   static AccessEvaluator of(String... authorizations) {
-    final List<byte[]> authList = new ArrayList<>(authorizations.length);
-    for (final String auth : authorizations) {
-      authList.add(auth.getBytes(UTF_8));
-    }
-    return new AccessEvaluatorImpl(authList);
+    return new AccessEvaluatorImpl(AccessEvaluatorImpl.convert(authorizations));
   }
 
   /**

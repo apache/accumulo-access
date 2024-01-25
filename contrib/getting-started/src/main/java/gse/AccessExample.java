@@ -27,7 +27,7 @@ public class AccessExample {
 
     public static void main(String[] args) {
         // Create an access evaluator using the all the arguments passed in on the command line as authorizations.
-        AccessEvaluator evaluator = AccessEvaluator.builder().authorizations(args).build();
+        AccessEvaluator evaluator = AccessEvaluator.of(args);
 
         // For each record use the access evaluator to determine if it can be accessed using the authorizations from
         // the command line and the access expression associated with each record.
