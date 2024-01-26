@@ -33,7 +33,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 //this class is intentionally package private and should never be made public
-class AccessEvaluatorImpl implements AccessEvaluator {
+final class AccessEvaluatorImpl implements AccessEvaluator {
   private final Collection<Predicate<BytesWrapper>> authorizedPredicates;
 
   private static final byte[] EMPTY = new byte[0];

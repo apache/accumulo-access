@@ -28,7 +28,7 @@ import java.util.Set;
  *
  * @since 1.0.0
  */
-public class Authorizations {
+public final class Authorizations {
   private final Set<String> authorizations;
 
   private Authorizations(Set<String> authorizations) {

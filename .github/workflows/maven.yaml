@@ -71,7 +71,7 @@ jobs:
       matrix:
         profile:
           - {name: 'unit-tests',    distribution: adopt,  javaver: 17, args: 'verify -PskipQA'}
-          - {name: 'qa-checks',     distribution: adopt,  javaver: 17, args: 'verify javadoc:jar -Psec-bugs,errorprone'}
+          - {name: 'qa-checks',     distribution: adopt,  javaver: 17, args: 'verify javadoc:jar -Perrorprone'}
           - {name: 'jdk21',         distribution: oracle, javaver: 21, args: 'verify'}
       fail-fast: false
     runs-on: ubuntu-latest
