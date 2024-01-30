@@ -47,6 +47,9 @@ import java.util.List;
  * </pre>
  *
  * <p>
+ * Instances of this class are thread-safe.
+ *
+ * <p>
  * Note: The underlying implementation uses UTF-8 when converting between bytes and Strings.
  *
  * @see <a href="https://github.com/apache/accumulo-access">Accumulo Access Documentation</a>

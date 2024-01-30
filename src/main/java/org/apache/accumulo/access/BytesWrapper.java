@@ -35,9 +35,7 @@ final class BytesWrapper implements Comparable<BytesWrapper> {
    * @param data byte data
    */
   public BytesWrapper(byte[] data) {
-    this.data = data;
-    this.offset = 0;
-    this.length = data.length;
+    set(data, 0, data.length);
   }
 
   /**
@@ -115,6 +113,10 @@ final class BytesWrapper implements Comparable<BytesWrapper> {
     return new String(data, offset, length, UTF_8);
   }
 
+  /*
+   * Wraps the given byte[] and captures the current offset and length. This method does *not* make
+   * a copy of the input buffer
+   */
   void set(byte[] data, int offset, int length) {
     if (offset < 0) {
       throw new IllegalArgumentException("Offset cannot be negative. length = " + offset);
