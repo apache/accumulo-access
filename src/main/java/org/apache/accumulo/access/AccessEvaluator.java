@@ -19,6 +19,7 @@
 package org.apache.accumulo.access;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -157,6 +158,13 @@ public interface AccessEvaluator {
    */
   static AccessEvaluator of(String... authorizations) {
     return new AccessEvaluatorImpl(AccessEvaluatorImpl.convert(authorizations));
+  }
+
+  /**
+   * Allows specifying a single set of authorizations.
+   */
+  static AccessEvaluator of(List<byte[]> authorizations) {
+    return new AccessEvaluatorImpl(Collections.singletonList(authorizations));
   }
 
   /**

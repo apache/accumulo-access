@@ -86,6 +86,9 @@ final class AccessEvaluatorImpl implements AccessEvaluator {
   AccessEvaluatorImpl(final Collection<List<byte[]>> authorizationSets) {
 
     for (final List<byte[]> auths : authorizationSets) {
+      if (auths == null) {
+        continue;
+      }
       for (final byte[] auth : auths) {
         if (auth.length == 0) {
           throw new IllegalArgumentException("Empty authorization");
@@ -95,6 +98,9 @@ final class AccessEvaluatorImpl implements AccessEvaluator {
 
     final List<Predicate<BytesWrapper>> predicates = new ArrayList<>(authorizationSets.size());
     for (final List<byte[]> authorizationList : authorizationSets) {
+      if (authorizationList == null) {
+        continue;
+      }
       final Set<BytesWrapper> authBytes = new HashSet<>(authorizationList.size());
       for (final byte[] authorization : authorizationList) {
         authBytes.add(new BytesWrapper(AccessEvaluatorImpl.escape(authorization, false)));
