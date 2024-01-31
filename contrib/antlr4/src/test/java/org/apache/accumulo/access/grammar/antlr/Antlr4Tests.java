@@ -42,10 +42,10 @@ import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.IllegalAccessExpressionException;
-import org.apache.accumulo.access.TestDataLoader;
-import org.apache.accumulo.access.TestDataLoader.ExpectedResult;
-import org.apache.accumulo.access.TestDataLoader.TestDataSet;
-import org.apache.accumulo.access.TestDataLoader.TestExpressions;
+import org.apache.accumulo.access.antlr.TestDataLoader;
+import org.apache.accumulo.access.antlr.TestDataLoader.ExpectedResult;
+import org.apache.accumulo.access.antlr.TestDataLoader.TestDataSet;
+import org.apache.accumulo.access.antlr.TestDataLoader.TestExpressions;
 import org.apache.accumulo.access.grammars.AccessExpressionLexer;
 import org.apache.accumulo.access.grammars.AccessExpressionParser;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
@@ -142,7 +142,7 @@ public class Antlr4Tests {
 
       List<Authorizations> authSets =
           Stream.of(testSet.auths).map(Authorizations::of).collect(Collectors.toList());
-      AccessEvaluator evaluator = AccessEvaluator.builder().authorizations(authSets).build();
+      AccessEvaluator evaluator = AccessEvaluator.of(authSets);
       AccessExpressionAntlrEvaluator antlr = new AccessExpressionAntlrEvaluator(authSets);
 
       for (TestExpressions test : testSet.tests) {
@@ -154,8 +154,7 @@ public class Antlr4Tests {
               assertTrue(evaluator.canAccess(AccessExpression.of(expression)), expression);
               assertTrue(evaluator.canAccess(AccessExpression.of(expression.getBytes(UTF_8))),
                   expression);
-              assertTrue(evaluator.canAccess(AccessExpression.of(expression).normalize()),
-                  expression);
+              assertTrue(evaluator.canAccess(AccessExpression.of(expression, true)), expression);
               assertEquals(expression,
                   AccessExpression.of(expression.getBytes(UTF_8)).getExpression());
               assertEquals(expression, AccessExpression.of(expression).getExpression());
@@ -165,7 +164,7 @@ public class Antlr4Tests {
               assertTrue(antlr.canAccess(AccessExpression.of(expression)), expression);
               assertTrue(antlr.canAccess(AccessExpression.of(expression.getBytes(UTF_8))),
                   expression);
-              assertTrue(antlr.canAccess(AccessExpression.of(expression).normalize()), expression);
+              assertTrue(antlr.canAccess(AccessExpression.of(expression, true)), expression);
 
               break;
             case INACCESSIBLE:
@@ -174,8 +173,7 @@ public class Antlr4Tests {
               assertFalse(evaluator.canAccess(AccessExpression.of(expression)), expression);
               assertFalse(evaluator.canAccess(AccessExpression.of(expression.getBytes(UTF_8))),
                   expression);
-              assertFalse(evaluator.canAccess(AccessExpression.of(expression).normalize()),
-                  expression);
+              assertFalse(evaluator.canAccess(AccessExpression.of(expression, true)), expression);
               assertEquals(expression,
                   AccessExpression.of(expression.getBytes(UTF_8)).getExpression());
               assertEquals(expression, AccessExpression.of(expression).getExpression());
@@ -185,7 +183,7 @@ public class Antlr4Tests {
               assertFalse(antlr.canAccess(AccessExpression.of(expression)), expression);
               assertFalse(antlr.canAccess(AccessExpression.of(expression.getBytes(UTF_8))),
                   expression);
-              assertFalse(antlr.canAccess(AccessExpression.of(expression).normalize()), expression);
+              assertFalse(antlr.canAccess(AccessExpression.of(expression, true)), expression);
 
               break;
             case ERROR:
