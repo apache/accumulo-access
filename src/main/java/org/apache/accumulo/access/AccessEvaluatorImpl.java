@@ -38,9 +38,9 @@ final class AccessEvaluatorImpl implements AccessEvaluator {
 
   private static final byte[] EMPTY = new byte[0];
 
-  private final ThreadLocal<BytesWrapper> lookupWrappers =
+  private static final ThreadLocal<BytesWrapper> lookupWrappers =
       ThreadLocal.withInitial(() -> new BytesWrapper(EMPTY));
-  private final ThreadLocal<Tokenizer> tokenizers =
+  private static final ThreadLocal<Tokenizer> tokenizers =
       ThreadLocal.withInitial(() -> new Tokenizer(EMPTY));
 
   static Collection<List<byte[]>> convert(Collection<Authorizations> authorizationSets) {

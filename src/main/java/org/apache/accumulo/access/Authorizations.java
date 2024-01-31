@@ -24,6 +24,10 @@ import java.util.Set;
 /**
  * An immutable collection of authorization strings.
  *
+ * <p>
+ * Instances of this class are thread-safe.
+ *
+ * <p>
  * Note: The underlying implementation uses UTF-8 when converting between bytes and Strings.
  *
  * @since 1.0.0
