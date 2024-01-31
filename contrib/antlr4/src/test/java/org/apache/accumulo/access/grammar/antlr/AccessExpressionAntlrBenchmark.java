@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.accumulo.access.Authorizations;
-import org.apache.accumulo.access.TestDataLoader;
+import org.apache.accumulo.access.antlr.TestDataLoader;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Mode;
