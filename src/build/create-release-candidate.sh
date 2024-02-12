@@ -220,9 +220,7 @@ files will be added to the dist/release SVN area after release:
 $(yellow "$projName-$ver-$srcQualifier.tar.gz.sha512") will contain:
 SHA512 ($(green "$projName-$ver-$srcQualifier.tar.gz")) = $(yellow "$srcSha")
 
-Release notes (in progress) can be found at: $(green "https://$tlpName.apache.org/release/$projName-$ver")
-
-Release testing instructions: $relTestingUrl
+Issues and pull requests related to this release can be found at: $(green "https://github.com/apache/accumulo-access/issues?q=milestone%3A$ver")
 
 Please vote one of:
 [ ] +1 - I have verified and accept...
