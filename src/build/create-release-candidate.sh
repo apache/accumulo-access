@@ -142,8 +142,6 @@ createEmail() {
   [[ -n $3 ]] && stagingrepo=$3 || stagingrepo=$(prompter 'staging repository number from https://repository.apache.org/#stagingRepositories' '[0-9]+')
   local srcSha
   [[ -n $4 ]] && srcSha=$4 || srcSha=$(prompter 'SHA512 for source tarball' '[0-9a-f]{128}')
-  local binSha
-  [[ -n $5 ]] && binSha=$5 || binSha=$(prompter 'SHA512 for binary tarball' '[0-9a-f]{128}')
 
   local branch
   branch=$ver-rc$rc
@@ -425,7 +423,7 @@ createReleaseCandidate() {
 
   # continue to creating email notification
   echo "$(red Running)" "$(yellow "$scriptname" --email "$ver" "$rc")"
-  createEmail "$ver" "$rc" "" "$srcSha" "$binSha"
+  createEmail "$ver" "$rc" "" "$srcSha"
 }
 
 SELECTED_FINGERPRINT=""
