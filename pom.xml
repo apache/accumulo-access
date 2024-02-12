@@ -457,6 +457,7 @@
             <exclude>**/.project</exclude>
             <exclude>**/.classpath</exclude>
             <exclude>**/.settings/</exclude>
+            <exclude>.github/**</exclude>
           </excludes>
         </configuration>
         <executions>
