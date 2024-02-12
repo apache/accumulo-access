@@ -30,6 +30,9 @@
   <artifactId>accumulo-access</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <name>Apache Accumulo Access Project</name>
+  <description>Apache Accumulo Access is a library that provides the same functionality, semantics, and syntax
+  as the Apache Accumulo ColumnVisibility and VisibilityEvaluator classes. This functionality is provided in a
+  standalong Java library that has no runtime dependencies.</description>
   <url>https://accumulo.apache.org</url>
   <organization>
     <name>The Apache Software Foundation</name>
