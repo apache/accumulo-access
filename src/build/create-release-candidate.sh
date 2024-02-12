@@ -142,8 +142,6 @@ createEmail() {
   [[ -n $3 ]] && stagingrepo=$3 || stagingrepo=$(prompter 'staging repository number from https://repository.apache.org/#stagingRepositories' '[0-9]+')
   local srcSha
   [[ -n $4 ]] && srcSha=$4 || srcSha=$(prompter 'SHA512 for source tarball' '[0-9a-f]{128}')
-  local binSha
-  [[ -n $5 ]] && binSha=$5 || binSha=$(prompter 'SHA512 for binary tarball' '[0-9a-f]{128}')
 
   local branch
   branch=$ver-rc$rc
@@ -222,9 +220,7 @@ files will be added to the dist/release SVN area after release:
 $(yellow "$projName-$ver-$srcQualifier.tar.gz.sha512") will contain:
 SHA512 ($(green "$projName-$ver-$srcQualifier.tar.gz")) = $(yellow "$srcSha")
 
-Release notes (in progress) can be found at: $(green "https://$tlpName.apache.org/release/$projName-$ver")
-
-Release testing instructions: $relTestingUrl
+Issues and pull requests related to this release can be found at: $(green "https://github.com/apache/accumulo-access/issues?q=milestone%3A$ver")
 
 Please vote one of:
 [ ] +1 - I have verified and accept...
@@ -425,7 +421,7 @@ createReleaseCandidate() {
 
   # continue to creating email notification
   echo "$(red Running)" "$(yellow "$scriptname" --email "$ver" "$rc")"
-  createEmail "$ver" "$rc" "" "$srcSha" "$binSha"
+  createEmail "$ver" "$rc" "" "$srcSha"
 }
 
 SELECTED_FINGERPRINT=""
