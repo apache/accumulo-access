@@ -87,6 +87,7 @@
     <url>https://github.com/apache/accumulo-access/actions</url>
   </ciManagement>
   <properties>
+    <extraTestArgs>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.management/java.lang.management=ALL-UNNAMED --add-opens java.management/sun.management=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED</extraTestArgs>
     <maven.compiler.release>11</maven.compiler.release>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
@@ -95,7 +96,7 @@
     <minimalJavaBuildVersion>17</minimalJavaBuildVersion>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <version.errorprone>2.24.1</version.errorprone>
-    <version.jmh>1.36</version.jmh>
+    <version.jmh>1.37</version.jmh>
   </properties>
   <dependencies>
     <dependency>
@@ -113,7 +114,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>5.9.2</version>
+      <version>5.10.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -134,12 +135,12 @@
       <plugin>
         <groupId>com.mycila</groupId>
         <artifactId>license-maven-plugin</artifactId>
-        <version>4.2</version>
+        <version>4.3</version>
         <configuration>
           <licenseSets>
             <licenseSet>
               <header>src/build/license-header.txt</header>
-              <excludes combine.children="append">
+              <excludes>
                 <exclude>contrib/antlr4/src/main/antlr4/Abnf.g4</exclude>
                 <exclude>**/DEPENDENCIES</exclude>
                 <exclude>**/LICENSE</exclude>
@@ -148,7 +149,7 @@
               </excludes>
             </licenseSet>
           </licenseSets>
-          <mapping combine.children="append">
+          <mapping>
             <!-- general mappings; module-specific mappings appear in their respective pom -->
             <abnf>SEMICOLON_STYLE</abnf>
             <g4>SLASHSTAR_STYLE</g4>
@@ -251,9 +252,26 @@
         </configuration>
       </plugin>
       <plugin>
+        <groupId>com.github.koraktor</groupId>
+        <artifactId>mavanagaiata</artifactId>
+        <version>1.0.1</version>
+        <executions>
+          <execution>
+            <id>git-commit</id>
+            <goals>
+              <goal>commit</goal>
+            </goals>
+            <phase>validate</phase>
+            <configuration>
+              <skipNoGit>true</skipNoGit>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-maven-plugin</artifactId>
-        <version>4.8.3.0</version>
+        <version>4.8.3.1</version>
         <configuration>
           <excludeFilterFile>src/build/ci/spotbugs-exclude.xml</excludeFilterFile>
           <xmlOutput>true</xmlOutput>
@@ -261,7 +279,7 @@
           <failOnError>true</failOnError>
           <includeTests>true</includeTests>
           <maxRank>20</maxRank>
-          <plugins combine.children="append">
+          <plugins>
             <plugin>
               <groupId>com.h3xstream.findsecbugs</groupId>
               <artifactId>findsecbugs-plugin</artifactId>
@@ -275,6 +293,25 @@
             <goals>
               <goal>check</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>analyze</id>
+            <goals>
+              <goal>analyze-only</goal>
+            </goals>
+            <configuration>
+              <failOnWarning>true</failOnWarning>
+              <ignoredUnusedDeclaredDependencies>
+                <!-- ignore runtime test dependency for benchmark -->
+                <unused>org.openjdk.jmh:jmh-generator-annprocess:jar:*</unused>
+              </ignoredUnusedDeclaredDependencies>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -377,7 +414,7 @@
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>10.12.6</version>
+            <version>10.13.0</version>
           </dependency>
         </dependencies>
         <executions>
@@ -416,9 +453,6 @@
               <Sealed>true</Sealed>
             </manifestEntries>
           </archive>
-          <excludes>
-            <exclude>**/log4j2-test.properties</exclude>
-          </excludes>
         </configuration>
       </plugin>
       <plugin>
@@ -450,7 +484,7 @@
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
         <configuration>
-          <excludes combine.children="append">
+          <excludes>
             <exclude>contrib/antlr4/src/main/antlr4/Abnf.g4</exclude>
             <exclude>src/test/resources/testdata.json</exclude>
             <exclude>**/target/</exclude>
@@ -500,7 +534,6 @@
         </property>
       </activation>
       <properties>
-        <accumulo.skip>true</accumulo.skip>
         <apilyzer.skip>true</apilyzer.skip>
         <checkstyle.skip>true</checkstyle.skip>
         <formatter.skip>true</formatter.skip>
@@ -512,7 +545,6 @@
         <skipTests>true</skipTests>
         <sort.skip>true</sort.skip>
         <spotbugs.skip>true</spotbugs.skip>
-        <warbucks.skip>true</warbucks.skip>
       </properties>
     </profile>
     <profile>
@@ -699,15 +731,6 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
-      <id>jdk17</id>
-      <activation>
-        <jdk>[17,)</jdk>
-      </activation>
-      <properties>
-        <extraTestArgs>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.management/java.lang.management=ALL-UNNAMED --add-opens java.management/sun.management=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED</extraTestArgs>
-      </properties>
     </profile>
   </profiles>
 </project>
