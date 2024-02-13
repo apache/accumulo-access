@@ -16,13 +16,13 @@
 -->
 # ANTLR Example
 
-This contrib example contains an [ANTLRv4](https://www.antlr.org/) grammar file (see [AccessExpression.g4](src/main/antlr4/AccessExpression.g4)) that can be used to create AccessExpression parsers in languages supported by ANTLRv4. For example, a project could use this to validate that AccessExpression's are valid before sending them to Accumulo in the ColumnVisibility field of the Key.
+This example contains an [ANTLRv4](https://www.antlr.org/) grammar file (see [AccessExpression.g4](src/main/antlr4/AccessExpression.g4)) that can be used to create AccessExpression parsers in languages supported by ANTLRv4. For example, a project could use this to validate that AccessExpression's are valid before sending them to Accumulo in the ColumnVisibility field of the Key.
 
 An example [parser](src/test/java/org/apache/accumulo/access/grammar/antlr/AccessExpressionAntlrParser.java) and [evaluator](src/test/java/org/apache/accumulo/access/grammar/antlr/AccessExpressionAntlrEvaluator.java) are used when building this project to confirm that the parsing and evaluation are consistent with the reference Java implementation.
 
 ## Running the Benchmark
 
-ANTLR was evaluated as a replacement for the existing custom Java parser, but it doesn't parse as fast as the custom implementation. You can view the performance differences by running the JMH benchmark in this contrib project and the one in the main project.
+ANTLR was evaluated as a replacement for the existing custom Java parser, but it doesn't parse as fast as the custom implementation. You can view the performance differences by running the JMH benchmark in this example project and the one in the main project.
 
 To run the benchmark in this project:
 ```
