@@ -30,7 +30,7 @@ public class AccessExample {
   public static void main(String[] args) {
     if (args.length == 0) {
       System.out.printf("No authorizations provided. Running several examples.%n"
-          + "Specify the authorizations on the command line to try a specific example.%n%n");
+          + "Specify authorizations on the command line (separated by spaces) to try a specific example.%n%n");
 
       run("BLUE", "GREEN", "PINK", "RED");
       run();
