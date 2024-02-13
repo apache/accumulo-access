@@ -55,7 +55,7 @@ Add the library to your CLASSPATH. For Maven, use:
 </dependencies>
 ```
 
-## Running the Example
+## Running the [Example](src/test/java/example/AccessExample.java)
 
 ```
 mvn clean package
