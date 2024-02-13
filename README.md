@@ -60,6 +60,7 @@ Add the library to your CLASSPATH. For Maven, use:
 ```
 mvn clean package
 CLASSPATH=$(ls target/accumulo-access-*.jar) java src/test/java/example/AccessExample.java
+CLASSPATH=$(ls target/accumulo-access-*.jar) java src/test/java/example/AccessExample.java RED BLUE
 ```
 
 Note that `data6` is always returned, because it has no access expression. And
