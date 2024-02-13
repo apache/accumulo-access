@@ -54,11 +54,8 @@ public class AccessEvaluatorTest {
 
   public static class TestDataSet {
     String description;
-
     String[][] auths;
-
     List<TestExpressions> tests;
-
   }
 
   static List<TestDataSet> readTestData() throws IOException {
