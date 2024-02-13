@@ -19,7 +19,6 @@
 package org.apache.accumulo.access;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * <p>
