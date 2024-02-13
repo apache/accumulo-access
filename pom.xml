@@ -140,7 +140,7 @@
             <licenseSet>
               <header>src/build/license-header.txt</header>
               <excludes combine.children="append">
-                <exclude>contrib/antlr4/src/main/antlr4/Abnf.g4</exclude>
+                <exclude>examples/antlr4/src/main/antlr4/Abnf.g4</exclude>
                 <exclude>**/DEPENDENCIES</exclude>
                 <exclude>**/LICENSE</exclude>
                 <exclude>**/NOTICE</exclude>
@@ -451,7 +451,7 @@
         <artifactId>apache-rat-plugin</artifactId>
         <configuration>
           <excludes combine.children="append">
-            <exclude>contrib/antlr4/src/main/antlr4/Abnf.g4</exclude>
+            <exclude>examples/antlr4/src/main/antlr4/Abnf.g4</exclude>
             <exclude>src/test/resources/testdata.json</exclude>
             <exclude>**/target/</exclude>
             <exclude>**/.project</exclude>
