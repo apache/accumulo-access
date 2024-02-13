@@ -17,7 +17,6 @@
 # under the License.
 #
 /antlr4/target/
-
 /antlr4/.settings/
 /antlr4/.project
 /antlr4/.classpath
@@ -31,3 +30,17 @@
 /antlr4/nb-configuration.xml
 /antlr4/.vscode/
 /antlr4/.factorypath
+/getting-started/target/
+/getting-started/.settings/
+/getting-started/.project
+/getting-started/.classpath
+/getting-started/.pydevproject
+/getting-started/.idea
+/getting-started/*.iml
+/getting-started/*.ipr
+/getting-started/*.iws
+/getting-started/nbproject/
+/getting-started/nbactions.xml
+/getting-started/nb-configuration.xml
+/getting-started/.vscode/
+/getting-started/.factorypath
