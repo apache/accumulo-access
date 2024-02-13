@@ -30,11 +30,7 @@ This standalone Accumulo Access example has the following components.
 To run this example clone the Accumulo Access repository and then do the following.
 
 ```bash
-cd accumulo-access
-# This step installs a snapshot version of the Accumulo Access library.
-# This step will not longer be needed once Accumulo Access is released.
-mvn install
-cd contrib/getting-started
+cd accumulo-access/contrib/getting-started
 # Build the example.  If you change the example java code, run this step again.
 mvn clean package
 # Run the example
