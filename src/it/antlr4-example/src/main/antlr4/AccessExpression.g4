@@ -18,10 +18,6 @@
  */
 grammar AccessExpression;
 
-@header {
-  package org.apache.accumulo.access.grammars;
-}
-
 access_expression : EOF | expression EOF;
 expression :     ( and_expression | or_expression | '(' expression ')' | access_token);
 and_expression : ( access_token | '(' expression ')' ) (and_operator ( access_token | '(' expression ')' ) )+;

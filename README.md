@@ -27,9 +27,8 @@ This functionality is provided in a standalone java library that has no
 dependencies (for example no Hadoop, Zookeeper, Thrift, etc dependencies).
 
 For a conceptual overview of what an access expression is, see the
-[specification](SPECIFICATION.md) document. See the [getting started
-guide](contrib/getting-started/README.md) for an example of how to use
-this java library.
+[specification](SPECIFICATION.md) document. See the [Getting Started
+section](#getting-started) for an example of how to use this java library.
 
 ## Public API
 
@@ -50,7 +49,7 @@ Add the library to your CLASSPATH. For Maven, use:
   <dependency>
     <groupId>org.apache.accumulo</groupId>
     <artifactId>accumulo-access</artifactId>
-    <version>$version</version>
+    <version>${version.accumulo-access}</version>
   </dependency>
 </dependencies>
 ```
@@ -65,6 +64,9 @@ CLASSPATH=$(ls target/accumulo-access-*.jar) java src/test/java/example/AccessEx
 
 Note that `data6` is always returned, because it has no access expression. And
 remember, authorizations are case-sensitive.
+
+For an ANTLRv4 example, see antlr-example integration test's
+[README](src/it/antlr4-example/README.md).
 
 ## Running the Benchmark
 

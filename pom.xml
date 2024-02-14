@@ -105,7 +105,9 @@
     <rat.consoleOutput>true</rat.consoleOutput>
     <sourceReleaseAssemblyDescriptor>source-release-tar</sourceReleaseAssemblyDescriptor>
     <version.errorprone>2.24.1</version.errorprone>
+    <version.gson>2.10.1</version.gson>
     <version.jmh>1.37</version.jmh>
+    <version.junit>5.10.2</version.junit>
   </properties>
   <dependencies>
     <dependency>
@@ -117,13 +119,13 @@
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.10.1</version>
+      <version>${version.gson}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>5.10.2</version>
+      <version>${version.junit}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -150,7 +152,7 @@
             <licenseSet>
               <header>src/build/license-header.txt</header>
               <excludes>
-                <exclude>contrib/antlr4/src/main/antlr4/Abnf.g4</exclude>
+                <exclude>src/it/antlr4-example/src/main/antlr4/Abnf.g4</exclude>
                 <exclude>**/DEPENDENCIES</exclude>
                 <exclude>**/LICENSE</exclude>
                 <exclude>**/NOTICE</exclude>
@@ -350,18 +352,6 @@
                   <property name="message" value="Javadoc @see does not need @link: pick one or the other." />
                 </module>
                 <module name="RegexpSinglelineJava">
-                  <property name="format" value="jline[.]internal[.]Preconditions" />
-                  <property name="message" value="Please use Guava Preconditions not JLine" />
-                </module>
-                <module name="RegexpSinglelineJava">
-                  <property name="format" value="org[.]apache[.]commons[.]math[.]" />
-                  <property name="message" value="Use commons-math3 (org.apache.commons.math3.*)" />
-                </module>
-                <module name="RegexpSinglelineJava">
-                  <property name="format" value="import org[.]apache[.]accumulo[.]core[.]util[.]LazySingletons;" />
-                  <property name="message" value="Use static imports for LazySingletons for consistency" />
-                </module>
-                <module name="RegexpSinglelineJava">
                   <property name="format" value="org[.]junit[.]jupiter[.]api[.]Assertions;" />
                   <property name="message" value="Use static imports for Assertions.* methods for consistency" />
                 </module>
@@ -476,6 +466,24 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-invoker-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>invoked-integration-tests</id>
+            <goals>
+              <goal>install</goal>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <cloneProjectsTo>${project.build.directory}/its</cloneProjectsTo>
+              <localRepositoryPath>${project.build.directory}/it-repo</localRepositoryPath>
+              <settingsFile>src/it/settings.xml</settingsFile>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
         <configuration>
           <arguments>-P !autoformat,verifyformat -DskipTests</arguments>
@@ -494,7 +502,7 @@
         <artifactId>apache-rat-plugin</artifactId>
         <configuration>
           <excludes>
-            <exclude>contrib/antlr4/src/main/antlr4/Abnf.g4</exclude>
+            <exclude>src/it/antlr4-example/src/main/antlr4/Abnf.g4</exclude>
             <exclude>src/test/resources/testdata.json</exclude>
           </excludes>
         </configuration>
