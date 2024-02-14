@@ -19,7 +19,7 @@
 
 -->
 
-# Accumulo Access Control Library
+# Accumulo Access Library
 
 Java library that provides the same functionality, semantics, and syntax as the
 Apache Accumulo [ColumnVisibility][1] and [VisibilityEvaluator][2] classes.
@@ -41,9 +41,35 @@ are package private and are not part of the public API.
   * [AccessExpression](src/main/java/org/apache/accumulo/access/AccessExpression.java).
   * [Authorizations](src/main/java/org/apache/accumulo/access/Authorizations.java).
 
+## Getting Started
+
+Add the library to your CLASSPATH. For Maven, use:
+
+```xml
+<dependencies>
+  <dependency>
+    <groupId>org.apache.accumulo</groupId>
+    <artifactId>accumulo-access</artifactId>
+    <version>$version</version>
+  </dependency>
+</dependencies>
+```
+
+## Running the [Example](src/test/java/example/AccessExample.java)
+
+```
+mvn clean package
+CLASSPATH=$(ls target/accumulo-access-*.jar) java src/test/java/example/AccessExample.java
+CLASSPATH=$(ls target/accumulo-access-*.jar) java src/test/java/example/AccessExample.java RED BLUE
+```
+
+Note that `data6` is always returned, because it has no access expression. And
+remember, authorizations are case-sensitive.
+
 ## Running the Benchmark
 
 This project includes a JMH Benchmark. To run it:
+
 ```
 mvn clean package
 mvn exec:exec -Dexec.executable="java" -Dexec.classpathScope=test -Dexec.args="-classpath %classpath org.apache.accumulo.access.AccessExpressionBenchmark"
