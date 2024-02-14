@@ -37,7 +37,7 @@ entity's Authorizations and the object's AccessExpression.
 The formal definition of the AccessExpression UTF-8 string representation is provided by
 the following [ABNF][1]:
 
-```
+```ABNF
 access-expression       = [expression] ; empty string is a valid access expression
 
 expression              =  (access-token / paren-expression) [and-expression / or-expression]

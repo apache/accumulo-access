@@ -30,23 +30,21 @@ import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.antlr.v4.runtime.LexerNoViableAltException;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
+import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.grammar.antlr.Antlr4Tests;
 import org.apache.accumulo.access.grammars.AbnfLexer;
 import org.apache.accumulo.access.grammars.AbnfParser;
 import org.junit.jupiter.api.Test;
 
 // This test uses the ANTLR ABNF grammar to parse the
-// accumulo-access ANBF specification to validate that
+// AccessExpression ANBF specification to validate that
 // it is proper ANBF.
 public class SpecificationTest {
 
   @Test
   public void testAbnfSpecificationParses() throws Exception {
 
-    // The test resource specification.abnf is a copy of the ABNF
-    // from SPECIFICATION.md
-
-    InputStream is = Antlr4Tests.class.getResourceAsStream("/specification.abnf");
+    var is = AccessExpression.class.getResourceAsStream("specification/AccessExpression.abnf");
     assertNotNull(is);
 
     final AtomicLong errors = new AtomicLong(0);

@@ -19,32 +19,29 @@
 package org.apache.accumulo.access;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
- * <p>
- * Used to decide if an entity with one more sets of authorizations can access zero or more access
- * expressions.
- * </p>
- * <p>
- * Note: For performance improvements, especially in cases where expressions are expected to repeat,
- * it's recommended to wrap this evaluator with an external caching mechanism, such as Guava's
- * cache, to leverage its extensive caching options. Caching is only safe under the assumption that
- * for an AccessEvaluator instance, evaluating the same expression multiple times will always yield
- * the same result. When considering caching, any environmental factors that might change this
- * assumption may need to be mitigated.
- * </p>
+ * This class is used to decide if an entity with a given set of authorizations can access
+ * subsequent access expressions.
  *
- * Below is an example that should print false and then print true.
+ * <p>
+ * For example:
  *
  * <pre>
  * {@code
  * var evaluator = AccessEvaluator.of("ALPHA", "OMEGA");
  *
- * System.out.println(evaluator.canAccess("ALPHA&BETA"));
- * System.out.println(evaluator.canAccess("(ALPHA|BETA)&(OMEGA|EPSILON)"));
+ * System.out.println(evaluator.canAccess("ALPHA&BETA")); // should print 'false'
+ * System.out.println(evaluator.canAccess("(ALPHA|BETA)&(OMEGA|EPSILON)")); // should print 'true'
  * }
  * </pre>
+ *
+ * <p>
+ * Note: for performance, especially in cases where expressions are expected to repeat, it's
+ * recommended to cache the results of these evaluations. Caching is only safe under the assumption
+ * that for an AccessEvaluator instance, evaluating the same expression multiple times will always
+ * yield the same result. When considering caching, any environmental factors that might change this
+ * assumption may need to be mitigated.
  *
  * <p>
  * Instances of this class are thread-safe.

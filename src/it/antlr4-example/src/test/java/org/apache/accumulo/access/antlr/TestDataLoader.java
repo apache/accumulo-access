@@ -46,9 +46,7 @@ public class TestDataLoader {
 
   public static class TestDataSet {
     public String description;
-
     public String[][] auths;
-
     public List<TestExpressions> tests;
   }
 
@@ -56,8 +54,8 @@ public class TestDataLoader {
 
     URL url = TestDataLoader.class.getClassLoader().getResource(".");
     File testClassesDir = new File(url.toURI());
-    File accumuloAccessParentDir =
-        testClassesDir.getParentFile().getParentFile().getParentFile().getParentFile();
+    File accumuloAccessParentDir = testClassesDir.getParentFile().getParentFile().getParentFile()
+        .getParentFile().getParentFile();
     File accumuloAccessSourceDir = new File(accumuloAccessParentDir, "src");
     assertTrue(accumuloAccessSourceDir.exists());
     File accumuloAccessTestDir = new File(accumuloAccessSourceDir, "test");
