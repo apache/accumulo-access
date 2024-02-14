@@ -19,6 +19,7 @@
 
 package example;
 
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
@@ -28,22 +29,30 @@ import org.apache.accumulo.access.AccessEvaluator;
 public class AccessExample {
 
   public static void main(String[] args) {
+    PrintStream out = System.out;
+    var example = new AccessExample(out);
     if (args.length == 0) {
-      System.out.printf("No authorizations provided. Running several examples.%n"
+      out.printf("No authorizations provided. Running several examples.%n"
           + "Specify authorizations on the command line (separated by spaces) to try a specific example.%n%n");
 
-      run("BLUE", "GREEN", "PINK", "RED");
-      run();
-      run("BLUE", "RED");
-      run("GREEN", "RED");
-      run("PINK");
+      example.run("BLUE", "GREEN", "PINK", "RED");
+      example.run();
+      example.run("BLUE", "RED");
+      example.run("GREEN", "RED");
+      example.run("PINK");
     } else {
-      run(args);
+      example.run(args);
     }
   }
 
-  private static void run(String... authorizations) {
-    System.out.printf("Showing accessible records using authorizations: %s%n",
+  private final PrintStream out;
+
+  AccessExample(PrintStream out) {
+    this.out = out;
+  }
+
+  void run(String... authorizations) {
+    out.printf("Showing accessible records using authorizations: %s%n",
         Arrays.toString(authorizations));
 
     // Create an access evaluator using the provided authorizations
@@ -52,10 +61,10 @@ public class AccessExample {
     // Print each record whose access expression permits viewing using the provided authorizations
     getData().forEach((record, accessExpression) -> {
       if (evaluator.canAccess(accessExpression)) {
-        System.out.printf("  %s : %s%n", record, accessExpression);
+        out.printf("  %s : %s%n", record, accessExpression);
       }
     });
-    System.out.println();
+    out.println();
   }
 
   // Create a simple example data set as a sorted map of records and their access expression
