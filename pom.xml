@@ -28,7 +28,7 @@
   </parent>
   <groupId>org.apache.accumulo</groupId>
   <artifactId>accumulo-access</artifactId>
-  <version>1.0.0-beta-SNAPSHOT</version>
+  <version>1.0.0-beta</version>
   <name>Apache Accumulo Access Project</name>
   <description>Apache Accumulo Access is a library that provides the same functionality, semantics, and syntax
   as the Apache Accumulo ColumnVisibility and VisibilityEvaluator classes. This functionality is provided in a
@@ -75,7 +75,7 @@
   <scm>
     <connection>scm:git:https://gitbox.apache.org/repos/asf/accumulo-access.git</connection>
     <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/accumulo-access.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>rel/1.0.0-beta</tag>
     <url>https://gitbox.apache.org/repos/asf?p=accumulo-access.git</url>
   </scm>
   <issueManagement>
@@ -100,7 +100,7 @@
     <maven.version.ignore>.+-SNAPSHOT,(?i).*(alpha|beta)[0-9.-]*,(?i).*[.-](m|rc)[0-9]+</maven.version.ignore>
     <minimalJavaBuildVersion>17</minimalJavaBuildVersion>
     <!-- timestamp for reproducible outputs, updated on release by the release plugin -->
-    <project.build.outputTimestamp>2023-08-14T08:11:10Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2024-02-14T14:21:47Z</project.build.outputTimestamp>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <rat.consoleOutput>true</rat.consoleOutput>
     <sourceReleaseAssemblyDescriptor>source-release-tar</sourceReleaseAssemblyDescriptor>
