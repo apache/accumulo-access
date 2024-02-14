@@ -200,3 +200,12 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+*****
+
+This project also includes portions that are made available under other licenses:
+
+* Abnf.g4 is copied in whole from
+  https://github.com/antlr/grammars-v4/blob/753536777d827ccc0c9b108531ea67375c2039ac/abnf/Abnf.g4
+  and is included under the terms of the BSD-3-Clause license found at the top of that file.
+
