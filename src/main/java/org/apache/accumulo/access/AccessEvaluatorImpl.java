@@ -196,9 +196,9 @@ final class AccessEvaluatorImpl implements AccessEvaluator {
 
   boolean evaluate(byte[] accessExpression) throws IllegalAccessExpressionException {
     var bytesWrapper = lookupWrappers.get();
+    var tokenizer = tokenizers.get();
 
     for (var auths : authorizedPredicates) {
-      var tokenizer = tokenizers.get();
       tokenizer.reset(accessExpression);
       Predicate<Tokenizer.AuthorizationToken> atp = authToken -> {
         bytesWrapper.set(authToken.data, authToken.start, authToken.len);
