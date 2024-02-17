@@ -504,6 +504,7 @@
           <excludes>
             <exclude>src/it/antlr4-example/src/main/antlr4/Abnf.g4</exclude>
             <exclude>src/test/resources/testdata.json</exclude>
+            <exclude>.github/**</exclude>
           </excludes>
         </configuration>
         <executions>
