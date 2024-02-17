@@ -30,7 +30,7 @@ Java implementation.
 
 ANTLR was evaluated as a replacement for the existing custom Java parser, but
 it doesn't parse as fast as the custom implementation. You can view the
-performance differences by running the JMH benchmark in this contrib project
+performance differences by running the JMH benchmark in this antlr4-example project
 and the one in the main project.
 
 To run the benchmark in this project, first build the main project using:
