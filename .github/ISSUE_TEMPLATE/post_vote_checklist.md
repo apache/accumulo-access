@@ -13,7 +13,6 @@ assignees: ''
   - [ ] Merge `<version>-rc<N>-next` branch into a maintenance branch (if maintenance is expected),
         and then into the `main` branch (and push them)
   - [ ] Remove `*-rc*` branches
-  - [ ] Update the Accumulo-Access dependency versions in the contrib projects
 - [Nexus](https://repository.apache.org) tasks
   - [ ] Release the staging repository corresponding to the successful release candidate (use "release" button)
   - [ ] Drop any other staging repositories for Accumulo-Access (do *not* "release" or "promote" them)
@@ -28,21 +27,15 @@ assignees: ''
   - [ ] In [several mirrors or CDN](https://www.apache.org/dyn/closer.lua/accumulo)
 - Update the [website](https://accumulo.apache.org/)
   - [ ] Release notes
-  - [ ] Add `LTM: true` to the release notes front-matter for LTM releases
   - [ ] Navigation
   - [ ] Downloads page
   - [ ] If LTM release, update previous LTM release entry on downloads page and release notes with an EOL date 1 year from the current release date
   - [ ] DOAP file
-  - [ ] Add manual/examples/javadoc (build javadoc from tag with `mvn clean package -DskipTests javadoc:aggregate -Paggregate-javadocs`)
-  - [ ] Add updated properties documentation (see [the website README](https://github.com/apache/accumulo-website#updating-property-documentation-for-releases))
-  - [ ] Jekyll config
-  - [ ] Grep for, and update any links to previous version to now point to the new version
-  - [ ] Update any older release notes front-matter to indicate they are either `archived: true` or `archived_critical: true`
 - Announcement email
   - [ ] Prepare and get review on dev list (see examples [from previous announcement messages](https://lists.apache.org/list.html?announce@apache.org:gte=1d:accumulo))
   - [ ] Send to announce@apache.org and user@accumulo.apache.org (use plain text mode only; html email will be rejected)
 - GitHub wrap-up
   - [ ] Close this issue
   - [ ] Create a new GitHub milestone for the next version (if necessary) and move any open issues not completed in this release to that project
-  - [ ] Close the project that corresponds to this release
+  - [ ] Close the milestone that corresponds to this release
 
