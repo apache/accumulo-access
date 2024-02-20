@@ -74,7 +74,7 @@ final class AccessEvaluatorImpl implements AccessEvaluator {
   }
 
   /**
-   * Create an AccessEvaluatorImpl using an Predicate&lt;String&gt; object
+   * Create an AccessEvaluatorImpl using a Predicate&lt;String&gt;
    */
   AccessEvaluatorImpl(Predicate<String> authorizationChecker) {
     this.authorizedPredicates = List.of(auth -> authorizationChecker.test(unescape(auth)));
