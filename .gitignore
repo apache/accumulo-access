@@ -18,19 +18,22 @@
 #
 
 # Maven ignores
-target/
+/target/
 
 # IDE ignores
-.settings/
-.project
-.classpath
-.pydevproject
-.idea
-*.iml
-*.ipr
-*.iws
-nbproject/
-nbactions.xml
-nb-configuration.xml
-.vscode/
-.factorypath
+/.settings/
+/.project
+/.classpath
+/.pydevproject
+/.idea
+/*.iml
+/*.ipr
+/*.iws
+/nbproject/
+/nbactions.xml
+/nb-configuration.xml
+/.vscode/
+/.factorypath
+
+# MacOS ignores
+.DS_Store

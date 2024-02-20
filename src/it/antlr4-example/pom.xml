@@ -24,18 +24,18 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>30</version>
+    <version>31</version>
   </parent>
   <groupId>org.apache.accumulo</groupId>
-  <artifactId>accumulo-access-antlr4</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <artifactId>accumulo-access-antlr4-example</artifactId>
+  <version>@project.version@</version>
   <name>Apache Accumulo Access Antlr4 Example</name>
   <properties>
+    <maven.compiler.release>11</maven.compiler.release>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
     <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <version.jmh>1.36</version.jmh>
   </properties>
   <dependencies>
     <dependency>
@@ -47,67 +47,35 @@
     <dependency>
       <groupId>org.apache.accumulo</groupId>
       <artifactId>accumulo-access</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.spotbugs</groupId>
-      <artifactId>spotbugs-annotations</artifactId>
-      <version>4.7.3</version>
-      <scope>test</scope>
+      <version>@project.version@</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.10.1</version>
+      <version>@version.gson@</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>5.9.2</version>
+      <version>@version.junit@</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.openjdk.jmh</groupId>
       <artifactId>jmh-core</artifactId>
-      <version>${version.jmh}</version>
+      <version>@version.jmh@</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.openjdk.jmh</groupId>
       <artifactId>jmh-generator-annprocess</artifactId>
-      <version>${version.jmh}</version>
+      <version>@version.jmh@</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
   <build>
     <plugins>
-      <plugin>
-        <groupId>com.github.ekryd.sortpom</groupId>
-        <artifactId>sortpom-maven-plugin</artifactId>
-        <version>3.3.0</version>
-        <configuration>
-          <createBackupFile>false</createBackupFile>
-          <expandEmptyElements>false</expandEmptyElements>
-          <keepBlankLines>false</keepBlankLines>
-          <lineSeparator>\n</lineSeparator>
-          <nrOfIndentSpace>2</nrOfIndentSpace>
-          <predefinedSortOrder>recommended_2008_06</predefinedSortOrder>
-          <sortDependencies>scope,groupId,artifactId</sortDependencies>
-          <sortProperties>true</sortProperties>
-          <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
-          <verifyFail>Stop</verifyFail>
-        </configuration>
-        <executions>
-          <execution>
-            <id>sort-pom</id>
-            <goals>
-              <goal>sort</goal>
-            </goals>
-            <phase>process-sources</phase>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>org.antlr</groupId>
         <artifactId>antlr4-maven-plugin</artifactId>
@@ -119,49 +87,13 @@
             </goals>
             <phase>generate-sources</phase>
             <configuration>
-              <outputDirectory>target/generated-sources/antlr4/org/apache/accumulo/access/grammars</outputDirectory>
+              <arguments>
+                <arg>-package</arg>
+                <arg>org.apache.accumulo.access.grammars</arg>
+              </arguments>
               <listener>false</listener>
               <visitor>false</visitor>
             </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>net.revelc.code</groupId>
-        <artifactId>impsort-maven-plugin</artifactId>
-        <version>1.9.0</version>
-        <configuration>
-          <removeUnused>true</removeUnused>
-          <groups>java.,javax.,jakarta.,org.,com.</groups>
-        </configuration>
-        <executions>
-          <execution>
-            <id>sort-imports</id>
-            <goals>
-              <goal>sort</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>net.revelc.code.formatter</groupId>
-        <artifactId>formatter-maven-plugin</artifactId>
-        <version>2.23.0</version>
-        <configuration>
-          <configFile>../../src/build/eclipse-codestyle.xml</configFile>
-          <lineEnding>LF</lineEnding>
-          <skipCssFormatting>true</skipCssFormatting>
-          <skipHtmlFormatting>true</skipHtmlFormatting>
-          <skipJsFormatting>true</skipJsFormatting>
-          <skipJsonFormatting>true</skipJsonFormatting>
-          <skipXmlFormatting>true</skipXmlFormatting>
-        </configuration>
-        <executions>
-          <execution>
-            <id>format-java-source</id>
-            <goals>
-              <goal>format</goal>
-            </goals>
           </execution>
         </executions>
       </plugin>

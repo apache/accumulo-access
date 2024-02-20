@@ -19,13 +19,22 @@
 package org.apache.accumulo.access;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
@@ -188,5 +197,31 @@ public class AccessExpressionTest {
 
     assertEquals(ae1.hashCode(), ae3.hashCode());
     assertNotEquals(ae1.hashCode(), ae2.hashCode());
+  }
+
+  @Test
+  public void testSpecificationDocumentation() throws IOException, URISyntaxException {
+    // verify AccessExpression.abnf matches what is documented in SPECIFICATION.md
+
+    // read the abnf spec, ignoring the header
+    List<String> specLinesFromAbnfFile;
+    try (
+        var abnfFileStream =
+            AccessExpression.class.getResourceAsStream("specification/AccessExpression.abnf");
+        var inputStreamReader = new InputStreamReader(abnfFileStream, UTF_8);
+        var bufferedReader = new BufferedReader(inputStreamReader)) {
+
+      Predicate<String> abnfComment = line -> line.startsWith(";");
+      Predicate<String> beforeFirstLine = abnfComment.or(String::isBlank);
+      specLinesFromAbnfFile = bufferedReader.lines().dropWhile(beforeFirstLine).collect(toList());
+    }
+
+    // grab from the markdown, but make sure to skip the markdown triple ticks
+    List<String> specLinesFromMarkdownFile = Files.readAllLines(Path.of("SPECIFICATION.md"))
+        .stream().dropWhile(line -> !line.startsWith("```ABNF")).skip(1)
+        .takeWhile(line -> !line.startsWith("```")).collect(toList());
+
+    assertFalse(specLinesFromAbnfFile.isEmpty()); // make sure we didn't just compare nothing
+    assertEquals(specLinesFromAbnfFile, specLinesFromMarkdownFile);
   }
 }
