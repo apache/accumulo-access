@@ -20,6 +20,7 @@ package org.apache.accumulo.access;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * <p>
@@ -91,12 +92,12 @@ public interface AccessEvaluator {
   }
 
   /**
-   * Creates an AccessEvaluator from an Authorizer object
+   * Creates an AccessEvaluator from a Predicate&lt;String&gt;
    *
-   * @param authorizer authorizer to use in the AccessEvaluator
+   * @param authorizer Predicate&lt;String&gt; to use in the AccessEvaluator
    * @return AccessEvaluator object
    */
-  static AccessEvaluator of(Authorizer authorizer) {
+  static AccessEvaluator of(Predicate<String> authorizer) {
     return new AccessEvaluatorImpl(authorizer);
   }
 
@@ -162,13 +163,4 @@ public interface AccessEvaluator {
     return new AccessEvaluatorImpl(AccessEvaluatorImpl.convert(authorizations));
   }
 
-  /**
-   * An interface that is used to check if an authorization seen in an access expression is
-   * authorized.
-   *
-   * @since 1.0.0
-   */
-  interface Authorizer {
-    boolean isAuthorized(String auth);
-  }
 }
