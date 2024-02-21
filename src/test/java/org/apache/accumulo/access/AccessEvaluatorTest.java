@@ -28,9 +28,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -87,8 +87,7 @@ public class AccessEvaluatorTest {
         evaluator = AccessEvaluator.of(testSet.auths[0]);
         runTestCases(testSet, evaluator);
 
-        Set<String> auths = Stream.of(testSet.auths[0]).collect(Collectors.toSet());
-        evaluator = AccessEvaluator.of(auths::contains);
+        evaluator = AccessEvaluator.of(Arrays.asList(testSet.auths[0])::contains);
         runTestCases(testSet, evaluator);
       } else {
         var authSets =
