@@ -35,7 +35,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -61,11 +60,10 @@ public class AccessExpressionTest {
       assertEquals(2, testCase.size());
       var expression = testCase.get(0);
       var expected = testCase.get(1);
-      var actual = AccessExpression.of(expression).getAuthorizations().asSet().stream().sorted()
-          .collect(Collectors.joining(","));
+      var actual = String.join(",", AccessExpression.of(expression).getAuthorizations().asSet());
       assertEquals(expected, actual);
-      actual = AccessExpression.of(expression.getBytes(UTF_8)).getAuthorizations().asSet().stream()
-          .sorted().collect(Collectors.joining(","));
+      actual = String.join(",",
+          AccessExpression.of(expression.getBytes(UTF_8)).getAuthorizations().asSet());
       assertEquals(expected, actual);
     }
 

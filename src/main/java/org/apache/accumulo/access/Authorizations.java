@@ -18,8 +18,11 @@
  */
 package org.apache.accumulo.access;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /**
  * An immutable collection of authorization strings.
@@ -33,13 +36,13 @@ import java.util.Set;
  * @since 1.0.0
  */
 public final class Authorizations {
-  private final Set<String> authorizations;
+  private final SortedSet<String> authorizations;
 
-  private Authorizations(Set<String> authorizations) {
-    this.authorizations = Set.copyOf(authorizations);
+  private Authorizations(SortedSet<String> authorizations) {
+    this.authorizations = authorizations;
   }
 
-  public Set<String> asSet() {
+  public SortedSet<String> asSet() {
     return authorizations;
   }
 
@@ -64,11 +67,12 @@ public final class Authorizations {
   }
 
   public static Authorizations of(String... authorizations) {
-    return new Authorizations(Set.of(authorizations));
+    return new Authorizations(
+        Arrays.stream(authorizations).collect(Collectors.toCollection(TreeSet::new)));
   }
 
   public static Authorizations of(Collection<String> authorizations) {
-    return new Authorizations(Set.copyOf(authorizations));
+    return new Authorizations(new TreeSet<>(authorizations));
   }
 
 }
