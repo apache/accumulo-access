@@ -90,9 +90,15 @@ public interface AccessEvaluator {
   }
 
   /**
-   * Creates an AccessEvaluator from a Predicate&lt;String&gt;
+   * Creates an AccessEvaluator from a Predicate&lt;String&gt;. The Predicate is used to test
+   * whether an authorization seen in an access expression is authorized. The {@code test()} method
+   * of the Predicate will be called with a single authorization as its argument. The Predicate
+   * should return true if the exact String matches an authorization that should be granted access,
+   * and false otherwise.
    *
-   * @param authorizer Predicate&lt;String&gt; to use in the AccessEvaluator
+   * @param authorizer Predicate&lt;String&gt; to use in the AccessEvaluator. This Predicate should
+   *        return true for authorizations that should be granted access, and false for those that
+   *        should not.
    * @return AccessEvaluator object
    */
   static AccessEvaluator of(Predicate<String> authorizer) {
