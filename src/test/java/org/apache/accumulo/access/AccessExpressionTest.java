@@ -47,14 +47,14 @@ public class AccessExpressionTest {
     // is the expected authorization in the expression
     var testData = new ArrayList<List<String>>();
 
-    testData.add(List.of("", ""));
-    testData.add(List.of("a", "a"));
-    testData.add(List.of("(a)", "a"));
-    testData.add(List.of("Z|M|A", "A,M,Z"));
-    testData.add(List.of("Z&M&A", "A,M,Z"));
-    testData.add(List.of("(Y|B|Y)&(Z|A|Z)", "A,B,Y,Z"));
-    testData.add(List.of("(Y&B&Y)|(Z&A&Z)", "A,B,Y,Z"));
-    testData.add(List.of("(A1|B1)&((A1|B2)&(B2|C1))", "A1,B1,B2,C1"));
+    testData.add(List.of("", "[]"));
+    testData.add(List.of("a", "[a]"));
+    testData.add(List.of("(a)", "[a]"));
+    testData.add(List.of("Z|M|A", "[A, M, Z]"));
+    testData.add(List.of("Z&M&A", "[A, M, Z]"));
+    testData.add(List.of("(Y|B|Y)&(Z|A|Z)", "[A, B, Y, Z]"));
+    testData.add(List.of("(Y&B&Y)|(Z&A&Z)", "[A, B, Y, Z]"));
+    testData.add(List.of("(A1|B1)&((A1|B2)&(B2|C1))", "[A1, B1, B2, C1]"));
 
     for (var testCase : testData) {
       assertEquals(2, testCase.size());

@@ -20,7 +20,7 @@ package org.apache.accumulo.access;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.TreeSet;
 
 /**
  * An immutable collection of authorization strings.
@@ -64,7 +64,7 @@ public final class Authorizations {
    */
   @Override
   public String toString() {
-    return authorizations.stream().sorted().collect(Collectors.joining(","));
+    return new TreeSet<>(authorizations).toString();
   }
 
   public static Authorizations of(String... authorizations) {
