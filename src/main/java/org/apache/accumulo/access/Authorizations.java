@@ -18,10 +18,8 @@
  */
 package org.apache.accumulo.access;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -36,13 +34,13 @@ import java.util.stream.Collectors;
  * @since 1.0.0
  */
 public final class Authorizations {
-  private final SortedSet<String> authorizations;
+  private final Set<String> authorizations;
 
-  private Authorizations(SortedSet<String> authorizations) {
-    this.authorizations = authorizations;
+  private Authorizations(Set<String> authorizations) {
+    this.authorizations = Set.copyOf(authorizations);
   }
 
-  public SortedSet<String> asSet() {
+  public Set<String> asSet() {
     return authorizations;
   }
 
@@ -61,18 +59,20 @@ public final class Authorizations {
     return authorizations.hashCode();
   }
 
+  /**
+   * @return a String containing the sorted, comma-separated set of authorizations
+   */
   @Override
   public String toString() {
-    return authorizations.toString();
+    return authorizations.stream().sorted().collect(Collectors.joining(","));
   }
 
   public static Authorizations of(String... authorizations) {
-    return new Authorizations(
-        Arrays.stream(authorizations).collect(Collectors.toCollection(TreeSet::new)));
+    return new Authorizations(Set.of(authorizations));
   }
 
   public static Authorizations of(Collection<String> authorizations) {
-    return new Authorizations(new TreeSet<>(authorizations));
+    return new Authorizations(Set.copyOf(authorizations));
   }
 
 }

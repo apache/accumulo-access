@@ -60,10 +60,9 @@ public class AccessExpressionTest {
       assertEquals(2, testCase.size());
       var expression = testCase.get(0);
       var expected = testCase.get(1);
-      var actual = String.join(",", AccessExpression.of(expression).getAuthorizations().asSet());
+      var actual = AccessExpression.of(expression).getAuthorizations().toString();
       assertEquals(expected, actual);
-      actual = String.join(",",
-          AccessExpression.of(expression.getBytes(UTF_8)).getAuthorizations().asSet());
+      actual = AccessExpression.of(expression.getBytes(UTF_8)).getAuthorizations().toString();
       assertEquals(expected, actual);
     }
 
@@ -221,5 +220,15 @@ public class AccessExpressionTest {
 
     assertFalse(specLinesFromAbnfFile.isEmpty()); // make sure we didn't just compare nothing
     assertEquals(specLinesFromAbnfFile, specLinesFromMarkdownFile);
+  }
+
+  @Test
+  public void authSetIsImmutable() {
+    Authorizations auths = AccessExpression.of("A&B").getAuthorizations();
+    var authSet = auths.asSet();
+    assertThrows(UnsupportedOperationException.class, () -> authSet.add("C"),
+        "Set returned by asSet should be immutable");
+    assertThrows(UnsupportedOperationException.class, () -> authSet.remove("A"),
+        "Set returned by asSet should be immutable");
   }
 }
