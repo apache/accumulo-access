@@ -20,6 +20,7 @@ package org.apache.accumulo.access;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * An immutable collection of authorization strings.
@@ -58,9 +59,12 @@ public final class Authorizations {
     return authorizations.hashCode();
   }
 
+  /**
+   * @return a String containing the sorted, comma-separated set of authorizations
+   */
   @Override
   public String toString() {
-    return authorizations.toString();
+    return new TreeSet<>(authorizations).toString();
   }
 
   public static Authorizations of(String... authorizations) {
