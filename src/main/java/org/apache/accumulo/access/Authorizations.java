@@ -18,6 +18,7 @@
  */
 package org.apache.accumulo.access;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 
@@ -64,7 +65,8 @@ public final class Authorizations {
   }
 
   public static Authorizations of(String... authorizations) {
-    return new Authorizations(Set.of(authorizations));
+    // Use Set.copyOf to remove duplicates if they exist
+    return new Authorizations(Set.copyOf(Arrays.asList(authorizations)));
   }
 
   public static Authorizations of(Collection<String> authorizations) {
