@@ -120,7 +120,7 @@ public class Antlr4Tests {
   @Test
   public void testSimpleEvaluation() throws Exception {
     String accessExpression = "(one&two)|(foo&bar)";
-    Authorizations auths = Authorizations.of("four", "three", "one", "two");
+    Authorizations auths = Authorizations.of(false, "four", "three", "one", "two");
     AccessExpressionAntlrEvaluator eval = new AccessExpressionAntlrEvaluator(List.of(auths));
     assertTrue(eval.canAccess(accessExpression));
   }
@@ -128,7 +128,7 @@ public class Antlr4Tests {
   @Test
   public void testSimpleEvaluationFailure() throws Exception {
     String accessExpression = "(A&B&C)";
-    Authorizations auths = Authorizations.of("A", "C");
+    Authorizations auths = Authorizations.of(false, "A", "C");
     AccessExpressionAntlrEvaluator eval = new AccessExpressionAntlrEvaluator(List.of(auths));
     assertFalse(eval.canAccess(accessExpression));
   }
@@ -141,7 +141,7 @@ public class Antlr4Tests {
     for (TestDataSet testSet : testData) {
 
       List<Authorizations> authSets =
-          Stream.of(testSet.auths).map(Authorizations::of).collect(Collectors.toList());
+          Stream.of(testSet.auths).map(a -> Authorizations.of(false, a)).collect(Collectors.toList());
       AccessEvaluator evaluator = AccessEvaluator.of(authSets);
       AccessExpressionAntlrEvaluator antlr = new AccessExpressionAntlrEvaluator(authSets);
 

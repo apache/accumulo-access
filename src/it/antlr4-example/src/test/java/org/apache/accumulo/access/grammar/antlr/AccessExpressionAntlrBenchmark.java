@@ -86,7 +86,7 @@ public class AccessExpressionAntlrBenchmark {
         et.expressions = new ArrayList<>();
 
         et.evaluator = new AccessExpressionAntlrEvaluator(
-            Stream.of(testDataSet.auths).map(Authorizations::of).collect(Collectors.toList()));
+            Stream.of(testDataSet.auths).map(a -> Authorizations.of(false, a)).collect(Collectors.toList()));
 
         for (var tests : testDataSet.tests) {
           if (tests.expectedResult != TestDataLoader.ExpectedResult.ERROR) {
