@@ -18,6 +18,7 @@
  */
 package org.apache.accumulo.access;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 
@@ -39,6 +40,11 @@ public final class Authorizations {
     this.authorizations = Set.copyOf(authorizations);
   }
 
+  /**
+   * Returns the set of authorization strings in this Authorization object
+   *
+   * @return set of authorization strings
+   */
   public Set<String> asSet() {
     return authorizations;
   }
@@ -63,12 +69,37 @@ public final class Authorizations {
     return authorizations.toString();
   }
 
-  public static Authorizations of(String... authorizations) {
-    return new Authorizations(Set.of(authorizations));
+  /**
+   * Creates an Authorizations object from the list of input authorization strings. Duplicate values
+   * are removed from the input list
+   *
+   * @param failOnDuplicates throw an exception if there are duplicates in the input
+   * @param authorizations list of authorization strings
+   * @return Authorizations object
+   * @throws IllegalArgumentException if failOnDuplicates is true and duplicates in the input
+   */
+  public static Authorizations of(boolean failOnDuplicates, String... authorizations) {
+    return failOnDuplicates ? new Authorizations(Set.of(authorizations))
+        : of(false, Arrays.asList(authorizations));
   }
 
-  public static Authorizations of(Collection<String> authorizations) {
-    return new Authorizations(Set.copyOf(authorizations));
+  /**
+   * Creates an Authorizations object from the collection of input authorization strings. Duplicate
+   * values are removed from the input list
+   *
+   * @param failOnDuplicates throw an exception if there are duplicates in the input
+   * @param authorizations list of authorization strings
+   * @return Authorizations object
+   * @throws IllegalArgumentException if failOnDuplicates is true and duplicates in the input
+   */
+  public static Authorizations of(boolean failOnDuplicates, Collection<String> authorizations) {
+    Set<String> auths = Set.copyOf(authorizations);
+    if (failOnDuplicates) {
+      if (authorizations.size() != auths.size()) {
+        throw new IllegalArgumentException("duplicate element found in input");
+      }
+    }
+    return new Authorizations(auths);
   }
 
 }

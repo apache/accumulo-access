@@ -91,8 +91,8 @@ public class AccessEvaluatorTest {
         evaluator = AccessEvaluator.of(auths::contains);
         runTestCases(testSet, evaluator);
       } else {
-        var authSets =
-            Stream.of(testSet.auths).map(Authorizations::of).collect(Collectors.toList());
+        var authSets = Stream.of(testSet.auths).map(a -> Authorizations.of(false, a))
+            .collect(Collectors.toList());
         evaluator = AccessEvaluator.of(authSets);
         runTestCases(testSet, evaluator);
       }
@@ -187,7 +187,8 @@ public class AccessEvaluatorTest {
     assertThrows(IllegalArgumentException.class, () -> AccessEvaluator.of(""));
     assertThrows(IllegalArgumentException.class, () -> AccessEvaluator.of("", "A"));
     assertThrows(IllegalArgumentException.class, () -> AccessEvaluator.of("A", ""));
-    assertThrows(IllegalArgumentException.class, () -> AccessEvaluator.of(Authorizations.of("")));
+    assertThrows(IllegalArgumentException.class,
+        () -> AccessEvaluator.of(Authorizations.of(false, "")));
   }
 
   @Test

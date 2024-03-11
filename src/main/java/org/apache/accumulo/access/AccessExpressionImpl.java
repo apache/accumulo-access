@@ -86,7 +86,7 @@ final class AccessExpressionImpl implements AccessExpression {
       return true;
     };
     ParserEvaluator.parseAccessExpression(tokenizer, atp, atp);
-    return Authorizations.of(auths);
+    return Authorizations.of(false, auths);
   }
 
   static Authorizations getAuthorizations(String expression) {

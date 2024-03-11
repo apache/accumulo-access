@@ -87,8 +87,8 @@ public class AccessExpressionBenchmark {
         if (testDataSet.auths.length == 1) {
           et.evaluator = AccessEvaluator.of(testDataSet.auths[0]);
         } else {
-          var authSets =
-              Stream.of(testDataSet.auths).map(Authorizations::of).collect(Collectors.toList());
+          var authSets = Stream.of(testDataSet.auths).map(a -> Authorizations.of(false, a))
+              .collect(Collectors.toList());
           et.evaluator = AccessEvaluator.of(authSets);
         }
 
