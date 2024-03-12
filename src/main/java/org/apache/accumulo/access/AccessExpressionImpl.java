@@ -75,7 +75,7 @@ final class AccessExpressionImpl implements AccessExpression {
 
   @Override
   public Authorizations getAuthorizations() {
-    return AccessExpressionImpl.getAuthorizations(expression);
+    return getAuthorizations(expression);
   }
 
   static Authorizations getAuthorizations(byte[] expression) {
@@ -86,7 +86,7 @@ final class AccessExpressionImpl implements AccessExpression {
       return true;
     };
     ParserEvaluator.parseAccessExpression(tokenizer, atp, atp);
-    return Authorizations.of(false, auths);
+    return Authorizations.of(auths);
   }
 
   static Authorizations getAuthorizations(String expression) {

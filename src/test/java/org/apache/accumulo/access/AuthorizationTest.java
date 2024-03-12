@@ -19,10 +19,9 @@
 package org.apache.accumulo.access;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -30,36 +29,16 @@ public class AuthorizationTest {
 
   @Test
   public void testEquality() {
-    Authorizations auths1 = Authorizations.of(false, "A", "B", "C");
-    Authorizations auths2 = Authorizations.of(false, "A", "B", "C");
-
-    assertEquals(auths1, auths2);
-    assertEquals(auths1.hashCode(), auths2.hashCode());
-  }
-
-  @Test
-  public void testDuplicateElementsInArray() {
-    Authorizations auths1 = Authorizations.of(false, "A", "B", "C");
-    Authorizations auths2 = Authorizations.of(false, "A", "A", "B", "C");
+    Authorizations auths1 = Authorizations.of(Set.of("A", "B", "C"));
+    Authorizations auths2 = Authorizations.of(Set.of("A", "B", "C"));
 
     assertEquals(auths1, auths2);
     assertEquals(auths1.hashCode(), auths2.hashCode());
 
-    assertNotNull(Authorizations.of(true, "A", "B", "C"));
-    assertThrows(IllegalArgumentException.class, () -> Authorizations.of(true, "A", "A", "B", "C"));
-  }
+    Authorizations auths3 = Authorizations.of(Set.of("D", "E", "F"));
 
-  @Test
-  public void testDuplicateElementsInCollection() {
-    Authorizations auths1 = Authorizations.of(false, List.of("A", "B", "C"));
-    Authorizations auths2 = Authorizations.of(false, List.of("A", "A", "B", "C"));
-
-    assertEquals(auths1, auths2);
-    assertEquals(auths1.hashCode(), auths2.hashCode());
-
-    assertNotNull(Authorizations.of(true, List.of("A", "B", "C")));
-    assertThrows(IllegalArgumentException.class,
-        () -> Authorizations.of(true, List.of("A", "A", "B", "C")));
+    assertNotEquals(auths1, auths3);
+    assertNotEquals(auths1.hashCode(), auths3.hashCode());
 
   }
 

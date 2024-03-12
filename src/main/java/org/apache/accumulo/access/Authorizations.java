@@ -18,8 +18,6 @@
  */
 package org.apache.accumulo.access;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -34,6 +32,7 @@ import java.util.Set;
  * @since 1.0.0
  */
 public final class Authorizations {
+
   private final Set<String> authorizations;
 
   private Authorizations(Set<String> authorizations) {
@@ -70,36 +69,13 @@ public final class Authorizations {
   }
 
   /**
-   * Creates an Authorizations object from the list of input authorization strings. Duplicate values
-   * are removed from the input list
+   * Creates an Authorizations object from the set of input authorization strings.
    *
-   * @param failOnDuplicates throw an exception if there are duplicates in the input
    * @param authorizations list of authorization strings
    * @return Authorizations object
-   * @throws IllegalArgumentException if failOnDuplicates is true and duplicates in the input
    */
-  public static Authorizations of(boolean failOnDuplicates, String... authorizations) {
-    return failOnDuplicates ? new Authorizations(Set.of(authorizations))
-        : of(false, Arrays.asList(authorizations));
-  }
-
-  /**
-   * Creates an Authorizations object from the collection of input authorization strings. Duplicate
-   * values are removed from the input list
-   *
-   * @param failOnDuplicates throw an exception if there are duplicates in the input
-   * @param authorizations list of authorization strings
-   * @return Authorizations object
-   * @throws IllegalArgumentException if failOnDuplicates is true and duplicates in the input
-   */
-  public static Authorizations of(boolean failOnDuplicates, Collection<String> authorizations) {
-    Set<String> auths = Set.copyOf(authorizations);
-    if (failOnDuplicates) {
-      if (authorizations.size() != auths.size()) {
-        throw new IllegalArgumentException("duplicate element found in input");
-      }
-    }
-    return new Authorizations(auths);
+  public static Authorizations of(Set<String> authorizations) {
+    return new Authorizations(authorizations);
   }
 
 }

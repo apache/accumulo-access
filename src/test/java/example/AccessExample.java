@@ -22,9 +22,11 @@ package example;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.accumulo.access.AccessEvaluator;
+import org.apache.accumulo.access.Authorizations;
 
 public class AccessExample {
 
@@ -56,7 +58,7 @@ public class AccessExample {
         Arrays.toString(authorizations));
 
     // Create an access evaluator using the provided authorizations
-    AccessEvaluator evaluator = AccessEvaluator.of(authorizations);
+    AccessEvaluator evaluator = AccessEvaluator.of(Authorizations.of(Set.of(authorizations)));
 
     // Print each record whose access expression permits viewing using the provided authorizations
     getData().forEach((record, accessExpression) -> {
