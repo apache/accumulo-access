@@ -71,7 +71,7 @@ public final class Authorizations {
   /**
    * Creates an Authorizations object from the set of input authorization strings.
    *
-   * @param authorizations list of authorization strings
+   * @param authorizations set of authorization strings
    * @return Authorizations object
    */
   public static Authorizations of(Set<String> authorizations) {
