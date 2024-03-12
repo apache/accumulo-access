@@ -18,7 +18,6 @@
  */
 package org.apache.accumulo.access;
 
-import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -33,12 +32,18 @@ import java.util.Set;
  * @since 1.0.0
  */
 public final class Authorizations {
+
   private final Set<String> authorizations;
 
   private Authorizations(Set<String> authorizations) {
     this.authorizations = Set.copyOf(authorizations);
   }
 
+  /**
+   * Returns the set of authorization strings in this Authorization object
+   *
+   * @return immutable set of authorization strings
+   */
   public Set<String> asSet() {
     return authorizations;
   }
@@ -63,12 +68,14 @@ public final class Authorizations {
     return authorizations.toString();
   }
 
-  public static Authorizations of(String... authorizations) {
-    return new Authorizations(Set.of(authorizations));
-  }
-
-  public static Authorizations of(Collection<String> authorizations) {
-    return new Authorizations(Set.copyOf(authorizations));
+  /**
+   * Creates an Authorizations object from the set of input authorization strings.
+   *
+   * @param authorizations set of authorization strings
+   * @return Authorizations object
+   */
+  public static Authorizations of(Set<String> authorizations) {
+    return new Authorizations(authorizations);
   }
 
 }

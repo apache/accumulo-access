@@ -56,14 +56,6 @@ final class AccessEvaluatorImpl implements AccessEvaluator {
     return authorizationLists;
   }
 
-  static Collection<List<byte[]>> convert(String... authorizations) {
-    final List<byte[]> authList = new ArrayList<>(authorizations.length);
-    for (final String auth : authorizations) {
-      authList.add(auth.getBytes(UTF_8));
-    }
-    return Collections.singletonList(authList);
-  }
-
   static Collection<List<byte[]>> convert(Authorizations authorizations) {
     final Set<String> authSet = authorizations.asSet();
     final List<byte[]> authList = new ArrayList<>(authSet.size());

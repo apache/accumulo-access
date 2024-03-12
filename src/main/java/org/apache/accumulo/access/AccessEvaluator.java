@@ -153,13 +153,6 @@ public interface AccessEvaluator {
   }
 
   /**
-   * Allows specifying a single set of authorizations.
-   */
-  static AccessEvaluator of(String... authorizations) {
-    return new AccessEvaluatorImpl(AccessEvaluatorImpl.convert(authorizations));
-  }
-
-  /**
    * An interface that is used to check if an authorization seen in an access expression is
    * authorized.
    *

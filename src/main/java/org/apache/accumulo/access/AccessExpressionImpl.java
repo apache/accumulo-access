@@ -75,7 +75,7 @@ final class AccessExpressionImpl implements AccessExpression {
 
   @Override
   public Authorizations getAuthorizations() {
-    return AccessExpressionImpl.getAuthorizations(expression);
+    return getAuthorizations(expression);
   }
 
   static Authorizations getAuthorizations(byte[] expression) {

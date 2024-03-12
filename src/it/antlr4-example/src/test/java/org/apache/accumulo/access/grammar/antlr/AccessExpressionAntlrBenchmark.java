@@ -25,6 +25,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -86,7 +87,7 @@ public class AccessExpressionAntlrBenchmark {
         et.expressions = new ArrayList<>();
 
         et.evaluator = new AccessExpressionAntlrEvaluator(
-            Stream.of(testDataSet.auths).map(Authorizations::of).collect(Collectors.toList()));
+            Stream.of(testDataSet.auths).map(a -> Authorizations.of(Set.of(a))).collect(Collectors.toList()));
 
         for (var tests : testDataSet.tests) {
           if (tests.expectedResult != TestDataLoader.ExpectedResult.ERROR) {

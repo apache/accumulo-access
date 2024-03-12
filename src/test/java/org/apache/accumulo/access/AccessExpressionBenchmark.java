@@ -23,6 +23,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -85,10 +86,10 @@ public class AccessExpressionBenchmark {
         et.expressions = new ArrayList<>();
 
         if (testDataSet.auths.length == 1) {
-          et.evaluator = AccessEvaluator.of(testDataSet.auths[0]);
+          et.evaluator = AccessEvaluator.of(Authorizations.of(Set.of(testDataSet.auths[0])));
         } else {
-          var authSets =
-              Stream.of(testDataSet.auths).map(Authorizations::of).collect(Collectors.toList());
+          var authSets = Stream.of(testDataSet.auths).map(a -> Authorizations.of(Set.of(a)))
+              .collect(Collectors.toList());
           et.evaluator = AccessEvaluator.of(authSets);
         }
 

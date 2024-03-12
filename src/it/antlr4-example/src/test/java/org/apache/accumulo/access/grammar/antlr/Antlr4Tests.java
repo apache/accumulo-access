@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -120,7 +121,7 @@ public class Antlr4Tests {
   @Test
   public void testSimpleEvaluation() throws Exception {
     String accessExpression = "(one&two)|(foo&bar)";
-    Authorizations auths = Authorizations.of("four", "three", "one", "two");
+    Authorizations auths = Authorizations.of(Set.of("four", "three", "one", "two"));
     AccessExpressionAntlrEvaluator eval = new AccessExpressionAntlrEvaluator(List.of(auths));
     assertTrue(eval.canAccess(accessExpression));
   }
@@ -128,7 +129,7 @@ public class Antlr4Tests {
   @Test
   public void testSimpleEvaluationFailure() throws Exception {
     String accessExpression = "(A&B&C)";
-    Authorizations auths = Authorizations.of("A", "C");
+    Authorizations auths = Authorizations.of(Set.of("A", "C"));
     AccessExpressionAntlrEvaluator eval = new AccessExpressionAntlrEvaluator(List.of(auths));
     assertFalse(eval.canAccess(accessExpression));
   }
@@ -141,7 +142,7 @@ public class Antlr4Tests {
     for (TestDataSet testSet : testData) {
 
       List<Authorizations> authSets =
-          Stream.of(testSet.auths).map(Authorizations::of).collect(Collectors.toList());
+          Stream.of(testSet.auths).map(a -> Authorizations.of(Set.of(a))).collect(Collectors.toList());
       AccessEvaluator evaluator = AccessEvaluator.of(authSets);
       AccessExpressionAntlrEvaluator antlr = new AccessExpressionAntlrEvaluator(authSets);
 
