@@ -42,7 +42,7 @@ public final class Authorizations {
   /**
    * Returns the set of authorization strings in this Authorization object
    *
-   * @return set of authorization strings
+   * @return immutable set of authorization strings
    */
   public Set<String> asSet() {
     return authorizations;
