@@ -33,6 +33,8 @@ import java.util.Set;
  */
 public final class Authorizations {
 
+  private static final Authorizations EMPTY = new Authorizations(Set.of());
+
   private final Set<String> authorizations;
 
   private Authorizations(Set<String> authorizations) {
@@ -75,7 +77,10 @@ public final class Authorizations {
    * @return Authorizations object
    */
   public static Authorizations of(Set<String> authorizations) {
-    return new Authorizations(authorizations);
+    if (authorizations.isEmpty()) {
+      return EMPTY;
+    } else {
+      return new Authorizations(authorizations);
+    }
   }
-
 }
