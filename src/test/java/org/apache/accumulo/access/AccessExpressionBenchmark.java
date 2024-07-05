@@ -62,8 +62,8 @@ public class AccessExpressionBenchmark {
 
   public static class VisibilityEvaluatorTests {
     List<VisibilityEvaluator> evaluator;
-
-    List<ColumnVisibility> expressions;
+    List<byte[]> expressions;
+    List<ColumnVisibility> columnVisibilities;
   }
 
   public static class EvaluatorTests {
@@ -98,6 +98,7 @@ public class AccessExpressionBenchmark {
         // Create old
         VisibilityEvaluatorTests vet = new VisibilityEvaluatorTests();
         vet.expressions = new ArrayList<>();
+        vet.columnVisibilities = new ArrayList<>();
 
         if (testDataSet.auths.length == 1) {
           vet.evaluator = List.of(new VisibilityEvaluator(
@@ -130,7 +131,8 @@ public class AccessExpressionBenchmark {
               byte[] byteExp = exp.getBytes(UTF_8);
               allTestExpressions.add(byteExp);
               et.expressions.add(byteExp);
-              vet.expressions.add(new ColumnVisibility(byteExp));
+              vet.expressions.add(byteExp);
+              vet.columnVisibilities.add(new ColumnVisibility(byteExp));
             }
           }
         }
@@ -183,7 +185,7 @@ public class AccessExpressionBenchmark {
    * tree an operate on it.
    */
   @Benchmark
-  public void measureEvaluation(BenchmarkState state, Blackhole blackhole) {
+  public void measureParseAndEvaluation(BenchmarkState state, Blackhole blackhole) {
     for (EvaluatorTests evaluatorTests : state.getEvaluatorTests()) {
       for (byte[] expression : evaluatorTests.expressions) {
         blackhole.consume(evaluatorTests.evaluator.canAccess(expression));
@@ -192,18 +194,35 @@ public class AccessExpressionBenchmark {
   }
 
   /**
-   * Measures the time it takes to parse and evaluate an expression. This has to create the parse
-   * tree an operate on it.
+   * Measures the time it takes to evaluate a legacy expression.
    *
-   * @throws VisibilityParseException
+   * @throws VisibilityParseException error parsing expression with legacy code
    */
   @Benchmark
-  public void measureLegacyEvaluation(BenchmarkState state, Blackhole blackhole)
+  public void measureLegacyEvaluationOnly(BenchmarkState state, Blackhole blackhole)
       throws VisibilityParseException {
     for (VisibilityEvaluatorTests evaluatorTests : state.getVisibilityEvaluatorTests()) {
-      for (ColumnVisibility expression : evaluatorTests.expressions) {
+      for (ColumnVisibility expression : evaluatorTests.columnVisibilities) {
         for (VisibilityEvaluator ve : evaluatorTests.evaluator) {
           blackhole.consume(ve.evaluate(expression));
+        }
+      }
+    }
+  }
+
+  /**
+   * Measures the time it takes to parse and evaluate a legacy expression. This has to create the
+   * parse tree an operate on it.
+   *
+   * @throws VisibilityParseException error parsing expression with legacy code
+   */
+  @Benchmark
+  public void measureLegacyParseAndEvaluation(BenchmarkState state, Blackhole blackhole)
+      throws VisibilityParseException {
+    for (VisibilityEvaluatorTests evaluatorTests : state.getVisibilityEvaluatorTests()) {
+      for (byte[] expression : evaluatorTests.expressions) {
+        for (VisibilityEvaluator ve : evaluatorTests.evaluator) {
+          blackhole.consume(ve.evaluate(new ColumnVisibility(expression)));
         }
       }
     }
