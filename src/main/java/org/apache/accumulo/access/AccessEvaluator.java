@@ -18,7 +18,11 @@
  */
 package org.apache.accumulo.access;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * This class is used to decide if an entity with a given set of authorizations can access
@@ -84,7 +88,7 @@ public interface AccessEvaluator {
    * @return AccessEvaluator object
    */
   static AccessEvaluator of(Authorizations authorizations) {
-    return new AccessEvaluatorImpl(AccessEvaluatorImpl.convert(authorizations));
+    return new AccessEvaluatorImpl(authorizations);
   }
 
   /**
@@ -149,7 +153,32 @@ public interface AccessEvaluator {
    *
    */
   static AccessEvaluator of(Collection<Authorizations> authorizationSets) {
-    return new AccessEvaluatorImpl(AccessEvaluatorImpl.convert(authorizationSets));
+    List<AccessEvaluatorImpl> evaluators = new ArrayList<>(authorizationSets.size());
+    for (Authorizations authorizations : authorizationSets) {
+      evaluators.add(new AccessEvaluatorImpl(authorizations));
+    }
+
+    return new AccessEvaluator() {
+      @Override
+      public boolean canAccess(String accessExpression) throws IllegalAccessExpressionException {
+        return canAccess(accessExpression.getBytes(UTF_8));
+      }
+
+      @Override
+      public boolean canAccess(byte[] accessExpression) throws IllegalAccessExpressionException {
+        for (AccessEvaluatorImpl evaluator : evaluators) {
+          if (!evaluator.canAccess(accessExpression)) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      @Override
+      public boolean canAccess(AccessExpression accessExpression) {
+        return canAccess(accessExpression.getExpression());
+      }
+    };
   }
 
   /**
