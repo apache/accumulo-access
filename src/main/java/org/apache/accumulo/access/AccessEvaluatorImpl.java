@@ -24,17 +24,13 @@ import static org.apache.accumulo.access.ByteUtils.QUOTE;
 import static org.apache.accumulo.access.ByteUtils.isQuoteOrSlash;
 import static org.apache.accumulo.access.ByteUtils.isQuoteSymbol;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
 //this class is intentionally package private and should never be made public
 final class AccessEvaluatorImpl implements AccessEvaluator {
-  private final Collection<Predicate<BytesWrapper>> authorizedPredicates;
+  private final Predicate<BytesWrapper> authorizedPredicate;
 
   private static final byte[] EMPTY = new byte[0];
 
@@ -43,57 +39,28 @@ final class AccessEvaluatorImpl implements AccessEvaluator {
   private static final ThreadLocal<Tokenizer> tokenizers =
       ThreadLocal.withInitial(() -> new Tokenizer(EMPTY));
 
-  static Collection<List<byte[]>> convert(Collection<Authorizations> authorizationSets) {
-    final List<List<byte[]>> authorizationLists = new ArrayList<>(authorizationSets.size());
-    for (final Authorizations authorizations : authorizationSets) {
-      final Set<String> authSet = authorizations.asSet();
-      final List<byte[]> authList = new ArrayList<>(authSet.size());
-      for (final String auth : authSet) {
-        authList.add(auth.getBytes(UTF_8));
-      }
-      authorizationLists.add(authList);
-    }
-    return authorizationLists;
-  }
-
-  static Collection<List<byte[]>> convert(Authorizations authorizations) {
-    final Set<String> authSet = authorizations.asSet();
-    final List<byte[]> authList = new ArrayList<>(authSet.size());
-    for (final String auth : authSet) {
-      authList.add(auth.getBytes(UTF_8));
-    }
-    return Collections.singletonList(authList);
-  }
-
   /**
    * Create an AccessEvaluatorImpl using an Authorizer object
    */
   AccessEvaluatorImpl(Authorizer authorizationChecker) {
-    this.authorizedPredicates = List.of(auth -> authorizationChecker.isAuthorized(unescape(auth)));
+    this.authorizedPredicate = auth -> authorizationChecker.isAuthorized(unescape(auth));
   }
 
   /**
    * Create an AccessEvaluatorImpl using a collection of authorizations
    */
-  AccessEvaluatorImpl(final Collection<List<byte[]>> authorizationSets) {
-
-    for (final List<byte[]> auths : authorizationSets) {
-      for (final byte[] auth : auths) {
-        if (auth.length == 0) {
-          throw new IllegalArgumentException("Empty authorization");
-        }
+  AccessEvaluatorImpl(Authorizations authorizations) {
+    var authsSet = authorizations.asSet();
+    final Set<BytesWrapper> authBytes = new HashSet<>(authsSet.size());
+    for (String authorization : authsSet) {
+      var auth = authorization.getBytes(UTF_8);
+      if (auth.length == 0) {
+        throw new IllegalArgumentException("Empty authorization");
       }
+      authBytes.add(new BytesWrapper(AccessEvaluatorImpl.escape(auth, false)));
     }
 
-    final List<Predicate<BytesWrapper>> predicates = new ArrayList<>(authorizationSets.size());
-    for (final List<byte[]> authorizationList : authorizationSets) {
-      final Set<BytesWrapper> authBytes = new HashSet<>(authorizationList.size());
-      for (final byte[] authorization : authorizationList) {
-        authBytes.add(new BytesWrapper(AccessEvaluatorImpl.escape(authorization, false)));
-      }
-      predicates.add((auth) -> authBytes.contains(auth));
-    }
-    authorizedPredicates = List.copyOf(predicates);
+    authorizedPredicate = authBytes::contains;
   }
 
   static String unescape(BytesWrapper auth) {
@@ -190,17 +157,11 @@ final class AccessEvaluatorImpl implements AccessEvaluator {
     var bytesWrapper = lookupWrappers.get();
     var tokenizer = tokenizers.get();
 
-    for (var auths : authorizedPredicates) {
-      tokenizer.reset(accessExpression);
-      Predicate<Tokenizer.AuthorizationToken> atp = authToken -> {
-        bytesWrapper.set(authToken.data, authToken.start, authToken.len);
-        return auths.test(bytesWrapper);
-      };
-      if (!ParserEvaluator.parseAccessExpression(tokenizer, atp, authToken -> true)) {
-        return false;
-      }
-    }
-    return true;
+    tokenizer.reset(accessExpression);
+    Predicate<Tokenizer.AuthorizationToken> atp = authToken -> {
+      bytesWrapper.set(authToken.data, authToken.start, authToken.len);
+      return authorizedPredicate.test(bytesWrapper);
+    };
+    return ParserEvaluator.parseAccessExpression(tokenizer, atp, authToken -> true);
   }
-
 }

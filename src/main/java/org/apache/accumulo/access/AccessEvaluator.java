@@ -19,6 +19,7 @@
 package org.apache.accumulo.access;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * This class is used to decide if an entity with a given set of authorizations can access
@@ -84,7 +85,7 @@ public interface AccessEvaluator {
    * @return AccessEvaluator object
    */
   static AccessEvaluator of(Authorizations authorizations) {
-    return new AccessEvaluatorImpl(AccessEvaluatorImpl.convert(authorizations));
+    return new AccessEvaluatorImpl(authorizations);
   }
 
   /**
@@ -149,7 +150,7 @@ public interface AccessEvaluator {
    *
    */
   static AccessEvaluator of(Collection<Authorizations> authorizationSets) {
-    return new AccessEvaluatorImpl(AccessEvaluatorImpl.convert(authorizationSets));
+    return new MultiAccessEvaluatorImpl(authorizationSets);
   }
 
   /**
