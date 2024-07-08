@@ -35,12 +35,12 @@ class MultiAccessEvaluatorImpl implements AccessEvaluator {
   }
 
   @Override
-  public boolean canAccess(String accessExpression) throws IllegalAccessExpressionException {
+  public boolean canAccess(String accessExpression) throws InvalidAccessExpressionException {
     return canAccess(accessExpression.getBytes(UTF_8));
   }
 
   @Override
-  public boolean canAccess(byte[] accessExpression) throws IllegalAccessExpressionException {
+  public boolean canAccess(byte[] accessExpression) throws InvalidAccessExpressionException {
     for (AccessEvaluatorImpl evaluator : evaluators) {
       if (!evaluator.canAccess(accessExpression)) {
         return false;
