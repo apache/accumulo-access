@@ -25,6 +25,8 @@ import java.util.function.Predicate;
 
 final class AccessExpressionImpl implements AccessExpression {
 
+  private static final long serialVersionUID = 1L;
+
   public static final AccessExpression EMPTY = new AccessExpressionImpl("", false);
 
   private final String expression;

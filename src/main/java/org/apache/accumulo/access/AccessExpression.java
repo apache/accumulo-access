@@ -18,6 +18,8 @@
  */
 package org.apache.accumulo.access;
 
+import java.io.Serializable;
+
 /**
  * This class offers the ability to validate, build, and normalize access expressions. An instance
  * of this class should wrap an immutable, validated access expression. If passing access
@@ -77,7 +79,7 @@ package org.apache.accumulo.access;
  * @see <a href="https://github.com/apache/accumulo-access">Accumulo Access Documentation</a>
  * @since 1.0.0
  */
-public interface AccessExpression {
+public interface AccessExpression extends Serializable {
 
   /**
    * @return the expression that was used to create this object.
