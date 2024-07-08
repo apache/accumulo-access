@@ -73,8 +73,7 @@ For an ANTLRv4 example, see antlr-example integration test's
 This project includes a JMH Benchmark. To run it:
 
 ```
-mvn clean package
-mvn exec:exec -Dexec.executable="java" -Dexec.classpathScope=test -Dexec.args="-classpath %classpath org.apache.accumulo.access.AccessExpressionBenchmark"
+mvn clean verify -Pbenchmark"
 ```
 
 [1]: https://github.com/apache/accumulo/blob/rel/2.1.2/core/src/main/java/org/apache/accumulo/core/security/ColumnVisibility.java
