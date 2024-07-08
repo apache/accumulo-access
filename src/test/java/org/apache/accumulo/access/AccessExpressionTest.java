@@ -224,4 +224,11 @@ public class AccessExpressionTest {
     assertFalse(specLinesFromAbnfFile.isEmpty()); // make sure we didn't just compare nothing
     assertEquals(specLinesFromAbnfFile, specLinesFromMarkdownFile);
   }
+
+  @Test
+  public void testEmpty() {
+    // do not expect empty expression to fail validation
+    AccessExpression.validate(new byte[0]);
+    AccessExpression.validate("");
+  }
 }
