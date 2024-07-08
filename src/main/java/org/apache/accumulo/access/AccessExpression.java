@@ -31,7 +31,8 @@ import java.io.Serializable;
  * constructing an AccessExpression. The AccessEvaluator has the ability to short-circuit
  * evaluation, for example when the left hand side of an OR expression is valid, then it won't need
  * to evaluate the right side. The user may not want to perform normalization if they are
- * constructing their AccessExpressions to take advantage of this feature.
+ * constructing their AccessExpressions to take advantage of short-circuit feature as it could
+ * re-order the tokens or predicates in the expression.
  *
  * <p>
  * Below is an example of how to use this API.
