@@ -18,12 +18,12 @@
 #
 
 # Maven ignores
-/target/
+**/target/
 
 # IDE ignores
-/.settings/
-/.project
-/.classpath
+**/.settings/
+**/.project
+**/.classpath
 /.pydevproject
 /.idea
 /*.iml

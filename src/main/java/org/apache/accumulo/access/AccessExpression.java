@@ -18,6 +18,8 @@
  */
 package org.apache.accumulo.access;
 
+import java.io.Serializable;
+
 /**
  * This class offers the ability to validate, build, and normalize access expressions. An instance
  * of this class should wrap an immutable, validated access expression. If passing access
@@ -59,7 +61,7 @@ package org.apache.accumulo.access;
  * [🦖, CAT, 🦕]
  * </pre>
  *
- * The following code will throw an {@link IllegalAccessExpressionException} because the expression
+ * The following code will throw an {@link InvalidAccessExpressionException} because the expression
  * is not valid.
  *
  * <pre>
@@ -77,7 +79,7 @@ package org.apache.accumulo.access;
  * @see <a href="https://github.com/apache/accumulo-access">Accumulo Access Documentation</a>
  * @since 1.0.0
  */
-public interface AccessExpression {
+public interface AccessExpression extends Serializable {
 
   /**
    * @return the expression that was used to create this object.
@@ -93,7 +95,7 @@ public interface AccessExpression {
   /**
    * This is equivalent to calling {@code AccessExpression.of(expression, false);}
    */
-  static AccessExpression of(String expression) throws IllegalAccessExpressionException {
+  static AccessExpression of(String expression) throws InvalidAccessExpressionException {
     return new AccessExpressionImpl(expression, false);
   }
 
@@ -123,10 +125,10 @@ public interface AccessExpression {
    *        normalizing expressions, consider using a cache that maps un-normalized expressions to
    *        normalized ones. Since the normalization process is deterministic, the computation can
    *        be cached.
-   * @throws IllegalAccessExpressionException when the expression is not valid.
+   * @throws InvalidAccessExpressionException when the expression is not valid.
    */
   static AccessExpression of(String expression, boolean normalize)
-      throws IllegalAccessExpressionException {
+      throws InvalidAccessExpressionException {
     return new AccessExpressionImpl(expression, normalize);
   }
 
@@ -134,7 +136,7 @@ public interface AccessExpression {
    * <p>
    * This is equivalent to calling {@code AccessExpression.of(expression, false);}
    */
-  static AccessExpression of(byte[] expression) throws IllegalAccessExpressionException {
+  static AccessExpression of(byte[] expression) throws InvalidAccessExpressionException {
     return new AccessExpressionImpl(expression, false);
   }
 
@@ -151,10 +153,10 @@ public interface AccessExpression {
    * @param expression an access expression that is expected to be encoded using UTF-8
    * @param normalize If true then the expression will be normalized, if false the expression will
    *        only be validated. Normalization is expensive so only use when needed.
-   * @throws IllegalAccessExpressionException when the expression is not valid.
+   * @throws InvalidAccessExpressionException when the expression is not valid.
    */
   static AccessExpression of(byte[] expression, boolean normalize)
-      throws IllegalAccessExpressionException {
+      throws InvalidAccessExpressionException {
     return new AccessExpressionImpl(expression, normalize);
   }
 
@@ -169,16 +171,16 @@ public interface AccessExpression {
    * Quickly validates that an access expression is properly formed.
    *
    * @param expression a potential access expression that is expected to be encoded using UTF-8
-   * @throws IllegalAccessExpressionException if the given expression is not valid
+   * @throws InvalidAccessExpressionException if the given expression is not valid
    */
-  static void validate(byte[] expression) throws IllegalAccessExpressionException {
+  static void validate(byte[] expression) throws InvalidAccessExpressionException {
     AccessExpressionImpl.validate(expression);
   }
 
   /**
    * @see #validate(byte[])
    */
-  static void validate(String expression) throws IllegalAccessExpressionException {
+  static void validate(String expression) throws InvalidAccessExpressionException {
     AccessExpressionImpl.validate(expression);
   }
 

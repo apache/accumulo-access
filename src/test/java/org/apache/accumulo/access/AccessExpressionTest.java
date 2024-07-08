@@ -145,7 +145,7 @@ public class AccessExpressionTest {
   }
 
   void checkError(Executable executable, String expected, int index) {
-    var exception = assertThrows(IllegalAccessExpressionException.class, executable);
+    var exception = assertThrows(InvalidAccessExpressionException.class, executable);
     assertTrue(exception.getMessage().contains(expected));
     assertEquals(index, exception.getIndex());
   }

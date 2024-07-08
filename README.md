@@ -35,7 +35,7 @@ section](#getting-started) for an example of how to use this java library.
 The following types constitute the public API of this library. All other types
 are package private and are not part of the public API.
 
-  * [IllegalAccessExpressionException](src/main/java/org/apache/accumulo/access/IllegalAccessExpressionException.java).
+  * [InvalidAccessExpressionException](src/main/java/org/apache/accumulo/access/InvalidAccessExpressionException.java).
   * [AccessEvaluator](src/main/java/org/apache/accumulo/access/AccessEvaluator.java).
   * [AccessExpression](src/main/java/org/apache/accumulo/access/AccessExpression.java).
   * [Authorizations](src/main/java/org/apache/accumulo/access/Authorizations.java).
@@ -73,8 +73,7 @@ For an ANTLRv4 example, see antlr-example integration test's
 This project includes a JMH Benchmark. To run it:
 
 ```
-mvn clean package
-mvn exec:exec -Dexec.executable="java" -Dexec.classpathScope=test -Dexec.args="-classpath %classpath org.apache.accumulo.access.AccessExpressionBenchmark"
+mvn clean verify -Pbenchmark"
 ```
 
 [1]: https://github.com/apache/accumulo/blob/rel/2.1.2/core/src/main/java/org/apache/accumulo/core/security/ColumnVisibility.java

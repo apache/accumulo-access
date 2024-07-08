@@ -18,6 +18,8 @@
  */
 package org.apache.accumulo.access;
 
+import java.io.Serializable;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -31,7 +33,9 @@ import java.util.Set;
  *
  * @since 1.0.0
  */
-public final class Authorizations {
+public final class Authorizations implements Iterable<String>, Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   private static final Authorizations EMPTY = new Authorizations(Set.of());
 
@@ -89,5 +93,10 @@ public final class Authorizations {
     } else {
       return new Authorizations(authorizations);
     }
+  }
+
+  @Override
+  public Iterator<String> iterator() {
+    return authorizations.iterator();
   }
 }
