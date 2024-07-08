@@ -35,7 +35,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -48,24 +47,22 @@ public class AccessExpressionTest {
     // is the expected authorization in the expression
     var testData = new ArrayList<List<String>>();
 
-    testData.add(List.of("", ""));
-    testData.add(List.of("a", "a"));
-    testData.add(List.of("(a)", "a"));
-    testData.add(List.of("Z|M|A", "A,M,Z"));
-    testData.add(List.of("Z&M&A", "A,M,Z"));
-    testData.add(List.of("(Y|B|Y)&(Z|A|Z)", "A,B,Y,Z"));
-    testData.add(List.of("(Y&B&Y)|(Z&A&Z)", "A,B,Y,Z"));
-    testData.add(List.of("(A1|B1)&((A1|B2)&(B2|C1))", "A1,B1,B2,C1"));
+    testData.add(List.of("", "[]"));
+    testData.add(List.of("a", "[a]"));
+    testData.add(List.of("(a)", "[a]"));
+    testData.add(List.of("Z|M|A", "[A, M, Z]"));
+    testData.add(List.of("Z&M&A", "[A, M, Z]"));
+    testData.add(List.of("(Y|B|Y)&(Z|A|Z)", "[A, B, Y, Z]"));
+    testData.add(List.of("(Y&B&Y)|(Z&A&Z)", "[A, B, Y, Z]"));
+    testData.add(List.of("(A1|B1)&((A1|B2)&(B2|C1))", "[A1, B1, B2, C1]"));
 
     for (var testCase : testData) {
       assertEquals(2, testCase.size());
       var expression = testCase.get(0);
       var expected = testCase.get(1);
-      var actual = AccessExpression.of(expression).getAuthorizations().asSet().stream().sorted()
-          .collect(Collectors.joining(","));
+      var actual = AccessExpression.of(expression).getAuthorizations().toString();
       assertEquals(expected, actual);
-      actual = AccessExpression.of(expression.getBytes(UTF_8)).getAuthorizations().asSet().stream()
-          .sorted().collect(Collectors.joining(","));
+      actual = AccessExpression.of(expression.getBytes(UTF_8)).getAuthorizations().toString();
       assertEquals(expected, actual);
     }
 
@@ -223,5 +220,15 @@ public class AccessExpressionTest {
 
     assertFalse(specLinesFromAbnfFile.isEmpty()); // make sure we didn't just compare nothing
     assertEquals(specLinesFromAbnfFile, specLinesFromMarkdownFile);
+  }
+
+  @Test
+  public void authSetIsImmutable() {
+    Authorizations auths = AccessExpression.of("A&B").getAuthorizations();
+    var authSet = auths.asSet();
+    assertThrows(UnsupportedOperationException.class, () -> authSet.add("C"),
+        "Set returned by asSet should be immutable");
+    assertThrows(UnsupportedOperationException.class, () -> authSet.remove("A"),
+        "Set returned by asSet should be immutable");
   }
 }
