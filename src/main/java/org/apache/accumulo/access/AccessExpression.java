@@ -27,7 +27,7 @@ import java.io.Serializable;
  * passing this type over a String is that its known to be a valid expression.
  *
  * Normalization removes duplicates, sorts, flattens, and removes unneeded parentheses or quotes in
- * the expression. Normalization is an optional process that the user can choose to occur when
+ * the expression. Normalization is an optional process that the user can choose to apply when
  * constructing an AccessExpression. The AccessEvaluator has the ability to short-circuit
  * evaluation, for example when the left hand side of an OR expression is valid, then it won't need
  * to evaluate the right side. The user may not want to perform normalization if they are
