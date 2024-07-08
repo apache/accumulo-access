@@ -71,6 +71,13 @@ public final class Authorizations {
   }
 
   /**
+   * @return a pre-allocated empty Authorizations object
+   */
+  public static Authorizations of() {
+    return EMPTY;
+  }
+
+  /**
    * Creates an Authorizations object from the set of input authorization strings.
    *
    * @param authorizations set of authorization strings

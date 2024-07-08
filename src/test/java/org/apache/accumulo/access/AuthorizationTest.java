@@ -20,6 +20,7 @@ package org.apache.accumulo.access;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.util.Set;
 
@@ -39,7 +40,15 @@ public class AuthorizationTest {
 
     assertNotEquals(auths1, auths3);
     assertNotEquals(auths1.hashCode(), auths3.hashCode());
-
   }
 
+  @Test
+  public void testEmpty() {
+    // check if new object is allocated
+    assertSame(Authorizations.of(), Authorizations.of());
+    // check if optimization is working
+    assertSame(Authorizations.of(), Authorizations.of(Set.of()));
+    assertEquals(Set.of(), Authorizations.of().asSet());
+    assertSame(Set.of(), Authorizations.of().asSet());
+  }
 }
