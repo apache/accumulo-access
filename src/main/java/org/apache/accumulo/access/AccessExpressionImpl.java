@@ -124,13 +124,17 @@ final class AccessExpressionImpl implements AccessExpression {
   }
 
   static void validate(byte[] expression) throws InvalidAccessExpressionException {
-    Tokenizer tokenizer = new Tokenizer(expression);
-    Predicate<Tokenizer.AuthorizationToken> atp = authToken -> true;
-    ParserEvaluator.parseAccessExpression(tokenizer, atp, atp);
+    if (expression.length > 0) {
+      Tokenizer tokenizer = new Tokenizer(expression);
+      Predicate<Tokenizer.AuthorizationToken> atp = authToken -> true;
+      ParserEvaluator.parseAccessExpression(tokenizer, atp, atp);
+    } // else empty expression is valid, avoid object allocation
   }
 
   static void validate(String expression) throws InvalidAccessExpressionException {
-    validate(expression.getBytes(UTF_8));
+    if (!expression.isEmpty()) {
+      validate(expression.getBytes(UTF_8));
+    } // else empty expression is valid, avoid object allocation
   }
 
   static String normalize(String expression) throws InvalidAccessExpressionException {
