@@ -123,22 +123,22 @@ final class AccessExpressionImpl implements AccessExpression {
     return AccessEvaluatorImpl.escape(term, true);
   }
 
-  static void validate(byte[] expression) throws IllegalAccessExpressionException {
+  static void validate(byte[] expression) throws InvalidAccessExpressionException {
     Tokenizer tokenizer = new Tokenizer(expression);
     Predicate<Tokenizer.AuthorizationToken> atp = authToken -> true;
     ParserEvaluator.parseAccessExpression(tokenizer, atp, atp);
   }
 
-  static void validate(String expression) throws IllegalAccessExpressionException {
+  static void validate(String expression) throws InvalidAccessExpressionException {
     validate(expression.getBytes(UTF_8));
   }
 
-  static String normalize(String expression) throws IllegalAccessExpressionException {
+  static String normalize(String expression) throws InvalidAccessExpressionException {
     Tokenizer tokenizer = new Tokenizer(expression.getBytes(UTF_8));
     return Normalizer.normalize(tokenizer);
   }
 
-  static String normalize(byte[] expression) throws IllegalAccessExpressionException {
+  static String normalize(byte[] expression) throws InvalidAccessExpressionException {
     Tokenizer tokenizer = new Tokenizer(expression);
     return Normalizer.normalize(tokenizer);
   }
