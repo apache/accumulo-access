@@ -59,17 +59,17 @@ public interface AccessEvaluator {
    * @param accessExpression for this parameter a valid access expression is expected.
    * @return true if the expression is visible using the authorizations supplied at creation, false
    *         otherwise
-   * @throws IllegalAccessExpressionException when the expression is not valid
+   * @throws InvalidAccessExpressionException when the expression is not valid
    */
-  boolean canAccess(String accessExpression) throws IllegalAccessExpressionException;
+  boolean canAccess(String accessExpression) throws InvalidAccessExpressionException;
 
   /**
    * @param accessExpression for this parameter a valid access expression is expected.
    * @return true if the expression is visible using the authorizations supplied at creation, false
    *         otherwise
-   * @throws IllegalAccessExpressionException when the expression is not valid
+   * @throws InvalidAccessExpressionException when the expression is not valid
    */
-  boolean canAccess(byte[] accessExpression) throws IllegalAccessExpressionException;
+  boolean canAccess(byte[] accessExpression) throws InvalidAccessExpressionException;
 
   /**
    * @param accessExpression previously validated access expression

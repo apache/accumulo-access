@@ -28,7 +28,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.Authorizations;
-import org.apache.accumulo.access.IllegalAccessExpressionException;
+import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_tokenContext;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.And_expressionContext;
@@ -70,7 +70,7 @@ public class AccessExpressionAntlrEvaluator implements AccessEvaluator {
     }
   }
 
-  public boolean canAccess(byte[] accessExpression) throws IllegalAccessExpressionException {
+  public boolean canAccess(byte[] accessExpression) throws InvalidAccessExpressionException {
     return canAccess(AccessExpression.of(accessExpression));
   }
 

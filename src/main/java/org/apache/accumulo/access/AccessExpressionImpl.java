@@ -25,6 +25,8 @@ import java.util.function.Predicate;
 
 final class AccessExpressionImpl implements AccessExpression {
 
+  private static final long serialVersionUID = 1L;
+
   public static final AccessExpression EMPTY = new AccessExpressionImpl("", false);
 
   private final String expression;
@@ -121,22 +123,26 @@ final class AccessExpressionImpl implements AccessExpression {
     return AccessEvaluatorImpl.escape(term, true);
   }
 
-  static void validate(byte[] expression) throws IllegalAccessExpressionException {
-    Tokenizer tokenizer = new Tokenizer(expression);
-    Predicate<Tokenizer.AuthorizationToken> atp = authToken -> true;
-    ParserEvaluator.parseAccessExpression(tokenizer, atp, atp);
+  static void validate(byte[] expression) throws InvalidAccessExpressionException {
+    if (expression.length > 0) {
+      Tokenizer tokenizer = new Tokenizer(expression);
+      Predicate<Tokenizer.AuthorizationToken> atp = authToken -> true;
+      ParserEvaluator.parseAccessExpression(tokenizer, atp, atp);
+    } // else empty expression is valid, avoid object allocation
   }
 
-  static void validate(String expression) throws IllegalAccessExpressionException {
-    validate(expression.getBytes(UTF_8));
+  static void validate(String expression) throws InvalidAccessExpressionException {
+    if (!expression.isEmpty()) {
+      validate(expression.getBytes(UTF_8));
+    } // else empty expression is valid, avoid object allocation
   }
 
-  static String normalize(String expression) throws IllegalAccessExpressionException {
+  static String normalize(String expression) throws InvalidAccessExpressionException {
     Tokenizer tokenizer = new Tokenizer(expression.getBytes(UTF_8));
     return Normalizer.normalize(tokenizer);
   }
 
-  static String normalize(byte[] expression) throws IllegalAccessExpressionException {
+  static String normalize(byte[] expression) throws InvalidAccessExpressionException {
     Tokenizer tokenizer = new Tokenizer(expression);
     return Normalizer.normalize(tokenizer);
   }

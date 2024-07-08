@@ -145,7 +145,7 @@ public class AccessExpressionTest {
   }
 
   void checkError(Executable executable, String expected, int index) {
-    var exception = assertThrows(IllegalAccessExpressionException.class, executable);
+    var exception = assertThrows(InvalidAccessExpressionException.class, executable);
     assertTrue(exception.getMessage().contains(expected));
     assertEquals(index, exception.getIndex());
   }
@@ -223,5 +223,12 @@ public class AccessExpressionTest {
 
     assertFalse(specLinesFromAbnfFile.isEmpty()); // make sure we didn't just compare nothing
     assertEquals(specLinesFromAbnfFile, specLinesFromMarkdownFile);
+  }
+
+  @Test
+  public void testEmpty() {
+    // do not expect empty expression to fail validation
+    AccessExpression.validate(new byte[0]);
+    AccessExpression.validate("");
   }
 }

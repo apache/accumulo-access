@@ -28,6 +28,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.accumulo.core.security.ColumnVisibility;
+import org.apache.accumulo.core.security.VisibilityEvaluator;
+import org.apache.accumulo.core.security.VisibilityParseException;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.Scope;
@@ -57,6 +60,12 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  */
 public class AccessExpressionBenchmark {
 
+  public static class VisibilityEvaluatorTests {
+    List<VisibilityEvaluator> evaluator;
+    List<byte[]> expressions;
+    List<ColumnVisibility> columnVisibilities;
+  }
+
   public static class EvaluatorTests {
     AccessEvaluator evaluator;
 
@@ -72,6 +81,8 @@ public class AccessExpressionBenchmark {
 
     private ArrayList<EvaluatorTests> evaluatorTests;
 
+    private ArrayList<VisibilityEvaluatorTests> visibilityEvaluatorTests;
+
     @SuppressFBWarnings(value = {"UWF_UNWRITTEN_FIELD", "NP_UNWRITTEN_FIELD"},
         justification = "Field is written by Gson")
     @Setup
@@ -80,8 +91,28 @@ public class AccessExpressionBenchmark {
       allTestExpressions = new ArrayList<>();
       allTestExpressionsStr = new ArrayList<>();
       evaluatorTests = new ArrayList<>();
+      visibilityEvaluatorTests = new ArrayList<>();
 
       for (var testDataSet : testData) {
+
+        // Create old
+        VisibilityEvaluatorTests vet = new VisibilityEvaluatorTests();
+        vet.expressions = new ArrayList<>();
+        vet.columnVisibilities = new ArrayList<>();
+
+        if (testDataSet.auths.length == 1) {
+          vet.evaluator = List.of(new VisibilityEvaluator(
+              new org.apache.accumulo.core.security.Authorizations(testDataSet.auths[0])));
+        } else {
+          List<VisibilityEvaluator> veList = new ArrayList<>();
+          for (String[] auths : testDataSet.auths) {
+            veList.add(new VisibilityEvaluator(
+                new org.apache.accumulo.core.security.Authorizations(auths)));
+          }
+          vet.evaluator = veList;
+        }
+
+        // Create new
         EvaluatorTests et = new EvaluatorTests();
         et.expressions = new ArrayList<>();
 
@@ -100,11 +131,14 @@ public class AccessExpressionBenchmark {
               byte[] byteExp = exp.getBytes(UTF_8);
               allTestExpressions.add(byteExp);
               et.expressions.add(byteExp);
+              vet.expressions.add(byteExp);
+              vet.columnVisibilities.add(new ColumnVisibility(byteExp));
             }
           }
         }
 
         evaluatorTests.add(et);
+        visibilityEvaluatorTests.add(vet);
       }
     }
 
@@ -118,6 +152,10 @@ public class AccessExpressionBenchmark {
 
     List<EvaluatorTests> getEvaluatorTests() {
       return evaluatorTests;
+    }
+
+    List<VisibilityEvaluatorTests> getVisibilityEvaluatorTests() {
+      return visibilityEvaluatorTests;
     }
 
   }
@@ -147,10 +185,45 @@ public class AccessExpressionBenchmark {
    * tree an operate on it.
    */
   @Benchmark
-  public void measureEvaluation(BenchmarkState state, Blackhole blackhole) {
+  public void measureParseAndEvaluation(BenchmarkState state, Blackhole blackhole) {
     for (EvaluatorTests evaluatorTests : state.getEvaluatorTests()) {
       for (byte[] expression : evaluatorTests.expressions) {
         blackhole.consume(evaluatorTests.evaluator.canAccess(expression));
+      }
+    }
+  }
+
+  /**
+   * Measures the time it takes to evaluate a legacy expression.
+   *
+   * @throws VisibilityParseException error parsing expression with legacy code
+   */
+  @Benchmark
+  public void measureLegacyEvaluationOnly(BenchmarkState state, Blackhole blackhole)
+      throws VisibilityParseException {
+    for (VisibilityEvaluatorTests evaluatorTests : state.getVisibilityEvaluatorTests()) {
+      for (ColumnVisibility expression : evaluatorTests.columnVisibilities) {
+        for (VisibilityEvaluator ve : evaluatorTests.evaluator) {
+          blackhole.consume(ve.evaluate(expression));
+        }
+      }
+    }
+  }
+
+  /**
+   * Measures the time it takes to parse and evaluate a legacy expression. This has to create the
+   * parse tree an operate on it.
+   *
+   * @throws VisibilityParseException error parsing expression with legacy code
+   */
+  @Benchmark
+  public void measureLegacyParseAndEvaluation(BenchmarkState state, Blackhole blackhole)
+      throws VisibilityParseException {
+    for (VisibilityEvaluatorTests evaluatorTests : state.getVisibilityEvaluatorTests()) {
+      for (byte[] expression : evaluatorTests.expressions) {
+        for (VisibilityEvaluator ve : evaluatorTests.evaluator) {
+          blackhole.consume(ve.evaluate(new ColumnVisibility(expression)));
+        }
       }
     }
   }

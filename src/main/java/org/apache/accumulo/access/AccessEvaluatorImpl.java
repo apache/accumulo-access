@@ -144,16 +144,16 @@ final class AccessEvaluatorImpl implements AccessEvaluator {
   }
 
   @Override
-  public boolean canAccess(String expression) throws IllegalAccessExpressionException {
+  public boolean canAccess(String expression) throws InvalidAccessExpressionException {
     return evaluate(expression.getBytes(UTF_8));
   }
 
   @Override
-  public boolean canAccess(byte[] expression) throws IllegalAccessExpressionException {
+  public boolean canAccess(byte[] expression) throws InvalidAccessExpressionException {
     return evaluate(expression);
   }
 
-  boolean evaluate(byte[] accessExpression) throws IllegalAccessExpressionException {
+  boolean evaluate(byte[] accessExpression) throws InvalidAccessExpressionException {
     var bytesWrapper = lookupWrappers.get();
     var tokenizer = tokenizers.get();
 

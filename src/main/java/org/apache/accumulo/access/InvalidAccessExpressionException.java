@@ -25,10 +25,48 @@ import java.util.regex.PatternSyntaxException;
  *
  * @since 1.0.0
  */
-public final class IllegalAccessExpressionException extends PatternSyntaxException {
+public final class InvalidAccessExpressionException extends IllegalArgumentException {
+
   private static final long serialVersionUID = 1L;
 
-  public IllegalAccessExpressionException(String desc, String badarg, int index) {
-    super(desc, badarg, index);
+  private final PatternSyntaxException delegate;
+
+  public InvalidAccessExpressionException(String desc, String badarg, int index) {
+    super();
+    delegate = new PatternSyntaxException(desc, badarg, index);
   }
+
+  @Override
+  public String getMessage() {
+    return delegate.getMessage();
+  }
+
+  /**
+   * Retrieves the error index.
+   *
+   * @return The approximate index in the pattern of the error, or {@code -1} if the index is not
+   *         known
+   */
+  public int getIndex() {
+    return delegate.getIndex();
+  }
+
+  /**
+   * Retrieves the description of the error.
+   *
+   * @return The description of the error
+   */
+  public String getDescription() {
+    return delegate.getDescription();
+  }
+
+  /**
+   * Retrieves the erroneous regular-expression pattern.
+   *
+   * @return The erroneous pattern
+   */
+  public String getPattern() {
+    return delegate.getPattern();
+  }
+
 }
