@@ -25,7 +25,7 @@ import java.io.Serializable;
  * of this class should wrap an immutable, validated access expression. If passing access
  * expressions as arguments in code, consider using this type instead of a String. The advantage of
  * passing this type over a String is that its known to be a valid expression.
- *
+ * <p>
  * Normalization removes duplicates, sorts, flattens, and removes unneeded parentheses or quotes in
  * the expression. Normalization is an optional process that the user can choose to apply when
  * constructing an AccessExpression. The AccessEvaluator has the ability to short-circuit
