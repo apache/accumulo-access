@@ -73,8 +73,9 @@ For an ANTLRv4 example, see antlr-example integration test's
 This project includes a JMH Benchmark. To run it:
 
 ```
-mvn clean verify -Pbenchmark"
+mvn clean verify -Pbenchmark
 ```
+
 
 [1]: https://github.com/apache/accumulo/blob/rel/2.1.2/core/src/main/java/org/apache/accumulo/core/security/ColumnVisibility.java
 [2]: https://github.com/apache/accumulo/blob/rel/2.1.2/core/src/main/java/org/apache/accumulo/core/security/VisibilityEvaluator.java
