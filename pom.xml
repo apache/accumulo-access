@@ -765,21 +765,21 @@
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>exec-maven-plugin</artifactId>
             <version>3.3.0</version>
-            <configuration>
-              <classpathScope>test</classpathScope>
-              <executable>java</executable>
-              <arguments>
-                <argument>-classpath</argument>
-                <classpath />
-                <argument>org.apache.accumulo.access.AccessExpressionBenchmark</argument>
-              </arguments>
-            </configuration>
             <executions>
               <execution>
                 <goals>
                   <goal>exec</goal>
                 </goals>
                 <phase>verify</phase>
+                <configuration>
+                  <classpathScope>test</classpathScope>
+                  <executable>java</executable>
+                  <arguments>
+                    <argument>-classpath</argument>
+                    <classpath />
+                    <argument>org.apache.accumulo.access.AccessExpressionBenchmark</argument>
+                  </arguments>
+                </configuration>
               </execution>
             </executions>
           </plugin>
