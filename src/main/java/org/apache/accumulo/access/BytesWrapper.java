@@ -19,9 +19,10 @@
 package org.apache.accumulo.access;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Objects.checkFromIndexSize;
+import static java.util.Objects.checkIndex;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 final class BytesWrapper implements Comparable<BytesWrapper> {
 
@@ -55,8 +56,7 @@ final class BytesWrapper implements Comparable<BytesWrapper> {
   }
 
   byte byteAt(int i) {
-    return data[offset + Objects.checkIndex(i, length)];
-    return data[offset + i];
+    return data[offset + checkIndex(i, length)];
   }
 
   public int length() {
@@ -111,7 +111,7 @@ final class BytesWrapper implements Comparable<BytesWrapper> {
    * a copy of the input buffer
    */
   void set(byte[] data, int offset, int length) {
-    Objects.checkFromIndexSize(offset, length, data.length);
+    checkFromIndexSize(offset, length, data.length);
     this.data = data;
     this.offset = offset;
     this.length = length;
