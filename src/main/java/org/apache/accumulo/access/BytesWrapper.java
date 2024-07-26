@@ -19,14 +19,16 @@
 package org.apache.accumulo.access;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Objects.checkFromIndexSize;
+import static java.util.Objects.checkIndex;
 
 import java.util.Arrays;
 
 final class BytesWrapper implements Comparable<BytesWrapper> {
 
-  protected byte[] data;
-  protected int offset;
-  protected int length;
+  private byte[] data;
+  private int offset;
+  private int length;
 
   /**
    * Creates a new sequence. The given byte array is used directly as the backing array, so later
@@ -54,16 +56,7 @@ final class BytesWrapper implements Comparable<BytesWrapper> {
   }
 
   byte byteAt(int i) {
-
-    if (i < 0) {
-      throw new IllegalArgumentException("i < 0, " + i);
-    }
-
-    if (i >= length) {
-      throw new IllegalArgumentException("i >= length, " + i + " >= " + length);
-    }
-
-    return data[offset + i];
+    return data[offset + checkIndex(i, length)];
   }
 
   public int length() {
@@ -118,18 +111,7 @@ final class BytesWrapper implements Comparable<BytesWrapper> {
    * a copy of the input buffer
    */
   void set(byte[] data, int offset, int length) {
-    if (offset < 0) {
-      throw new IllegalArgumentException("Offset cannot be negative. length = " + offset);
-    }
-    if (length < 0) {
-      throw new IllegalArgumentException("Length cannot be negative. length = " + length);
-    }
-    if ((offset + length) > data.length) {
-      throw new IllegalArgumentException(
-          "Sum of offset and length exceeds data length. data.length = " + data.length
-              + ", offset = " + offset + ", length = " + length);
-    }
-
+    checkFromIndexSize(offset, length, data.length);
     this.data = data;
     this.offset = offset;
     this.length = length;
