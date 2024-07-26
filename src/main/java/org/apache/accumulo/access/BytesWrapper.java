@@ -55,7 +55,7 @@ final class BytesWrapper implements Comparable<BytesWrapper> {
   }
 
   byte byteAt(int i) {
-    Objects.checkIndex(i, length);
+    return data[offset + Objects.checkIndex(i, length)];
     return data[offset + i];
   }
 
