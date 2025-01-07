@@ -86,6 +86,11 @@ public class AccessExpressionTest {
     testData.add(List.of("(b)|((a))", "a|b"));
     testData.add(List.of("(b|(a|c))&x", "x&(a|b|c)"));
     testData.add(List.of("(((a)))", "a"));
+    testData.add(List.of("b&c&a", "a&b&c"));
+    testData.add(List.of("c&b&a", "a&b&c"));
+    testData.add(List.of("a&(b&c)", "a&b&c"));
+    testData.add(List.of("(a&c)&b", "a&b&c"));
+    testData.add(List.of("(d&c&b&a)|(b&c&a&d)", "a&b&c&d"));
     testData.add(List.of("Z|M|A", "A|M|Z"));
     testData.add(List.of("Z&M&A", "A&M&Z"));
     testData.add(List.of("(Y&B)|(Z&A)", "(A&Z)|(B&Y)"));
@@ -123,6 +128,8 @@ public class AccessExpressionTest {
       var expected = testCase.get(1);
       assertEquals(expected, AccessExpression.of(expression, true).getExpression());
       assertEquals(expected, AccessExpression.of(expression.getBytes(UTF_8), true).getExpression());
+      assertEquals(expected, AccessExpression
+          .of(AccessExpression.of(expression, true).getExpression(), true).getExpression());
 
       // when not normalizing should see the original expression
       assertEquals(expression, AccessExpression.of(expression).getExpression());
