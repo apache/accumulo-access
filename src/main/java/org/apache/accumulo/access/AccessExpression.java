@@ -68,6 +68,7 @@ import java.util.function.Predicate;
  * The above example will print the following.
  *
  * <pre>
+ * {@code
  * (CAT&"🦖")|(CAT&"🦕")
  * (CAT&"🦖")|(CAT&"🦕")
  * CAT
@@ -75,6 +76,7 @@ import java.util.function.Predicate;
  * CAT
  * 🦕
  * type:OR child[0]:CAT&"🦖" child[1]:CAT&"🦕"
+ * }
  * </pre>
  *
  * The following code will throw an {@link InvalidAccessExpressionException} because the expression
