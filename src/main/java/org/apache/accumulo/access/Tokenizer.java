@@ -102,7 +102,15 @@ final class Tokenizer {
     return expression[index];
   }
 
-  AuthorizationToken nextAuthorization() {
+  public byte[] expression() {
+    return expression;
+  }
+
+  public int curentOffset() {
+    return index;
+  }
+
+  AuthorizationToken nextAuthorization(boolean includeQuotes) {
     if (isQuoteSymbol(expression[index])) {
       int start = ++index;
 
@@ -126,6 +134,11 @@ final class Tokenizer {
 
       authorizationToken.start = start;
       authorizationToken.len = index - start;
+
+      if (includeQuotes) {
+        authorizationToken.start--;
+        authorizationToken.len += 2;
+      }
 
       index++;
 

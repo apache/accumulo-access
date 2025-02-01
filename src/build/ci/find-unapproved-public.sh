@@ -19,10 +19,12 @@
 #
 
 count=$(grep -E "public.*(class|interface|enum|record)" src/main/java/org/apache/accumulo/access/*.java |
-  grep -v AccessEvaluator |
-  grep -v AccessExpression |
-  grep -v Authorizations |
-  grep -c -v InvalidAccessExpressionException)
+  grep -v " interface AccessEvaluator " |
+  grep -v " class AccessExpression " |
+  grep -v " class ParsedAccessExpression " |
+  grep -v " enum ExpressionType " |
+  grep -v " class Authorizations " |
+  grep -c -v " class InvalidAccessExpressionException ")
 
 if [[ 0 -ne $count ]]; then
   echo "$count unapproved public classes found"

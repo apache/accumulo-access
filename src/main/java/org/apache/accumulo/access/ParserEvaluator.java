@@ -123,7 +123,7 @@ final class ParserEvaluator {
       tokenizer.next(CLOSE_PAREN);
       return node;
     } else {
-      var auth = tokenizer.nextAuthorization();
+      var auth = tokenizer.nextAuthorization(false);
       return authorizedPredicate.test(auth);
     }
   }

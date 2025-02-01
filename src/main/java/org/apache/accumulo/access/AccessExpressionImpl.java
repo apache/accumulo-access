@@ -20,131 +20,26 @@ package org.apache.accumulo.access;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.util.HashSet;
-import java.util.function.Predicate;
-
-final class AccessExpressionImpl implements AccessExpression {
+final class AccessExpressionImpl extends AccessExpression {
 
   private static final long serialVersionUID = 1L;
 
-  public static final AccessExpression EMPTY = new AccessExpressionImpl("", false);
+  public static final AccessExpression EMPTY = new AccessExpressionImpl("");
 
   private final String expression;
 
-  AccessExpressionImpl(String expression, boolean normalize) {
-    if (normalize) {
-      // validate and normalize expression
-      this.expression = normalize(expression);
-    } else {
-      validate(expression);
-      this.expression = expression;
-    }
+  AccessExpressionImpl(String expression) {
+    validate(expression);
+    this.expression = expression;
   }
 
-  AccessExpressionImpl(byte[] expression, boolean normalize) {
-    if (normalize) {
-      // validate and normalize expression
-      this.expression = normalize(expression);
-    } else {
-      validate(expression);
-      this.expression = new String(expression, UTF_8);
-    }
+  AccessExpressionImpl(byte[] expression) {
+    validate(expression);
+    this.expression = new String(expression, UTF_8);
   }
 
   @Override
   public String getExpression() {
     return expression;
   }
-
-  @Override
-  public String toString() {
-    return expression;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (o instanceof AccessExpressionImpl) {
-      return ((AccessExpressionImpl) o).expression.equals(expression);
-    }
-
-    return false;
-  }
-
-  @Override
-  public int hashCode() {
-    return expression.hashCode();
-  }
-
-  @Override
-  public Authorizations getAuthorizations() {
-    return getAuthorizations(expression);
-  }
-
-  static Authorizations getAuthorizations(byte[] expression) {
-    HashSet<String> auths = new HashSet<>();
-    Tokenizer tokenizer = new Tokenizer(expression);
-    Predicate<Tokenizer.AuthorizationToken> atp = authToken -> {
-      auths.add(new String(authToken.data, authToken.start, authToken.len, UTF_8));
-      return true;
-    };
-    ParserEvaluator.parseAccessExpression(tokenizer, atp, atp);
-    return Authorizations.of(auths);
-  }
-
-  static Authorizations getAuthorizations(String expression) {
-    return getAuthorizations(expression.getBytes(UTF_8));
-  }
-
-  static String quote(String term) {
-    return new String(quote(term.getBytes(UTF_8)), UTF_8);
-  }
-
-  /**
-   * Properly quotes terms in an AccessExpression. If no quoting is needed, then nothing is done.
-   *
-   * @param term term to quote, encoded as UTF-8 bytes
-   * @return quoted term (unquoted if unnecessary), encoded as UTF-8 bytes
-   * @see #quote(String)
-   */
-  static byte[] quote(byte[] term) {
-    boolean needsQuote = false;
-
-    for (byte b : term) {
-      if (!Tokenizer.isValidAuthChar(b)) {
-        needsQuote = true;
-        break;
-      }
-    }
-
-    if (!needsQuote) {
-      return term;
-    }
-
-    return AccessEvaluatorImpl.escape(term, true);
-  }
-
-  static void validate(byte[] expression) throws InvalidAccessExpressionException {
-    if (expression.length > 0) {
-      Tokenizer tokenizer = new Tokenizer(expression);
-      Predicate<Tokenizer.AuthorizationToken> atp = authToken -> true;
-      ParserEvaluator.parseAccessExpression(tokenizer, atp, atp);
-    } // else empty expression is valid, avoid object allocation
-  }
-
-  static void validate(String expression) throws InvalidAccessExpressionException {
-    if (!expression.isEmpty()) {
-      validate(expression.getBytes(UTF_8));
-    } // else empty expression is valid, avoid object allocation
-  }
-
-  static String normalize(String expression) throws InvalidAccessExpressionException {
-    Tokenizer tokenizer = new Tokenizer(expression.getBytes(UTF_8));
-    return Normalizer.normalize(tokenizer);
-  }
-
-  static String normalize(byte[] expression) throws InvalidAccessExpressionException {
-    Tokenizer tokenizer = new Tokenizer(expression);
-    return Normalizer.normalize(tokenizer);
-  }
-
 }
