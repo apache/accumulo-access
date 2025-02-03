@@ -224,6 +224,10 @@ public class AccessExpressionTest {
         () -> AccessExpression.findAuthorizations((byte[]) null, auth -> {}));
     assertThrows(NullPointerException.class,
         () -> AccessExpression.findAuthorizations((String) null, auth -> {}));
+    assertThrows(NullPointerException.class,
+        () -> AccessExpression.findAuthorizations("A&B".getBytes(UTF_8), null));
+    assertThrows(NullPointerException.class,
+        () -> AccessExpression.findAuthorizations("A&B", null));
     assertThrows(NullPointerException.class, () -> AccessExpression.quote((byte[]) null));
     assertThrows(NullPointerException.class, () -> AccessExpression.quote((String) null));
     assertThrows(NullPointerException.class, () -> AccessExpression.unquote(null));
