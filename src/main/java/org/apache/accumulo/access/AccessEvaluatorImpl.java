@@ -32,13 +32,6 @@ import java.util.function.Predicate;
 final class AccessEvaluatorImpl implements AccessEvaluator {
   private final Predicate<BytesWrapper> authorizedPredicate;
 
-  private static final byte[] EMPTY = new byte[0];
-
-  private static final ThreadLocal<BytesWrapper> lookupWrappers =
-      ThreadLocal.withInitial(() -> new BytesWrapper(EMPTY));
-  private static final ThreadLocal<Tokenizer> tokenizers =
-      ThreadLocal.withInitial(() -> new Tokenizer(EMPTY));
-
   /**
    * Create an AccessEvaluatorImpl using an Authorizer object
    */
@@ -154,14 +147,11 @@ final class AccessEvaluatorImpl implements AccessEvaluator {
   }
 
   boolean evaluate(byte[] accessExpression) throws InvalidAccessExpressionException {
-    var bytesWrapper = lookupWrappers.get();
-    var tokenizer = tokenizers.get();
-
-    tokenizer.reset(accessExpression);
+    var bytesWrapper = ParserEvaluator.lookupWrappers.get();
     Predicate<Tokenizer.AuthorizationToken> atp = authToken -> {
       bytesWrapper.set(authToken.data, authToken.start, authToken.len);
       return authorizedPredicate.test(bytesWrapper);
     };
-    return ParserEvaluator.parseAccessExpression(tokenizer, atp, authToken -> true);
+    return ParserEvaluator.parseAccessExpression(accessExpression, atp, authToken -> true);
   }
 }

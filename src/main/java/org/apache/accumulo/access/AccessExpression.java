@@ -195,9 +195,8 @@ public abstract class AccessExpression implements Serializable {
    */
   public static void validate(byte[] expression) throws InvalidAccessExpressionException {
     if (expression.length > 0) {
-      Tokenizer tokenizer = new Tokenizer(expression);
       Predicate<Tokenizer.AuthorizationToken> atp = authToken -> true;
-      ParserEvaluator.parseAccessExpression(tokenizer, atp, atp);
+      ParserEvaluator.parseAccessExpression(expression, atp, atp);
     } // else empty expression is valid, avoid object allocation
   }
 
@@ -236,14 +235,13 @@ public abstract class AccessExpression implements Serializable {
    */
   public static void findAuthorizations(byte[] expression, Consumer<String> authorizationConsumer)
       throws InvalidAccessExpressionException {
-    Tokenizer tokenizer = new Tokenizer(expression);
+    var bytesWrapper = ParserEvaluator.lookupWrappers.get();
     Predicate<Tokenizer.AuthorizationToken> atp = authToken -> {
-      // TODO avoid creating BytesWrapper obj
-      authorizationConsumer.accept(AccessEvaluatorImpl
-          .unescape(new BytesWrapper(authToken.data, authToken.start, authToken.len)));
+      bytesWrapper.set(authToken.data, authToken.start, authToken.len);
+      authorizationConsumer.accept(AccessEvaluatorImpl.unescape(bytesWrapper));
       return true;
     };
-    ParserEvaluator.parseAccessExpression(tokenizer, atp, atp);
+    ParserEvaluator.parseAccessExpression(expression, atp, atp);
   }
 
   /**
