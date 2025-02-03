@@ -155,7 +155,6 @@ public class Antlr4Tests {
               assertTrue(evaluator.canAccess(AccessExpression.of(expression)), expression);
               assertTrue(evaluator.canAccess(AccessExpression.of(expression.getBytes(UTF_8))),
                   expression);
-              assertTrue(evaluator.canAccess(AccessExpression.of(expression, true)), expression);
               assertEquals(expression,
                   AccessExpression.of(expression.getBytes(UTF_8)).getExpression());
               assertEquals(expression, AccessExpression.of(expression).getExpression());
@@ -165,7 +164,6 @@ public class Antlr4Tests {
               assertTrue(antlr.canAccess(AccessExpression.of(expression)), expression);
               assertTrue(antlr.canAccess(AccessExpression.of(expression.getBytes(UTF_8))),
                   expression);
-              assertTrue(antlr.canAccess(AccessExpression.of(expression, true)), expression);
 
               break;
             case INACCESSIBLE:
@@ -174,7 +172,6 @@ public class Antlr4Tests {
               assertFalse(evaluator.canAccess(AccessExpression.of(expression)), expression);
               assertFalse(evaluator.canAccess(AccessExpression.of(expression.getBytes(UTF_8))),
                   expression);
-              assertFalse(evaluator.canAccess(AccessExpression.of(expression, true)), expression);
               assertEquals(expression,
                   AccessExpression.of(expression.getBytes(UTF_8)).getExpression());
               assertEquals(expression, AccessExpression.of(expression).getExpression());
@@ -184,7 +181,6 @@ public class Antlr4Tests {
               assertFalse(antlr.canAccess(AccessExpression.of(expression)), expression);
               assertFalse(antlr.canAccess(AccessExpression.of(expression.getBytes(UTF_8))),
                   expression);
-              assertFalse(antlr.canAccess(AccessExpression.of(expression, true)), expression);
 
               break;
             case ERROR:

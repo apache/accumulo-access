@@ -33,6 +33,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -56,99 +58,31 @@ public class AccessExpressionTest {
     testData.add(List.of("(Y|B|Y)&(Z|A|Z)", "A,B,Y,Z"));
     testData.add(List.of("(Y&B&Y)|(Z&A&Z)", "A,B,Y,Z"));
     testData.add(List.of("(A1|B1)&((A1|B2)&(B2|C1))", "A1,B1,B2,C1"));
+    testData.add(List.of("\"A#B\"&\"A\\\\B\"", "A#B,A\\B"));
 
     for (var testCase : testData) {
       assertEquals(2, testCase.size());
       var expression = testCase.get(0);
       var expected = testCase.get(1);
-      var actual = AccessExpression.of(expression).getAuthorizations().asSet().stream().sorted()
-          .collect(Collectors.joining(","));
+      HashSet<String> found = new HashSet<>();
+      AccessExpression.findAuthorizations(expression, found::add);
+      var actual = found.stream().sorted().collect(Collectors.joining(","));
       assertEquals(expected, actual);
-      actual = AccessExpression.of(expression.getBytes(UTF_8)).getAuthorizations().asSet().stream()
-          .sorted().collect(Collectors.joining(","));
+      found.clear();
+      AccessExpression.findAuthorizations(expression.getBytes(UTF_8), found::add);
+      actual = found.stream().sorted().collect(Collectors.joining(","));
       assertEquals(expected, actual);
     }
 
-  }
-
-  @Test
-  public void testNormalize() {
-    // Test data pairs where the first entry of each pair is an expression to normalize and second
-    // is the expected normalized value.
-    var testData = new ArrayList<List<String>>();
-
-    testData.add(List.of("", ""));
-    testData.add(List.of("a", "a"));
-    testData.add(List.of("\"a\"", "a"));
-    testData.add(List.of("(a)", "a"));
-    testData.add(List.of("b|a", "a|b"));
-    testData.add(List.of("(b)|a", "a|b"));
-    testData.add(List.of("(b)|((a))", "a|b"));
-    testData.add(List.of("(b|(a|c))&x", "x&(a|b|c)"));
-    testData.add(List.of("(((a)))", "a"));
-    testData.add(List.of("b&c&a", "a&b&c"));
-    testData.add(List.of("c&b&a", "a&b&c"));
-    testData.add(List.of("a&(b&c)", "a&b&c"));
-    testData.add(List.of("(a&c)&b", "a&b&c"));
-    testData.add(List.of("(d&c&b&a)|(b&c&a&d)", "a&b&c&d"));
-    testData.add(List.of("Z|M|A", "A|M|Z"));
-    testData.add(List.of("Z&M&A", "A&M&Z"));
-    testData.add(List.of("(Y&B)|(Z&A)", "(A&Z)|(B&Y)"));
-    testData.add(List.of("(Y&B&Y)|(Z&A&Z)", "(A&Z)|(B&Y)"));
-    testData.add(List.of("(Y|B)&(Z|A)", "(A|Z)&(B|Y)"));
-    testData.add(List.of("(Y|B|Y)&(Z|A|Z)", "(A|Z)&(B|Y)"));
-    testData.add(List.of("((Z&B)|(Y&C))&((V&D)|(X&A))", "((A&X)|(D&V))&((B&Z)|(C&Y))"));
-    testData.add(List.of("((Z&B&B)|(Y&C&Y))&((V&D)|(X&A))", "((A&X)|(D&V))&((B&Z)|(C&Y))"));
-    testData.add(List.of("((Z&B)|(Y&C))&((V&D&D)|(X&A))", "((A&X)|(D&V))&((B&Z)|(C&Y))"));
-    testData.add(List.of("((Z|B)&(Y|C))|((V|D)&(X|A))", "((A|X)&(D|V))|((B|Z)&(C|Y))"));
-    testData.add(List.of("bz1|bm3|c9|ba4|am", "am|ba4|bm3|bz1|c9"));
-    testData.add(List.of("bz1&bm3&c9&ba4&am", "am&ba4&bm3&bz1&c9"));
-    testData.add(List.of("((V&D)|(X&A))&A", "A&((A&X)|(D&V))"));
-    testData.add(List.of("((V|D)&(X|A))|A", "A|((A|X)&(D|V))"));
-    testData.add(List.of("(Z|(X|M))|C|(A|B)", "A|B|C|M|X|Z"));
-    testData.add(List.of("(Z&(X&M))&C&(A&B)", "A&B&C&M&X&Z"));
-    testData.add(List.of("(Z&(X&(M|L)))&C&(A&B)", "A&B&C&X&Z&(L|M)"));
-    testData.add(List.of("(Z|(X|(M&L)))|C|(A|B)", "A|B|C|X|Z|(L&M)"));
-    testData.add(List.of("(A&(C&B)&C)|((A&C)&(B&C))", "A&B&C"));
-    testData.add(List.of("(A|(C|B)|C)&((A|C)|(B|C))", "A|B|C"));
-    testData.add(List.of("a|a|a|a", "a"));
-    testData.add(List.of("a&a&a&a", "a"));
-    testData.add(List.of("(a|a)|(a|a)", "a"));
-    testData.add(List.of("(a&a)&(a&a)", "a"));
-    var auth1 = "\"ABC\"";
-    var auth2 = "\"QRS\"";
-    var auth3 = "\"X&Z\"";
-    testData.add(List.of(
-        "(" + auth1 + "&" + auth2 + "&" + auth3 + ")|(" + auth3 + "&" + auth1 + "&" + auth2 + ")",
-        "ABC&QRS&\"X&Z\""));
-
-    for (var testCase : testData) {
-      assertEquals(2, testCase.size());
-      var expression = testCase.get(0);
-      var expected = testCase.get(1);
-      assertEquals(expected, AccessExpression.of(expression, true).getExpression());
-      assertEquals(expected, AccessExpression.of(expression.getBytes(UTF_8), true).getExpression());
-      assertEquals(expected, AccessExpression
-          .of(AccessExpression.of(expression, true).getExpression(), true).getExpression());
-
-      // when not normalizing should see the original expression
-      assertEquals(expression, AccessExpression.of(expression).getExpression());
-      assertEquals(expression, AccessExpression.of(expression, false).getExpression());
-      assertEquals(expression, AccessExpression.of(expression.getBytes(UTF_8)).getExpression());
-      assertEquals(expression,
-          AccessExpression.of(expression.getBytes(UTF_8), false).getExpression());
-    }
   }
 
   void checkError(String expression, String expected, int index) {
     checkError(() -> AccessExpression.validate(expression), expected, index);
     checkError(() -> AccessExpression.validate(expression.getBytes(UTF_8)), expected, index);
     checkError(() -> AccessExpression.of(expression), expected, index);
-    checkError(() -> AccessExpression.of(expression, true), expected, index);
-    checkError(() -> AccessExpression.of(expression, false), expected, index);
     checkError(() -> AccessExpression.of(expression.getBytes(UTF_8)), expected, index);
-    checkError(() -> AccessExpression.of(expression.getBytes(UTF_8), true), expected, index);
-    checkError(() -> AccessExpression.of(expression.getBytes(UTF_8), false), expected, index);
+    checkError(() -> AccessExpression.parse(expression), expected, index);
+    checkError(() -> AccessExpression.parse(expression.getBytes(UTF_8)), expected, index);
   }
 
   void checkError(Executable executable, String expected, int index) {
@@ -196,14 +130,24 @@ public class AccessExpressionTest {
   public void testEqualsHashcode() {
     var ae1 = AccessExpression.of("A&B");
     var ae2 = AccessExpression.of("A&C");
-    var ae3 = AccessExpression.of("B&A", true);
+    var ae3 = AccessExpression.of("A&B");
+    var ae4 = AccessExpression.parse("A&B");
 
     assertEquals(ae1, ae3);
+    assertEquals(ae1, ae4);
     assertNotEquals(ae1, ae2);
     assertNotEquals(ae3, ae2);
+    assertNotEquals(ae2, ae4);
+
+    assertEquals("A&B", ae1.toString());
+    assertEquals("A&B", ae4.toString());
+    assertEquals("A&B", ae1.getExpression());
+    assertEquals("A&B", ae4.getExpression());
 
     assertEquals(ae1.hashCode(), ae3.hashCode());
+    assertEquals(ae1.hashCode(), ae4.hashCode());
     assertNotEquals(ae1.hashCode(), ae2.hashCode());
+    assertNotEquals(ae2.hashCode(), ae4.hashCode());
   }
 
   @Test
@@ -237,5 +181,55 @@ public class AccessExpressionTest {
     // do not expect empty expression to fail validation
     AccessExpression.validate(new byte[0]);
     AccessExpression.validate("");
+    assertEquals("", AccessExpression.of(new byte[0]).getExpression());
+    assertEquals("", AccessExpression.of("").getExpression());
+
+    for (var parsed : List.of(AccessExpression.parse(new byte[0]), AccessExpression.parse(""))) {
+      assertEquals("", parsed.getExpression());
+      assertTrue(parsed.getChildren().isEmpty());
+      assertEquals(ParsedAccessExpression.ExpressionType.EMPTY, parsed.getType());
+    }
+  }
+
+  @Test
+  public void testImmutable() {
+    byte[] exp = "A&B&(C|D)".getBytes(UTF_8);
+    var exp1 = AccessExpression.of(exp);
+    var exp2 = AccessExpression.parse(exp);
+    Arrays.fill(exp, (byte) 0);
+    assertEquals("A&B&(C|D)", exp1.getExpression());
+    assertEquals("A&B&(C|D)", exp2.getExpression());
+
+    assertEquals("A", exp2.getChildren().get(0).getExpression());
+    assertEquals("B", exp2.getChildren().get(1).getExpression());
+    assertEquals("C|D", exp2.getChildren().get(2).getExpression());
+    assertEquals("C", exp2.getChildren().get(2).getChildren().get(0).getExpression());
+    assertEquals("D", exp2.getChildren().get(2).getChildren().get(1).getExpression());
+
+    // check that children list in parse tree is immutable.
+    assertThrows(UnsupportedOperationException.class, () -> exp2.getChildren().remove(0));
+    assertThrows(UnsupportedOperationException.class,
+        () -> exp2.getChildren().get(2).getChildren().remove(0));
+  }
+
+  @Test
+  public void testNull() {
+    assertThrows(NullPointerException.class, () -> AccessExpression.parse((byte[]) null));
+    assertThrows(NullPointerException.class, () -> AccessExpression.parse((String) null));
+    assertThrows(NullPointerException.class, () -> AccessExpression.validate((byte[]) null));
+    assertThrows(NullPointerException.class, () -> AccessExpression.validate((String) null));
+    assertThrows(NullPointerException.class, () -> AccessExpression.of((byte[]) null));
+    assertThrows(NullPointerException.class, () -> AccessExpression.of((String) null));
+    assertThrows(NullPointerException.class,
+        () -> AccessExpression.findAuthorizations((byte[]) null, auth -> {}));
+    assertThrows(NullPointerException.class,
+        () -> AccessExpression.findAuthorizations((String) null, auth -> {}));
+    assertThrows(NullPointerException.class,
+        () -> AccessExpression.findAuthorizations("A&B".getBytes(UTF_8), null));
+    assertThrows(NullPointerException.class,
+        () -> AccessExpression.findAuthorizations("A&B", null));
+    assertThrows(NullPointerException.class, () -> AccessExpression.quote((byte[]) null));
+    assertThrows(NullPointerException.class, () -> AccessExpression.quote((String) null));
+    assertThrows(NullPointerException.class, () -> AccessExpression.unquote(null));
   }
 }

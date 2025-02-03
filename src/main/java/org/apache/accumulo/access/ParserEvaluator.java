@@ -30,7 +30,22 @@ final class ParserEvaluator {
   static final byte OPEN_PAREN = (byte) '(';
   static final byte CLOSE_PAREN = (byte) ')';
 
-  static boolean parseAccessExpression(Tokenizer tokenizer,
+  private static final byte[] EMPTY = new byte[0];
+
+  static final ThreadLocal<BytesWrapper> lookupWrappers =
+      ThreadLocal.withInitial(() -> new BytesWrapper(EMPTY));
+  private static final ThreadLocal<Tokenizer> tokenizers =
+      ThreadLocal.withInitial(() -> new Tokenizer(EMPTY));
+
+  static boolean parseAccessExpression(byte[] expression,
+      Predicate<Tokenizer.AuthorizationToken> authorizedPredicate,
+      Predicate<Tokenizer.AuthorizationToken> shortCircuitPredicate) {
+    var tokenizer = tokenizers.get();
+    tokenizer.reset(expression);
+    return parseAccessExpression(tokenizer, authorizedPredicate, shortCircuitPredicate);
+  }
+
+  private static boolean parseAccessExpression(Tokenizer tokenizer,
       Predicate<Tokenizer.AuthorizationToken> authorizedPredicate,
       Predicate<Tokenizer.AuthorizationToken> shortCircuitPredicate) {
 
@@ -123,7 +138,7 @@ final class ParserEvaluator {
       tokenizer.next(CLOSE_PAREN);
       return node;
     } else {
-      var auth = tokenizer.nextAuthorization();
+      var auth = tokenizer.nextAuthorization(false);
       return authorizedPredicate.test(auth);
     }
   }

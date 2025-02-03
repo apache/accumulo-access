@@ -20,6 +20,7 @@ package org.apache.accumulo.access;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.accumulo.access.AccessExpression.quote;
+import static org.apache.accumulo.access.AccessExpression.unquote;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -29,7 +30,6 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -119,13 +119,13 @@ public class AccessEvaluatorTest {
           AccessExpression.validate(expression);
           AccessExpression.validate(expression.getBytes(UTF_8));
           assertEquals(expression, AccessExpression.of(expression).getExpression());
-          assertEquals(expression, AccessExpression.of(expression, false).getExpression());
           assertEquals(expression, AccessExpression.of(expression.getBytes(UTF_8)).getExpression());
-          assertEquals(expression,
-              AccessExpression.of(expression.getBytes(UTF_8), false).getExpression());
-          Objects.requireNonNull(AccessExpression.of(expression).getAuthorizations());
-          Objects
-              .requireNonNull(AccessExpression.of(expression.getBytes(UTF_8)).getAuthorizations());
+          // parsing an expression will strip uneeded outer parens
+          assertTrue(expression.contains(AccessExpression.parse(expression).getExpression()));
+          assertTrue(expression
+              .contains(AccessExpression.parse(expression.getBytes(UTF_8)).getExpression()));
+          AccessExpression.findAuthorizations(expression, auth -> {});
+          AccessExpression.findAuthorizations(expression.getBytes(UTF_8), auth -> {});
         }
 
         switch (tests.expectedResult) {
@@ -133,24 +133,16 @@ public class AccessEvaluatorTest {
             assertTrue(evaluator.canAccess(expression), expression);
             assertTrue(evaluator.canAccess(expression.getBytes(UTF_8)), expression);
             assertTrue(evaluator.canAccess(AccessExpression.of(expression)), expression);
-            assertTrue(evaluator.canAccess(AccessExpression.of(expression, true)), expression);
-            assertTrue(evaluator.canAccess(AccessExpression.of(expression, true).getExpression()),
-                expression);
-            assertTrue(
-                evaluator.canAccess(
-                    AccessExpression.of(expression.getBytes(UTF_8), true).getExpression()),
+            assertTrue(evaluator.canAccess(AccessExpression.parse(expression)), expression);
+            assertTrue(evaluator.canAccess(AccessExpression.parse(expression).getExpression()),
                 expression);
             break;
           case INACCESSIBLE:
             assertFalse(evaluator.canAccess(expression), expression);
             assertFalse(evaluator.canAccess(expression.getBytes(UTF_8)), expression);
             assertFalse(evaluator.canAccess(AccessExpression.of(expression)), expression);
-            assertFalse(evaluator.canAccess(AccessExpression.of(expression, true)), expression);
-            assertFalse(evaluator.canAccess(AccessExpression.of(expression, true).getExpression()),
-                expression);
-            assertFalse(
-                evaluator.canAccess(
-                    AccessExpression.of(expression.getBytes(UTF_8), true).getExpression()),
+            assertFalse(evaluator.canAccess(AccessExpression.parse(expression)), expression);
+            assertFalse(evaluator.canAccess(AccessExpression.parse(expression).getExpression()),
                 expression);
             break;
           case ERROR:
@@ -165,15 +157,11 @@ public class AccessEvaluatorTest {
             assertThrows(InvalidAccessExpressionException.class,
                 () -> AccessExpression.of(expression), expression);
             assertThrows(InvalidAccessExpressionException.class,
-                () -> AccessExpression.of(expression, false), expression);
-            assertThrows(InvalidAccessExpressionException.class,
-                () -> AccessExpression.of(expression, true), expression);
-            assertThrows(InvalidAccessExpressionException.class,
                 () -> AccessExpression.of(expression.getBytes(UTF_8)), expression);
             assertThrows(InvalidAccessExpressionException.class,
-                () -> AccessExpression.of(expression.getBytes(UTF_8), false), expression);
+                () -> AccessExpression.parse(expression), expression);
             assertThrows(InvalidAccessExpressionException.class,
-                () -> AccessExpression.of(expression.getBytes(UTF_8), true), expression);
+                () -> AccessExpression.parse(expression.getBytes(UTF_8)), expression);
             break;
           default:
             throw new IllegalArgumentException();
@@ -211,11 +199,17 @@ public class AccessEvaluatorTest {
   @Test
   public void testQuote() {
     assertEquals("\"A#C\"", quote("A#C"));
+    assertEquals("A#C", unquote(quote("A#C")));
     assertEquals("\"A\\\"C\"", quote("A\"C"));
+    assertEquals("A\"C", unquote(quote("A\"C")));
     assertEquals("\"A\\\"\\\\C\"", quote("A\"\\C"));
+    assertEquals("A\"\\C", unquote(quote("A\"\\C")));
     assertEquals("ACS", quote("ACS"));
+    assertEquals("ACS", unquote(quote("ACS")));
     assertEquals("\"九\"", quote("九"));
+    assertEquals("九", unquote(quote("九")));
     assertEquals("\"五十\"", quote("五十"));
+    assertEquals("五十", unquote(quote("五十")));
   }
 
   private static String unescape(String s) {

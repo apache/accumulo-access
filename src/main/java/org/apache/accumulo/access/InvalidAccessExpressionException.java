@@ -25,6 +25,7 @@ import java.util.regex.PatternSyntaxException;
  *
  * @since 1.0.0
  */
+// TODO rename to illegal...
 public final class InvalidAccessExpressionException extends IllegalArgumentException {
 
   private static final long serialVersionUID = 1L;

@@ -38,6 +38,8 @@ are package private and are not part of the public API.
   * [InvalidAccessExpressionException](src/main/java/org/apache/accumulo/access/InvalidAccessExpressionException.java).
   * [AccessEvaluator](src/main/java/org/apache/accumulo/access/AccessEvaluator.java).
   * [AccessExpression](src/main/java/org/apache/accumulo/access/AccessExpression.java).
+  * [ParsedAccessExpression](src/main/java/org/apache/accumulo/access/ParsedAccessExpression.java).
+  * [ExpressionType](src/main/java/org/apache/accumulo/access/ParsedAccessExpression.java).
   * [Authorizations](src/main/java/org/apache/accumulo/access/Authorizations.java).
 
 ## Getting Started
@@ -54,7 +56,9 @@ Add the library to your CLASSPATH. For Maven, use:
 </dependencies>
 ```
 
-## Running the [Example](src/test/java/example/AccessExample.java)
+## Running the [Examples](src/test/java/example)
+
+To run [AccessExample](src/test/java/example/AccessExample.java)
 
 ```
 mvn clean package
@@ -64,6 +68,14 @@ CLASSPATH=$(ls target/accumulo-access-*.jar) java src/test/java/example/AccessEx
 
 Note that `data6` is always returned, because it has no access expression. And
 remember, authorizations are case-sensitive.
+
+To run [ParseExamples](src/test/java/example/ParseExamples.java)
+
+```
+mvn clean package
+CLASSPATH=$(ls target/accumulo-access-*.jar) java src/test/java/example/ParseExamples.java
+```
+
 
 For an ANTLRv4 example, see antlr-example integration test's
 [README](src/it/antlr4-example/README.md).
