@@ -67,7 +67,8 @@ public abstract class ParsedAccessExpression extends AccessExpression {
    * When {@link #getType()} returns OR or AND, then this method will return the sub expressions.
    * When {@link #getType()} method returns AUTHORIZATION or EMPTY this method will return an empty
    * list.
+   *
+   * @return an immutable list of the sub expressions.
    */
   public abstract List<ParsedAccessExpression> getChildren();
-
 }

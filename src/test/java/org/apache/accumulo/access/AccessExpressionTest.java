@@ -211,4 +211,21 @@ public class AccessExpressionTest {
     assertThrows(UnsupportedOperationException.class,
         () -> exp2.getChildren().get(2).getChildren().remove(0));
   }
+
+  @Test
+  public void testNull() {
+    assertThrows(NullPointerException.class, () -> AccessExpression.parse((byte[]) null));
+    assertThrows(NullPointerException.class, () -> AccessExpression.parse((String) null));
+    assertThrows(NullPointerException.class, () -> AccessExpression.validate((byte[]) null));
+    assertThrows(NullPointerException.class, () -> AccessExpression.validate((String) null));
+    assertThrows(NullPointerException.class, () -> AccessExpression.of((byte[]) null));
+    assertThrows(NullPointerException.class, () -> AccessExpression.of((String) null));
+    assertThrows(NullPointerException.class,
+        () -> AccessExpression.findAuthorizations((byte[]) null, auth -> {}));
+    assertThrows(NullPointerException.class,
+        () -> AccessExpression.findAuthorizations((String) null, auth -> {}));
+    assertThrows(NullPointerException.class, () -> AccessExpression.quote((byte[]) null));
+    assertThrows(NullPointerException.class, () -> AccessExpression.quote((String) null));
+    assertThrows(NullPointerException.class, () -> AccessExpression.unquote(null));
+  }
 }

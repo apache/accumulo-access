@@ -26,10 +26,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
- * This class offers the ability to validate, build, and normalize access expressions. An instance
- * of this class should wrap an immutable, validated access expression. If passing access
- * expressions as arguments in code, consider using this type instead of a String. The advantage of
- * passing this type over a String is that its known to be a valid expression.
+ * This class offers the ability to operate on access expressions.
  *
  * <p>
  * Below is an example of how to use this API.
@@ -130,15 +127,22 @@ public abstract class AccessExpression implements Serializable {
   }
 
   /**
-   * This is equivalent to calling {@code AccessExpression.of(expression, false);}
+   * Validates an access expression and returns an immutable AccessExpression object. If passing
+   * access expressions as arguments in code, consider using this type instead of a String. The
+   * advantage of passing this type over a String is that its known to be a valid expression. Also
+   * this type is much more informative than a String type. Conceptually this method calls
+   * {@link #validate(String)} and if that passes creates an immutable object that wraps the
+   * expression.
+   *
+   * @throws InvalidAccessExpressionException if the given expression is not valid
+   * @throws NullPointerException when the argument is null
    */
   public static AccessExpression of(String expression) throws InvalidAccessExpressionException {
     return new AccessExpressionImpl(expression);
   }
 
   /**
-   * <p>
-   * This is equivalent to calling {@code AccessExpression.of(expression, false);}
+   * @see #of(String)
    */
   public static AccessExpression of(byte[] expression) throws InvalidAccessExpressionException {
     return new AccessExpressionImpl(expression);
@@ -151,7 +155,11 @@ public abstract class AccessExpression implements Serializable {
     return AccessExpressionImpl.EMPTY;
   }
 
-  public static ParsedAccessExpression parse(byte[] expression) {
+  /**
+   * @see #parse(String)
+   */
+  public static ParsedAccessExpression parse(byte[] expression)
+      throws InvalidAccessExpressionException {
     if (expression.length == 0) {
       return ParsedAccessExpressionImpl.EMPTY;
     }
@@ -159,10 +167,22 @@ public abstract class AccessExpression implements Serializable {
     return ParsedAccessExpressionImpl.parseExpression(Arrays.copyOf(expression, expression.length));
   }
 
-  public static ParsedAccessExpression parse(String expression) {
+  /**
+   * Validates an access expression and returns an immutable object with a parse tree. Creating the
+   * parse tree is expensive relative to calling {@link #of(String)} or {@link #validate(String)},
+   * so only use this method when the parse tree is needed.
+   *
+   * @throws NullPointerException when the argument is null
+   * @throws InvalidAccessExpressionException if the given expression is not valid
+   */
+  public static ParsedAccessExpression parse(String expression)
+      throws InvalidAccessExpressionException {
     if (expression.isEmpty()) {
       return ParsedAccessExpressionImpl.EMPTY;
     }
+    // Calling expression.getBytes(UTF8) will create a byte array that only this code has access to,
+    // so not need to copy that byte array. That is why parse(byte[]) is not called here because
+    // that would copy the array again.
     return ParsedAccessExpressionImpl.parseExpression(expression.getBytes(UTF_8));
   }
 
@@ -171,6 +191,7 @@ public abstract class AccessExpression implements Serializable {
    *
    * @param expression a potential access expression that is expected to be encoded using UTF-8
    * @throws InvalidAccessExpressionException if the given expression is not valid
+   * @throws NullPointerException when the argument is null
    */
   public static void validate(byte[] expression) throws InvalidAccessExpressionException {
     if (expression.length > 0) {
@@ -203,6 +224,7 @@ public abstract class AccessExpression implements Serializable {
    * </p>
    *
    * @throws InvalidAccessExpressionException when the expression is not valid.
+   * @throws NullPointerException when any argument is null
    */
   public static void findAuthorizations(String expression, Consumer<String> authorizationConsumer)
       throws InvalidAccessExpressionException {
@@ -230,6 +252,8 @@ public abstract class AccessExpression implements Serializable {
    * "https://github.com/apache/accumulo-access/blob/main/SPECIFICATION.md">specification</a> unless
    * quoted (surrounded by quotation marks). Use this method to quote authorizations that occur in
    * an access expression. This method will only quote if it is needed.
+   *
+   * @throws NullPointerException when the argument is null
    */
   public static byte[] quote(byte[] term) {
     if (term.length == 0) {
@@ -258,6 +282,8 @@ public abstract class AccessExpression implements Serializable {
    * "https://github.com/apache/accumulo-access/blob/main/SPECIFICATION.md">specification</a> unless
    * quoted (surrounded by quotation marks). Use this method to quote authorizations that occur in
    * an access expression. This method will only quote if it is needed.
+   *
+   * @throws NullPointerException when the argument is null
    */
   public static String quote(String term) {
     return new String(quote(term.getBytes(UTF_8)), UTF_8);
@@ -266,6 +292,8 @@ public abstract class AccessExpression implements Serializable {
   /**
    * Reverses what {@link #quote(String)} does, so will unquote an unescape an authorization if
    * needed. If the authorization is not quoted then it is returned as-is.
+   *
+   * @throws NullPointerException when the argument is null
    */
   public static String unquote(String term) {
     if (term.equals("\"\"") || term.isEmpty()) {
