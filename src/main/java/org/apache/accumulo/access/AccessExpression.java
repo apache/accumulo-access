@@ -107,6 +107,15 @@ public abstract class AccessExpression implements Serializable {
    */
   public abstract String getExpression();
 
+  /**
+   * Parses the access expression if it was never parsed before. If this access expression was
+   * created using {@link #parse(String)} or {@link #parse(byte[])} then it will have a parse from
+   * inception and this method will return itself. If the access expression was created using
+   * {@link #of(String)} or {@link #of(byte[])} then this method will create a parse tree the first
+   * time its called and remember it, returning the remembered parse tree on subsequent calls.
+   */
+  public abstract ParsedAccessExpression parse();
+
   @Override
   public boolean equals(Object o) {
     if (o instanceof AccessExpression) {
@@ -170,7 +179,9 @@ public abstract class AccessExpression implements Serializable {
   /**
    * Validates an access expression and returns an immutable object with a parse tree. Creating the
    * parse tree is expensive relative to calling {@link #of(String)} or {@link #validate(String)},
-   * so only use this method when the parse tree is needed.
+   * so only use this method when the parse tree is always needed. If the code may only use the
+   * parse tree sometimes, then it may be best to call {@link #of(String)} to create the access
+   * expression and then call {@link AccessExpression#parse()} when needed.
    *
    * @throws NullPointerException when the argument is null
    * @throws InvalidAccessExpressionException if the given expression is not valid

@@ -94,6 +94,11 @@ final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
   }
 
   @Override
+  public ParsedAccessExpression parse() {
+    return this;
+  }
+
+  @Override
   public ExpressionType getType() {
     return type;
   }
