@@ -27,6 +27,7 @@ final class AccessExpressionImpl extends AccessExpression {
   public static final AccessExpression EMPTY = new AccessExpressionImpl("");
 
   private final String expression;
+  private volatile ParsedAccessExpression parsed = null;
 
   AccessExpressionImpl(String expression) {
     validate(expression);
@@ -41,5 +42,17 @@ final class AccessExpressionImpl extends AccessExpression {
   @Override
   public String getExpression() {
     return expression;
+  }
+
+  @Override
+  public ParsedAccessExpression parse() {
+    if (parsed == null) {
+      synchronized (this) {
+        if (parsed == null) {
+          parsed = ParsedAccessExpressionImpl.parseExpression(expression.getBytes(UTF_8));
+        }
+      }
+    }
+    return parsed;
   }
 }

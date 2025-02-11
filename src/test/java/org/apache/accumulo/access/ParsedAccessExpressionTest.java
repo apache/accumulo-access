@@ -24,6 +24,8 @@ import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.A
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.EMPTY;
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.OR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
@@ -35,7 +37,8 @@ public class ParsedAccessExpressionTest {
   public void testParsing() {
     String expression = "(BLUE&(RED|PINK|YELLOW))|((YELLOW|\"GREEN/GREY\")&(RED|BLUE))|BLACK";
     for (var parsed : List.of(AccessExpression.parse(expression),
-        AccessExpression.parse(expression.getBytes(UTF_8)))) {
+        AccessExpression.parse(expression.getBytes(UTF_8)), AccessExpression.of(expression).parse(),
+        AccessExpression.of(expression.getBytes(UTF_8)).parse())) {
       // verify root node
       verify("(BLUE&(RED|PINK|YELLOW))|((YELLOW|\"GREEN/GREY\")&(RED|BLUE))|BLACK", OR, 3, parsed);
 
@@ -69,6 +72,18 @@ public class ParsedAccessExpressionTest {
     verify("", EMPTY, 0, parsed);
   }
 
+  @Test
+  public void testParseTwice() {
+    for (var expression : List.of(AccessExpression.of("A&B"),
+        AccessExpression.of("A&B".getBytes(UTF_8)))) {
+      var parsed = expression.parse();
+      assertNotSame(expression, parsed);
+      assertEquals(expression.getExpression(), parsed.getExpression());
+      assertSame(parsed, expression.parse());
+      assertSame(parsed, expression.parse());
+    }
+  }
+
   /**
    * Traverses a path in the parse tree an verifies the node at the end of the path.
    */
@@ -81,6 +96,7 @@ public class ParsedAccessExpressionTest {
     assertEquals(expectedExpression, parsed.getExpression());
     assertEquals(expectedType, parsed.getType());
     assertEquals(expectedChildren, parsed.getChildren().size());
+    assertSame(parsed, parsed.parse());
     // check list of children is immutable
     var fp = parsed;
     assertThrows(UnsupportedOperationException.class, () -> fp.getChildren().clear());
