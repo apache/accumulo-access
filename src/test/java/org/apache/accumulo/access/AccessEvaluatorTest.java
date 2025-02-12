@@ -146,21 +146,21 @@ public class AccessEvaluatorTest {
                 expression);
             break;
           case ERROR:
-            assertThrows(InvalidAccessExpressionException.class,
+            assertThrows(IllegalAccessExpressionException.class,
                 () -> evaluator.canAccess(expression), expression);
-            assertThrows(InvalidAccessExpressionException.class,
+            assertThrows(IllegalAccessExpressionException.class,
                 () -> evaluator.canAccess(expression.getBytes(UTF_8)), expression);
-            assertThrows(InvalidAccessExpressionException.class,
+            assertThrows(IllegalAccessExpressionException.class,
                 () -> AccessExpression.validate(expression), expression);
-            assertThrows(InvalidAccessExpressionException.class,
+            assertThrows(IllegalAccessExpressionException.class,
                 () -> AccessExpression.validate(expression.getBytes(UTF_8)), expression);
-            assertThrows(InvalidAccessExpressionException.class,
+            assertThrows(IllegalAccessExpressionException.class,
                 () -> AccessExpression.of(expression), expression);
-            assertThrows(InvalidAccessExpressionException.class,
+            assertThrows(IllegalAccessExpressionException.class,
                 () -> AccessExpression.of(expression.getBytes(UTF_8)), expression);
-            assertThrows(InvalidAccessExpressionException.class,
+            assertThrows(IllegalAccessExpressionException.class,
                 () -> AccessExpression.parse(expression), expression);
-            assertThrows(InvalidAccessExpressionException.class,
+            assertThrows(IllegalAccessExpressionException.class,
                 () -> AccessExpression.parse(expression.getBytes(UTF_8)), expression);
             break;
           default:

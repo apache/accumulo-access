@@ -29,7 +29,7 @@ import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.antlr.v4.runtime.LexerNoViableAltException;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
-import org.apache.accumulo.access.InvalidAccessExpressionException;
+import org.apache.accumulo.access.IllegalAccessExpressionException;
 import org.apache.accumulo.access.grammars.AccessExpressionLexer;
 import org.apache.accumulo.access.grammars.AccessExpressionParser;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
@@ -84,12 +84,12 @@ public class AccessExpressionAntlrParser {
   }
 
   public static Access_expressionContext parseAccessExpression(byte[] accessExpression)
-      throws InvalidAccessExpressionException {
+      throws IllegalAccessExpressionException {
     return parseAccessExpression(new String(accessExpression, StandardCharsets.UTF_8));
   }
 
   public static Access_expressionContext parseAccessExpression(String accessExpression)
-      throws InvalidAccessExpressionException {
+      throws IllegalAccessExpressionException {
     CodePointCharStream input = CharStreams.fromString(accessExpression);
     AccessExpressionLexerWithErrors lexer = new AccessExpressionLexerWithErrors(input);
     AccessExpressionParser parser = new AccessExpressionParser(new CommonTokenStream(lexer));
@@ -103,11 +103,11 @@ public class AccessExpressionAntlrParser {
       errors = lexer.getErrorCount();
       errors += errorListener.getErrorCount();
       if (errors > 0 || parser.getNumberOfSyntaxErrors() > 0 || ctx.exception != null) {
-        throw new InvalidAccessExpressionException("Parse error", "", 0);
+        throw new IllegalAccessExpressionException("Parse error", "", 0);
       }
       return ctx;
     } catch (RuntimeException e1) {
-      throw new InvalidAccessExpressionException(e1.getMessage(), "", 0);
+      throw new IllegalAccessExpressionException(e1.getMessage(), "", 0);
     }
   }
 

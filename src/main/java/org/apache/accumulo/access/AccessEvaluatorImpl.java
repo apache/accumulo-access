@@ -137,16 +137,16 @@ final class AccessEvaluatorImpl implements AccessEvaluator {
   }
 
   @Override
-  public boolean canAccess(String expression) throws InvalidAccessExpressionException {
+  public boolean canAccess(String expression) throws IllegalAccessExpressionException {
     return evaluate(expression.getBytes(UTF_8));
   }
 
   @Override
-  public boolean canAccess(byte[] expression) throws InvalidAccessExpressionException {
+  public boolean canAccess(byte[] expression) throws IllegalAccessExpressionException {
     return evaluate(expression);
   }
 
-  boolean evaluate(byte[] accessExpression) throws InvalidAccessExpressionException {
+  boolean evaluate(byte[] accessExpression) throws IllegalAccessExpressionException {
     var bytesWrapper = ParserEvaluator.lookupWrappers.get();
     Predicate<Tokenizer.AuthorizationToken> atp = authToken -> {
       bytesWrapper.set(authToken.data, authToken.start, authToken.len);
