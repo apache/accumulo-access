@@ -76,7 +76,7 @@ import java.util.function.Predicate;
  * }
  * </pre>
  *
- * The following code will throw an {@link InvalidAccessExpressionException} because the expression
+ * The following code will throw an {@link IllegalAccessExpressionException} because the expression
  * is not valid.
  *
  * <pre>
@@ -143,17 +143,17 @@ public abstract class AccessExpression implements Serializable {
    * {@link #validate(String)} and if that passes creates an immutable object that wraps the
    * expression.
    *
-   * @throws InvalidAccessExpressionException if the given expression is not valid
+   * @throws IllegalAccessExpressionException if the given expression is not valid
    * @throws NullPointerException when the argument is null
    */
-  public static AccessExpression of(String expression) throws InvalidAccessExpressionException {
+  public static AccessExpression of(String expression) throws IllegalAccessExpressionException {
     return new AccessExpressionImpl(expression);
   }
 
   /**
    * @see #of(String)
    */
-  public static AccessExpression of(byte[] expression) throws InvalidAccessExpressionException {
+  public static AccessExpression of(byte[] expression) throws IllegalAccessExpressionException {
     return new AccessExpressionImpl(expression);
   }
 
@@ -168,7 +168,7 @@ public abstract class AccessExpression implements Serializable {
    * @see #parse(String)
    */
   public static ParsedAccessExpression parse(byte[] expression)
-      throws InvalidAccessExpressionException {
+      throws IllegalAccessExpressionException {
     if (expression.length == 0) {
       return ParsedAccessExpressionImpl.EMPTY;
     }
@@ -184,10 +184,10 @@ public abstract class AccessExpression implements Serializable {
    * expression and then call {@link AccessExpression#parse()} when needed.
    *
    * @throws NullPointerException when the argument is null
-   * @throws InvalidAccessExpressionException if the given expression is not valid
+   * @throws IllegalAccessExpressionException if the given expression is not valid
    */
   public static ParsedAccessExpression parse(String expression)
-      throws InvalidAccessExpressionException {
+      throws IllegalAccessExpressionException {
     if (expression.isEmpty()) {
       return ParsedAccessExpressionImpl.EMPTY;
     }
@@ -201,10 +201,10 @@ public abstract class AccessExpression implements Serializable {
    * Quickly validates that an access expression is properly formed.
    *
    * @param expression a potential access expression that is expected to be encoded using UTF-8
-   * @throws InvalidAccessExpressionException if the given expression is not valid
+   * @throws IllegalAccessExpressionException if the given expression is not valid
    * @throws NullPointerException when the argument is null
    */
-  public static void validate(byte[] expression) throws InvalidAccessExpressionException {
+  public static void validate(byte[] expression) throws IllegalAccessExpressionException {
     if (expression.length > 0) {
       Predicate<Tokenizer.AuthorizationToken> atp = authToken -> true;
       ParserEvaluator.parseAccessExpression(expression, atp, atp);
@@ -214,7 +214,7 @@ public abstract class AccessExpression implements Serializable {
   /**
    * @see #validate(byte[])
    */
-  public static void validate(String expression) throws InvalidAccessExpressionException {
+  public static void validate(String expression) throws IllegalAccessExpressionException {
     if (!expression.isEmpty()) {
       validate(expression.getBytes(UTF_8));
     } // else empty expression is valid, avoid object allocation
@@ -233,11 +233,11 @@ public abstract class AccessExpression implements Serializable {
    * is already available, then it would likely be faster to use it rather than call this method.
    * </p>
    *
-   * @throws InvalidAccessExpressionException when the expression is not valid.
+   * @throws IllegalAccessExpressionException when the expression is not valid.
    * @throws NullPointerException when any argument is null
    */
   public static void findAuthorizations(String expression, Consumer<String> authorizationConsumer)
-      throws InvalidAccessExpressionException {
+      throws IllegalAccessExpressionException {
     findAuthorizations(expression.getBytes(UTF_8), authorizationConsumer);
   }
 
@@ -245,7 +245,7 @@ public abstract class AccessExpression implements Serializable {
    * @see #findAuthorizations(String, Consumer)
    */
   public static void findAuthorizations(byte[] expression, Consumer<String> authorizationConsumer)
-      throws InvalidAccessExpressionException {
+      throws IllegalAccessExpressionException {
     var bytesWrapper = ParserEvaluator.lookupWrappers.get();
     Predicate<Tokenizer.AuthorizationToken> atp = authToken -> {
       bytesWrapper.set(authToken.data, authToken.start, authToken.len);

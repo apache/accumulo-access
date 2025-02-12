@@ -25,14 +25,13 @@ import java.util.regex.PatternSyntaxException;
  *
  * @since 1.0.0
  */
-// TODO rename to illegal...
-public final class InvalidAccessExpressionException extends IllegalArgumentException {
+public final class IllegalAccessExpressionException extends IllegalArgumentException {
 
   private static final long serialVersionUID = 1L;
 
   private final PatternSyntaxException delegate;
 
-  public InvalidAccessExpressionException(String desc, String badarg, int index) {
+  public IllegalAccessExpressionException(String desc, String badarg, int index) {
     super();
     delegate = new PatternSyntaxException(desc, badarg, index);
   }
