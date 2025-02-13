@@ -48,12 +48,14 @@ final class AccessExpressionImpl extends AccessExpression {
 
   @Override
   public ParsedAccessExpression parse() {
-    return parseTreeRef.updateAndGet((parseTree) -> {
-      if (parseTree == null) {
-        return ParsedAccessExpressionImpl.parseExpression(expression.getBytes(UTF_8));
-      } else {
-        return parseTree;
-      }
-    });
+    ParsedAccessExpression parseTree = parseTreeRef.get();
+    if (parseTree == null) {
+      parseTreeRef.compareAndSet(null,
+          ParsedAccessExpressionImpl.parseExpression(expression.getBytes(UTF_8)));
+      // must get() again in case another thread won w/ the compare and set, this ensures this
+      // method always returns the exact same object
+      parseTree = parseTreeRef.get();
+    }
+    return parseTree;
   }
 }
