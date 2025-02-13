@@ -24,7 +24,7 @@ count=$(grep -E "public.*(class|interface|enum|record)" src/main/java/org/apache
   grep -v " class ParsedAccessExpression " |
   grep -v " enum ExpressionType " |
   grep -v " class Authorizations " |
-  grep -c -v " class IllegalAccessExpressionException ")
+  grep -c -v " class InvalidAccessExpressionException ")
 
 if [[ 0 -ne $count ]]; then
   echo "$count unapproved public classes found"

@@ -95,7 +95,7 @@ final class Tokenizer {
   }
 
   public void error(String msg, int idx) {
-    throw new IllegalAccessExpressionException(msg, new String(expression, UTF_8), idx);
+    throw new InvalidAccessExpressionException(msg, new String(expression, UTF_8), idx);
   }
 
   byte peek() {
