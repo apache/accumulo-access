@@ -20,6 +20,8 @@ package org.apache.accumulo.access;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 final class AccessExpressionImpl extends AccessExpression {
 
   private static final long serialVersionUID = 1L;
@@ -27,7 +29,7 @@ final class AccessExpressionImpl extends AccessExpression {
   public static final AccessExpression EMPTY = new AccessExpressionImpl("");
 
   private final String expression;
-  private volatile ParsedAccessExpression parsed = null;
+  private final AtomicReference<ParsedAccessExpression> parseTreeRef = new AtomicReference<>();
 
   AccessExpressionImpl(String expression) {
     validate(expression);
@@ -46,13 +48,12 @@ final class AccessExpressionImpl extends AccessExpression {
 
   @Override
   public ParsedAccessExpression parse() {
-    if (parsed == null) {
-      synchronized (this) {
-        if (parsed == null) {
-          parsed = ParsedAccessExpressionImpl.parseExpression(expression.getBytes(UTF_8));
-        }
+    return parseTreeRef.updateAndGet((parseTree) -> {
+      if (parseTree == null) {
+        return ParsedAccessExpressionImpl.parseExpression(expression.getBytes(UTF_8));
+      } else {
+        return parseTree;
       }
-    }
-    return parsed;
+    });
   }
 }
