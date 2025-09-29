@@ -30,6 +30,8 @@ import java.util.List;
  */
 public abstract class ParsedAccessExpression extends AccessExpression {
 
+  private static final long serialVersionUID = 1L;
+
   /*
    * This is package private so that it can not be extended by classes outside of this package and
    * create a mutable implementation. In this package all implementations that extends are

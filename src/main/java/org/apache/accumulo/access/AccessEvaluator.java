@@ -19,7 +19,6 @@
 package org.apache.accumulo.access;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * This class is used to decide if an entity with a given set of authorizations can access
