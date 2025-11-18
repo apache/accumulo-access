@@ -40,21 +40,6 @@ final class BytesWrapper implements Comparable<BytesWrapper> {
     set(data, 0, data.length);
   }
 
-  /**
-   * Creates a new sequence from a subsequence of the given byte array. The given byte array is used
-   * directly as the backing array, so later changes made to the (relevant portion of the) array
-   * reflect into the new sequence.
-   *
-   * @param data byte data
-   * @param offset starting offset in byte array (inclusive)
-   * @param length number of bytes to include in sequence
-   * @throws IllegalArgumentException if the offset or length are out of bounds for the given byte
-   *         array
-   */
-  BytesWrapper(byte[] data, int offset, int length) {
-    set(data, offset, length);
-  }
-
   byte byteAt(int i) {
     return data[offset + checkIndex(i, length)];
   }

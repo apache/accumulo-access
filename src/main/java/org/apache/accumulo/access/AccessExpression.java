@@ -95,6 +95,9 @@ import java.util.function.Predicate;
  * @since 1.0.0
  */
 public abstract class AccessExpression implements Serializable {
+
+  private static final long serialVersionUID = 1L;
+
   /*
    * This is package private so that it can not be extended by classes outside of this package and
    * create a mutable implementation. In this package all implementations that extends are
@@ -299,7 +302,7 @@ public abstract class AccessExpression implements Serializable {
   }
 
   /**
-   * Reverses what {@link #quote(String)} does, so will unquote an unescape an authorization if
+   * Reverses what {@link #quote(String)} does, so will unquote and unescape an authorization if
    * needed. If the authorization is not quoted then it is returned as-is.
    *
    * @throws NullPointerException when the argument is null
