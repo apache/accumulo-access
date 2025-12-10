@@ -24,9 +24,24 @@ count=$(grep -E "public.*(class|interface|enum|record)" src/main/java/org/apache
   grep -v " class ParsedAccessExpression " |
   grep -v " enum ExpressionType " |
   grep -v " class Authorizations " |
+  grep -v " class BytesWrapper " |
+  grep -v " class ByteUtils " |
+  grep -v " class StringUtils " |
   grep -c -v " class InvalidAccessExpressionException ")
+
+files=$(grep -E "public.*(class|interface|enum|record)" src/main/java/org/apache/accumulo/access/*.java |
+  grep -v " interface AccessEvaluator " |
+  grep -v " class AccessExpression " |
+  grep -v " class ParsedAccessExpression " |
+  grep -v " enum ExpressionType " |
+  grep -v " class Authorizations " |
+  grep -v " class BytesWrapper " |
+  grep -v " class ByteUtils " |
+  grep -v " class StringUtils " |
+  grep -v " class InvalidAccessExpressionException ")
 
 if [[ 0 -ne $count ]]; then
   echo "$count unapproved public classes found"
+  echo "${files}"
   exit 1
 fi
