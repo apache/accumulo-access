@@ -28,7 +28,9 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.Authorizations;
+import org.apache.accumulo.access.BytesWrapper;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
+import org.apache.accumulo.access.StringUtils;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_tokenContext;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.And_expressionContext;
@@ -40,7 +42,7 @@ public class AccessExpressionAntlrEvaluator implements AccessEvaluator {
 
   private class Entity {
 
-    private Set<String> authorizations;
+    private Set<BytesWrapper> authorizations;
 
     @Override
     public String toString() {
@@ -55,17 +57,17 @@ public class AccessExpressionAntlrEvaluator implements AccessEvaluator {
     entities = new ArrayList<>(authSets.size());
 
     for (Authorizations a : authSets) {
-      Set<String> entityAuths = a.asSet();
+      Set<BytesWrapper> entityAuths = a.asSet();
       Entity e = new Entity();
       entities.add(e);
       e.authorizations = new HashSet<>(entityAuths.size() * 2);
       a.asSet().stream().forEach(auth -> {
         e.authorizations.add(auth);
-        String quoted = AccessExpression.quote(auth);
+        String quoted = auth.toString();
         if (!quoted.startsWith("\"")) {
           quoted = '"' + quoted + '"';
         }
-        e.authorizations.add(quoted);
+        e.authorizations.add(new BytesWrapper(StringUtils.toByteArray(quoted)));
       });
     }
   }
@@ -75,7 +77,7 @@ public class AccessExpressionAntlrEvaluator implements AccessEvaluator {
   }
 
   public boolean canAccess(AccessExpression accessExpression) {
-    return canAccess(accessExpression.getExpression());
+    return canAccess(AccessExpressionAntlrParser.parseAccessExpression(accessExpression.getExpression()));
   }
 
   public boolean canAccess(String accessExpression) {
@@ -97,7 +99,7 @@ public class AccessExpressionAntlrEvaluator implements AccessEvaluator {
   private Boolean evaluate(Entity e, ParseTree node) {
     Boolean retval;
     if (node instanceof Access_tokenContext) {
-      retval = e.authorizations.contains(node.getText());
+      retval = e.authorizations.contains(new BytesWrapper(StringUtils.toByteArray(node.getText())));
     } else if (node instanceof TerminalNode
         || node instanceof And_operatorContext | node instanceof Or_operatorContext) {
       retval = null;

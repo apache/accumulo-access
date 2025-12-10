@@ -127,7 +127,7 @@ public class ParseExamples {
 
     @Override
     public int hashCode() {
-      return expression.hashCode();
+      return Arrays.hashCode(expression);
     }
   }
 

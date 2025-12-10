@@ -55,7 +55,7 @@ public final class Authorizations implements Iterable<BytesWrapper>, Serializabl
    * @return immutable set of authorization strings
    */
   public Set<BytesWrapper> asSet() {
-    return authorizations;
+    return Set.copyOf(authorizations);
   }
 
   @Override

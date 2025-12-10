@@ -22,10 +22,12 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.checkFromIndexSize;
 import static java.util.Objects.checkIndex;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
-public final class BytesWrapper implements Comparable<BytesWrapper> {
+public final class BytesWrapper implements Comparable<BytesWrapper>, Serializable {
 
+  private static final long serialVersionUID = 1L;
   private byte[] data;
   private int offset;
   private int length;
