@@ -27,15 +27,10 @@ import java.util.function.Predicate;
  */
 final class ParserEvaluator {
 
-  static final byte OPEN_PAREN = (byte) '(';
-  static final byte CLOSE_PAREN = (byte) ')';
-
-  private static final byte[] EMPTY = new byte[0];
-
   static final ThreadLocal<BytesWrapper> lookupWrappers =
-      ThreadLocal.withInitial(() -> new BytesWrapper(EMPTY));
+      ThreadLocal.withInitial(() -> new BytesWrapper(ByteUtils.EMPTY_BYTES));
   private static final ThreadLocal<Tokenizer> tokenizers =
-      ThreadLocal.withInitial(() -> new Tokenizer(EMPTY));
+      ThreadLocal.withInitial(() -> new Tokenizer(ByteUtils.EMPTY_BYTES));
 
   static boolean parseAccessExpression(byte[] expression,
       Predicate<Tokenizer.AuthorizationToken> authorizedPredicate,
@@ -132,10 +127,10 @@ final class ParserEvaluator {
           .error("Expected a '(' character or an authorization token instead saw end of input");
     }
 
-    if (tokenizer.peek() == OPEN_PAREN) {
+    if (tokenizer.peek() == ByteUtils.OPEN_PAREN) {
       tokenizer.advance();
       var node = parseExpression(tokenizer, authorizedPredicate, shortCircuitPredicate);
-      tokenizer.next(CLOSE_PAREN);
+      tokenizer.next(ByteUtils.CLOSE_PAREN);
       return node;
     } else {
       var auth = tokenizer.nextAuthorization(false);

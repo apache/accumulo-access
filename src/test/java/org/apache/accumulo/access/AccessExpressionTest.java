@@ -20,6 +20,7 @@ package org.apache.accumulo.access;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -141,8 +142,8 @@ public class AccessExpressionTest {
 
     assertEquals("A&B", ae1.toString());
     assertEquals("A&B", ae4.toString());
-    assertEquals("A&B", ae1.getExpression());
-    assertEquals("A&B", ae4.getExpression());
+    assertArrayEquals(StringUtils.toByteArray("A&B"), ae1.getExpression());
+    assertArrayEquals(StringUtils.toByteArray("A&B"), ae4.getExpression());
 
     assertEquals(ae1.hashCode(), ae3.hashCode());
     assertEquals(ae1.hashCode(), ae4.hashCode());
@@ -181,11 +182,11 @@ public class AccessExpressionTest {
     // do not expect empty expression to fail validation
     AccessExpression.validate(new byte[0]);
     AccessExpression.validate("");
-    assertEquals("", AccessExpression.of(new byte[0]).getExpression());
-    assertEquals("", AccessExpression.of("").getExpression());
+    assertEquals("", StringUtils.toString(AccessExpression.of(new byte[0]).getExpression()));
+    assertEquals("", StringUtils.toString(AccessExpression.of("").getExpression()));
 
     for (var parsed : List.of(AccessExpression.parse(new byte[0]), AccessExpression.parse(""))) {
-      assertEquals("", parsed.getExpression());
+      assertEquals("", StringUtils.toString(parsed.getExpression()));
       assertTrue(parsed.getChildren().isEmpty());
       assertEquals(ParsedAccessExpression.ExpressionType.EMPTY, parsed.getType());
     }
@@ -197,14 +198,16 @@ public class AccessExpressionTest {
     var exp1 = AccessExpression.of(exp);
     var exp2 = AccessExpression.parse(exp);
     Arrays.fill(exp, (byte) 0);
-    assertEquals("A&B&(C|D)", exp1.getExpression());
-    assertEquals("A&B&(C|D)", exp2.getExpression());
+    assertArrayEquals(StringUtils.toByteArray("A&B&(C|D)"), exp1.getExpression());
+    assertArrayEquals(StringUtils.toByteArray("A&B&(C|D)"), exp2.getExpression());
 
-    assertEquals("A", exp2.getChildren().get(0).getExpression());
-    assertEquals("B", exp2.getChildren().get(1).getExpression());
-    assertEquals("C|D", exp2.getChildren().get(2).getExpression());
-    assertEquals("C", exp2.getChildren().get(2).getChildren().get(0).getExpression());
-    assertEquals("D", exp2.getChildren().get(2).getChildren().get(1).getExpression());
+    assertArrayEquals(StringUtils.toByteArray("A"), exp2.getChildren().get(0).getExpression());
+    assertArrayEquals(StringUtils.toByteArray("B"), exp2.getChildren().get(1).getExpression());
+    assertArrayEquals(StringUtils.toByteArray("C|D"), exp2.getChildren().get(2).getExpression());
+    assertArrayEquals(StringUtils.toByteArray("C"),
+        exp2.getChildren().get(2).getChildren().get(0).getExpression());
+    assertArrayEquals(StringUtils.toByteArray("D"),
+        exp2.getChildren().get(2).getChildren().get(1).getExpression());
 
     // check that children list in parse tree is immutable.
     assertThrows(UnsupportedOperationException.class, () -> exp2.getChildren().remove(0));
@@ -230,6 +233,7 @@ public class AccessExpressionTest {
         () -> AccessExpression.findAuthorizations("A&B", null));
     assertThrows(NullPointerException.class, () -> AccessExpression.quote((byte[]) null));
     assertThrows(NullPointerException.class, () -> AccessExpression.quote((String) null));
-    assertThrows(NullPointerException.class, () -> AccessExpression.unquote(null));
+    assertThrows(NullPointerException.class, () -> AccessExpression.unquote((byte[]) null));
+    assertThrows(NullPointerException.class, () -> AccessExpression.unquote((String) null));
   }
 }

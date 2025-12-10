@@ -18,7 +18,6 @@
  */
 package org.apache.accumulo.access;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.accumulo.access.ByteUtils.isBackslashSymbol;
 import static org.apache.accumulo.access.ByteUtils.isQuoteOrSlash;
 import static org.apache.accumulo.access.ByteUtils.isQuoteSymbol;
@@ -95,7 +94,7 @@ final class Tokenizer {
   }
 
   public void error(String msg, int idx) {
-    throw new InvalidAccessExpressionException(msg, new String(expression, UTF_8), idx);
+    throw new InvalidAccessExpressionException(msg, StringUtils.toString(expression), idx);
   }
 
   byte peek() {

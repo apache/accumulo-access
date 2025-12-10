@@ -19,14 +19,17 @@
 package example;
 
 import static example.ParseExamples.replaceAuthorizations;
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.accumulo.access.AccessExpression;
+import org.apache.accumulo.access.BytesWrapper;
+import org.apache.accumulo.access.StringUtils;
 import org.junit.jupiter.api.Test;
 
 // In addition to testing the examples, these test also provide extensive testing of ParsedAccessExpression
@@ -86,30 +89,41 @@ public class ParseExamplesTest {
 
     for (var testCase : testData) {
       assertEquals(2, testCase.size());
-      var expression = testCase.get(0);
-      var expected = testCase.get(1);
+      String expression = testCase.get(0);
+      byte[] expected = StringUtils.toByteArray(testCase.get(1));
 
-      var actual = ParseExamples.normalize(AccessExpression.parse(expression)).expression;
-      assertEquals(expected, actual);
+      byte[] actual = ParseExamples.normalize(AccessExpression.parse(expression)).expression;
+      assertArrayEquals(expected, actual);
 
-      actual =
-          ParseExamples.normalize(AccessExpression.parse(expression.getBytes(UTF_8))).expression;
-      assertEquals(expected, actual);
+      actual = ParseExamples
+          .normalize(AccessExpression.parse(StringUtils.toByteArray(expression))).expression;
+      assertArrayEquals(expected, actual);
     }
   }
 
   @Test
   public void testReplace() {
     // Test replacement code w/ quoting and escaping.
-    var parsed = AccessExpression.parse("((RED&\"ESC\\\\\")|(PINK&BLUE))");
-    StringBuilder expressionBuilder = new StringBuilder();
-    replaceAuthorizations(parsed, expressionBuilder, Map.of("ESC\\", "NEEDS+QUOTE"));
-    assertEquals("(RED&\"NEEDS+QUOTE\")|(PINK&BLUE)", expressionBuilder.toString());
+    String exp = "((RED&\"ESC\\\\\")|(PINK&BLUE))";
+    var parsed = AccessExpression.parse(exp);
+    ByteBuffer expressionBuilder = ByteBuffer.allocateDirect(exp.length() * 4);
+    replaceAuthorizations(parsed, expressionBuilder,
+        Map.of(new BytesWrapper(StringUtils.toByteArray("ESC\\")),
+            StringUtils.toByteArray("NEEDS+QUOTE")));
+    byte[] buf = new byte[expressionBuilder.position()];
+    expressionBuilder.flip();
+    expressionBuilder.get(buf);
+    assertEquals("(RED&\"NEEDS+QUOTE\")|(PINK&BLUE)", StringUtils.toString(buf));
 
     // Test replacing multiple
     parsed = AccessExpression.parse("((RED&(GREEN|YELLOW))|(PINK&BLUE))");
-    expressionBuilder = new StringBuilder();
-    replaceAuthorizations(parsed, expressionBuilder, Map.of("RED", "ROUGE", "GREEN", "AQUA"));
-    assertEquals("(ROUGE&(AQUA|YELLOW))|(PINK&BLUE)", expressionBuilder.toString());
+    expressionBuilder.clear();
+    replaceAuthorizations(parsed, expressionBuilder,
+        Map.of(new BytesWrapper(StringUtils.toByteArray("RED")), StringUtils.toByteArray("ROUGE"),
+            new BytesWrapper(StringUtils.toByteArray("GREEN")), StringUtils.toByteArray("AQUA")));
+    buf = new byte[expressionBuilder.position()];
+    expressionBuilder.flip();
+    expressionBuilder.get(buf);
+    assertEquals("(ROUGE&(AQUA|YELLOW))|(PINK&BLUE)", StringUtils.toString(buf));
   }
 }

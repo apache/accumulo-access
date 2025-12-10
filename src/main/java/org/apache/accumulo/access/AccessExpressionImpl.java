@@ -18,31 +18,27 @@
  */
 package org.apache.accumulo.access;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.accumulo.access.ByteUtils.EMPTY_BYTES;
 
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 
 final class AccessExpressionImpl extends AccessExpression {
 
   private static final long serialVersionUID = 1L;
 
-  public static final AccessExpression EMPTY = new AccessExpressionImpl("");
+  public static final AccessExpression EMPTY = new AccessExpressionImpl(EMPTY_BYTES);
 
-  private final String expression;
+  private final byte[] expression;
   private final AtomicReference<ParsedAccessExpression> parseTreeRef = new AtomicReference<>();
-
-  AccessExpressionImpl(String expression) {
-    validate(expression);
-    this.expression = expression;
-  }
 
   AccessExpressionImpl(byte[] expression) {
     validate(expression);
-    this.expression = new String(expression, UTF_8);
+    this.expression = Arrays.copyOf(expression, expression.length);
   }
 
   @Override
-  public String getExpression() {
+  public byte[] getExpression() {
     return expression;
   }
 
@@ -50,8 +46,7 @@ final class AccessExpressionImpl extends AccessExpression {
   public ParsedAccessExpression parse() {
     ParsedAccessExpression parseTree = parseTreeRef.get();
     if (parseTree == null) {
-      parseTreeRef.compareAndSet(null,
-          ParsedAccessExpressionImpl.parseExpression(expression.getBytes(UTF_8)));
+      parseTreeRef.compareAndSet(null, ParsedAccessExpressionImpl.parseExpression(expression));
       // must get() again in case another thread won w/ the compare and set, this ensures this
       // method always returns the exact same object
       parseTree = parseTreeRef.get();

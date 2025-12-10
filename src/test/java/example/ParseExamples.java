@@ -23,12 +23,17 @@ import static org.apache.accumulo.access.AccessExpression.unquote;
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.AND;
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.AUTHORIZATION;
 
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeSet;
 
 import org.apache.accumulo.access.AccessExpression;
+import org.apache.accumulo.access.ByteUtils;
+import org.apache.accumulo.access.BytesWrapper;
 import org.apache.accumulo.access.ParsedAccessExpression;
 import org.apache.accumulo.access.ParsedAccessExpression.ExpressionType;
+import org.apache.accumulo.access.StringUtils;
 
 /**
  * Examples of using the parse tree in {@link ParsedAccessExpression} to inspect and transform
@@ -40,27 +45,29 @@ public class ParseExamples {
    * This example will replace authorizations in an access expression.
    */
   public static void replaceAuthorizations(ParsedAccessExpression parsed,
-      StringBuilder expressionBuilder, Map<String,String> replacements) {
+      ByteBuffer expressionBuilder, Map<BytesWrapper,byte[]> replacements) {
     if (parsed.getType() == AUTHORIZATION) {
       // If the term is quoted in the expression, the quotes will be preserved. Calling unquote()
       // will only unescape and unquote if the string is quoted, otherwise it returns the string as
       // is.
-      String auth = unquote(parsed.getExpression());
+      byte[] auth = unquote(parsed.getExpression());
       // Must quote any authorization that needs it. Calling quote() will only quote and escape if
       // needed, otherwise it returns the string as is.
-      expressionBuilder.append(quote(replacements.getOrDefault(auth, auth)));
+      expressionBuilder.put(quote(replacements.getOrDefault(new BytesWrapper(auth), auth)));
     } else {
-      String operator = parsed.getType() == AND ? "&" : "|";
-      String sep = "";
+      byte operator = parsed.getType() == AND ? ByteUtils.AND_OPERATOR : ByteUtils.OR_OPERATOR;
+      byte sep = '\0';
 
       for (var childExpression : parsed.getChildren()) {
-        expressionBuilder.append(sep);
+        if (sep != '\0') {
+          expressionBuilder.put(sep);
+        }
         if (childExpression.getType() == AUTHORIZATION) {
           replaceAuthorizations(childExpression, expressionBuilder, replacements);
         } else {
-          expressionBuilder.append("(");
+          expressionBuilder.put(ByteUtils.OPEN_PAREN);
           replaceAuthorizations(childExpression, expressionBuilder, replacements);
-          expressionBuilder.append(")");
+          expressionBuilder.put(ByteUtils.CLOSE_PAREN);
         }
         sep = operator;
       }
@@ -72,10 +79,10 @@ public class ParseExamples {
    * in a tree set.
    */
   public static class NormalizedExpression implements Comparable<NormalizedExpression> {
-    public final String expression;
+    public final byte[] expression;
     public final ExpressionType type;
 
-    NormalizedExpression(String expression, ExpressionType type) {
+    NormalizedExpression(byte[] expression, ExpressionType type) {
       this.expression = expression;
       this.type = type;
     }
@@ -101,9 +108,9 @@ public class ParseExamples {
       if (cmp == 0) {
         if (type == AUTHORIZATION) {
           // sort based on the unquoted and unescaped form of the authorization
-          cmp = unquote(expression).compareTo(unquote(o.expression));
+          cmp = Arrays.compare(unquote(expression), unquote(o.expression));
         } else {
-          cmp = expression.compareTo(o.expression);
+          cmp = Arrays.compare(expression, o.expression);
         }
 
       }
@@ -168,8 +175,8 @@ public class ParseExamples {
     if (parsed.getType() == AUTHORIZATION) {
       // If the authorization is quoted and it does not need to be quoted then the following two
       // lines will remove the unnecessary quoting.
-      String unquoted = AccessExpression.unquote(parsed.getExpression());
-      String quoted = AccessExpression.quote(unquoted);
+      byte[] unquoted = AccessExpression.unquote(parsed.getExpression());
+      byte[] quoted = AccessExpression.quote(unquoted);
       return new NormalizedExpression(quoted, parsed.getType());
     } else {
       // The tree set does the work of sorting and deduplicating sub expressions.
@@ -181,24 +188,36 @@ public class ParseExamples {
       if (normalizedChildren.size() == 1) {
         return normalizedChildren.first();
       } else {
-        String operator = parsed.getType() == AND ? "&" : "|";
-        String sep = "";
+        byte operator = parsed.getType() == AND ? ByteUtils.AND_OPERATOR : ByteUtils.OR_OPERATOR;
+        byte sep = '\0';
 
-        StringBuilder builder = new StringBuilder();
+        int length = normalizedChildren.size() * 3;
+        for (var child : normalizedChildren) {
+          length += child.expression.length;
+        }
+
+        final byte[] builder = new byte[length];
+        int index = 0;
 
         for (var child : normalizedChildren) {
-          builder.append(sep);
+          if (sep != '\0') {
+            builder[index++] = sep;
+          }
           if (child.type == AUTHORIZATION) {
-            builder.append(child.expression);
+            for (byte b : child.expression) {
+              builder[index++] = b;
+            }
           } else {
-            builder.append("(");
-            builder.append(child.expression);
-            builder.append(")");
+            builder[index++] = ByteUtils.OPEN_PAREN;
+            for (byte b : child.expression) {
+              builder[index++] = b;
+            }
+            builder[index++] = ByteUtils.CLOSE_PAREN;
           }
           sep = operator;
         }
 
-        return new NormalizedExpression(builder.toString(), parsed.getType());
+        return new NormalizedExpression(Arrays.copyOfRange(builder, 0, index), parsed.getType());
       }
     }
   }
@@ -215,14 +234,18 @@ public class ParseExamples {
 
   public static void main(String[] args) {
 
-    var parsed = AccessExpression.parse("((RED&GREEN)|(PINK&BLUE))");
+    String exp = "((RED&GREEN)|(PINK&BLUE))";
+    var parsed = AccessExpression.parse(exp);
 
     System.out.printf("Operating on %s%n", parsed);
 
     System.out.printf("%n  Normalized to %s%n", normalize(parsed).expression);
-    StringBuilder expressionBuilder = new StringBuilder();
-    replaceAuthorizations(parsed, expressionBuilder, Map.of("GREEN", "GREY"));
-    System.out.printf("%n  Replaced GREEN with GREY : %s%n", expressionBuilder);
+    ByteBuffer expressionBuilder = ByteBuffer.allocateDirect(exp.length() * 2);
+    replaceAuthorizations(parsed, expressionBuilder, Map
+        .of(new BytesWrapper(StringUtils.toByteArray("GREEN")), StringUtils.toByteArray("GREY")));
+    byte[] buf = new byte[expressionBuilder.position()];
+    expressionBuilder.get(buf);
+    System.out.printf("%n  Replaced GREEN with GREY : %s%n", StringUtils.toString(buf));
     System.out.println("\n  Walking :");
     walk("    ", parsed);
   }

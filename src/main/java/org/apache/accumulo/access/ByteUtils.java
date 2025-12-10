@@ -22,11 +22,14 @@ package org.apache.accumulo.access;
  * This class exists to avoid repeat conversions from byte to char as well as to provide helper
  * methods for comparing them.
  */
-final class ByteUtils {
-  static final byte QUOTE = (byte) '"';
-  static final byte BACKSLASH = (byte) '\\';
-  static final byte AND_OPERATOR = (byte) '&';
-  static final byte OR_OPERATOR = (byte) '|';
+public final class ByteUtils {
+  public static final byte[] EMPTY_BYTES = new byte[0];
+  public static final byte QUOTE = (byte) '"';
+  public static final byte BACKSLASH = (byte) '\\';
+  public static final byte AND_OPERATOR = (byte) '&';
+  public static final byte OR_OPERATOR = (byte) '|';
+  public static final byte OPEN_PAREN = (byte) '(';
+  public static final byte CLOSE_PAREN = (byte) ')';
 
   private ByteUtils() {
     // private constructor to prevent instantiation

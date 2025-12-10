@@ -18,13 +18,11 @@
  */
 package org.apache.accumulo.access;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.accumulo.access.ByteUtils.BACKSLASH;
 import static org.apache.accumulo.access.ByteUtils.QUOTE;
 import static org.apache.accumulo.access.ByteUtils.isQuoteOrSlash;
 import static org.apache.accumulo.access.ByteUtils.isQuoteSymbol;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -43,17 +41,8 @@ final class AccessEvaluatorImpl implements AccessEvaluator {
    * Create an AccessEvaluatorImpl using a collection of authorizations
    */
   AccessEvaluatorImpl(Authorizations authorizations) {
-    var authsSet = authorizations.asSet();
-    final Set<BytesWrapper> authBytes = new HashSet<>(authsSet.size());
-    for (String authorization : authsSet) {
-      var auth = authorization.getBytes(UTF_8);
-      if (auth.length == 0) {
-        throw new IllegalArgumentException("Empty authorization");
-      }
-      authBytes.add(new BytesWrapper(AccessEvaluatorImpl.escape(auth, false)));
-    }
-
-    authorizedPredicate = authBytes::contains;
+    final Set<BytesWrapper> authsSet = authorizations.asSet();
+    authorizedPredicate = authsSet::contains;
   }
 
   static String unescape(BytesWrapper auth) {
@@ -89,7 +78,7 @@ final class AccessEvaluatorImpl implements AccessEvaluator {
         unescapedCopy[pos++] = b;
       }
 
-      return new String(unescapedCopy, UTF_8);
+      return StringUtils.toString(unescapedCopy);
     } else {
       return auth.toString();
     }
@@ -138,7 +127,7 @@ final class AccessEvaluatorImpl implements AccessEvaluator {
 
   @Override
   public boolean canAccess(String expression) throws InvalidAccessExpressionException {
-    return evaluate(expression.getBytes(UTF_8));
+    return evaluate(StringUtils.toByteArray(expression));
   }
 
   @Override

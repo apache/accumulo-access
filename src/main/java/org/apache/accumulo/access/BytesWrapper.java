@@ -24,7 +24,7 @@ import static java.util.Objects.checkIndex;
 
 import java.util.Arrays;
 
-final class BytesWrapper implements Comparable<BytesWrapper> {
+public final class BytesWrapper implements Comparable<BytesWrapper> {
 
   private byte[] data;
   private int offset;

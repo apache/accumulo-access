@@ -18,8 +18,6 @@
  */
 package org.apache.accumulo.access;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -36,7 +34,7 @@ class MultiAccessEvaluatorImpl implements AccessEvaluator {
 
   @Override
   public boolean canAccess(String accessExpression) throws InvalidAccessExpressionException {
-    return canAccess(accessExpression.getBytes(UTF_8));
+    return canAccess(StringUtils.toByteArray(accessExpression));
   }
 
   @Override

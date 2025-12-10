@@ -118,12 +118,15 @@ public class AccessEvaluatorTest {
             || tests.expectedResult == ExpectedResult.INACCESSIBLE) {
           AccessExpression.validate(expression);
           AccessExpression.validate(expression.getBytes(UTF_8));
-          assertEquals(expression, AccessExpression.of(expression).getExpression());
-          assertEquals(expression, AccessExpression.of(expression.getBytes(UTF_8)).getExpression());
+          assertEquals(expression,
+              StringUtils.toString(AccessExpression.of(expression).getExpression()));
+          assertEquals(expression, StringUtils
+              .toString(AccessExpression.of(expression.getBytes(UTF_8)).getExpression()));
           // parsing an expression will strip uneeded outer parens
-          assertTrue(expression.contains(AccessExpression.parse(expression).getExpression()));
           assertTrue(expression
-              .contains(AccessExpression.parse(expression.getBytes(UTF_8)).getExpression()));
+              .contains(StringUtils.toString(AccessExpression.parse(expression).getExpression())));
+          assertTrue(expression.contains(StringUtils
+              .toString(AccessExpression.parse(expression.getBytes(UTF_8)).getExpression())));
           AccessExpression.findAuthorizations(expression, auth -> {});
           AccessExpression.findAuthorizations(expression.getBytes(UTF_8), auth -> {});
         }

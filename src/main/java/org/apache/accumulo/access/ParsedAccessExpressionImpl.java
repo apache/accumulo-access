@@ -18,7 +18,6 @@
  */
 package org.apache.accumulo.access;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.accumulo.access.ByteUtils.AND_OPERATOR;
 import static org.apache.accumulo.access.ByteUtils.OR_OPERATOR;
 import static org.apache.accumulo.access.ByteUtils.isAndOrOperator;
@@ -27,8 +26,8 @@ import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.A
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.OR;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 // This class is intentionally package private
 final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
@@ -41,8 +40,6 @@ final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
 
   private final ExpressionType type;
   private final List<ParsedAccessExpression> children;
-
-  private final AtomicReference<String> stringExpression = new AtomicReference<>(null);
 
   static final ParsedAccessExpression EMPTY = new ParsedAccessExpressionImpl();
 
@@ -78,19 +75,13 @@ final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
     this.type = ExpressionType.EMPTY;
     this.offset = 0;
     this.length = 0;
-    this.expression = new byte[0];
+    this.expression = ByteUtils.EMPTY_BYTES;
     this.children = List.of();
   }
 
   @Override
-  public String getExpression() {
-    String strExp = stringExpression.get();
-    if (strExp != null) {
-      return strExp;
-    }
-    strExp = new String(expression, offset, length, UTF_8);
-    stringExpression.compareAndSet(null, strExp);
-    return stringExpression.get();
+  public byte[] getExpression() {
+    return Arrays.copyOfRange(expression, offset, offset + length);
   }
 
   @Override
@@ -163,10 +154,10 @@ final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
           .error("Expected a '(' character or an authorization token instead saw end of input");
     }
 
-    if (tokenizer.peek() == ParserEvaluator.OPEN_PAREN) {
+    if (tokenizer.peek() == ByteUtils.OPEN_PAREN) {
       tokenizer.advance();
       var node = parseExpression(tokenizer, true);
-      tokenizer.next(ParserEvaluator.CLOSE_PAREN);
+      tokenizer.next(ByteUtils.CLOSE_PAREN);
       return node;
     } else {
       var auth = tokenizer.nextAuthorization(true);

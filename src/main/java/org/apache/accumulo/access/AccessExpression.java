@@ -18,7 +18,7 @@
  */
 package org.apache.accumulo.access;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.accumulo.access.ByteUtils.QUOTE;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -89,7 +89,9 @@ import java.util.function.Predicate;
  * Instances of this class are thread-safe.
  *
  * <p>
- * Note: The underlying implementation uses UTF-8 when converting between bytes and Strings.
+ * Note: The underlying implementation uses byte arrays. Any methods that accept or return a String
+ * explicitly uses UTF-8 for the conversion. If you are using non-UTF-8 characters, then use the
+ * methods that use byte[].
  *
  * @see <a href="https://github.com/apache/accumulo-access">Accumulo Access Documentation</a>
  * @since 1.0.0
@@ -108,7 +110,7 @@ public abstract class AccessExpression implements Serializable {
   /**
    * @return the expression that was used to create this object.
    */
-  public abstract String getExpression();
+  public abstract byte[] getExpression();
 
   /**
    * Parses the access expression if it was never parsed before. If this access expression was
@@ -122,7 +124,7 @@ public abstract class AccessExpression implements Serializable {
   @Override
   public boolean equals(Object o) {
     if (o instanceof AccessExpression) {
-      return ((AccessExpression) o).getExpression().equals(getExpression());
+      return Arrays.equals(getExpression(), ((AccessExpression) o).getExpression());
     }
 
     return false;
@@ -130,12 +132,12 @@ public abstract class AccessExpression implements Serializable {
 
   @Override
   public int hashCode() {
-    return getExpression().hashCode();
+    return Arrays.hashCode(getExpression());
   }
 
   @Override
   public String toString() {
-    return getExpression();
+    return StringUtils.toString(getExpression());
   }
 
   /**
@@ -150,7 +152,7 @@ public abstract class AccessExpression implements Serializable {
    * @throws NullPointerException when the argument is null
    */
   public static AccessExpression of(String expression) throws InvalidAccessExpressionException {
-    return new AccessExpressionImpl(expression);
+    return new AccessExpressionImpl(StringUtils.toByteArray(expression));
   }
 
   /**
@@ -195,9 +197,9 @@ public abstract class AccessExpression implements Serializable {
       return ParsedAccessExpressionImpl.EMPTY;
     }
     // Calling expression.getBytes(UTF8) will create a byte array that only this code has access to,
-    // so not need to copy that byte array. That is why parse(byte[]) is not called here because
+    // so no need to copy that byte array. That is why parse(byte[]) is not called here because
     // that would copy the array again.
-    return ParsedAccessExpressionImpl.parseExpression(expression.getBytes(UTF_8));
+    return ParsedAccessExpressionImpl.parseExpression(StringUtils.toByteArray(expression));
   }
 
   /**
@@ -219,7 +221,7 @@ public abstract class AccessExpression implements Serializable {
    */
   public static void validate(String expression) throws InvalidAccessExpressionException {
     if (!expression.isEmpty()) {
-      validate(expression.getBytes(UTF_8));
+      validate(StringUtils.toByteArray(expression));
     } // else empty expression is valid, avoid object allocation
   }
 
@@ -241,7 +243,7 @@ public abstract class AccessExpression implements Serializable {
    */
   public static void findAuthorizations(String expression, Consumer<String> authorizationConsumer)
       throws InvalidAccessExpressionException {
-    findAuthorizations(expression.getBytes(UTF_8), authorizationConsumer);
+    findAuthorizations(StringUtils.toByteArray(expression), authorizationConsumer);
   }
 
   /**
@@ -298,7 +300,19 @@ public abstract class AccessExpression implements Serializable {
    * @throws NullPointerException when the argument is null
    */
   public static String quote(String term) {
-    return new String(quote(term.getBytes(UTF_8)), UTF_8);
+    return StringUtils.toString(quote(StringUtils.toByteArray(term)));
+  }
+
+  public static byte[] unquote(byte[] term) {
+    if (term.length == 0 || (term.length == 2 && term[0] == QUOTE && term[1] == QUOTE)) {
+      throw new IllegalArgumentException("Empty strings are not legal authorizations.");
+    }
+    if (term[0] == QUOTE && term[term.length - 1] == QUOTE) {
+      return StringUtils.toByteArray(AccessEvaluatorImpl
+          .unescape(new BytesWrapper(Arrays.copyOfRange(term, 1, term.length - 1))));
+    } else {
+      return term;
+    }
   }
 
   /**
@@ -314,7 +328,7 @@ public abstract class AccessExpression implements Serializable {
 
     if (term.charAt(0) == '"' && term.charAt(term.length() - 1) == '"') {
       term = term.substring(1, term.length() - 1);
-      return AccessEvaluatorImpl.unescape(new BytesWrapper(term.getBytes(UTF_8)));
+      return AccessEvaluatorImpl.unescape(new BytesWrapper(StringUtils.toByteArray(term)));
     } else {
       return term;
     }

@@ -23,6 +23,7 @@ import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.A
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.AUTHORIZATION;
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.EMPTY;
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.OR;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -78,7 +79,7 @@ public class ParsedAccessExpressionTest {
         AccessExpression.of("A&B".getBytes(UTF_8)))) {
       var parsed = expression.parse();
       assertNotSame(expression, parsed);
-      assertEquals(expression.getExpression(), parsed.getExpression());
+      assertArrayEquals(expression.getExpression(), parsed.getExpression());
       assertSame(parsed, expression.parse());
       assertSame(parsed, expression.parse());
     }
@@ -93,7 +94,7 @@ public class ParsedAccessExpressionTest {
       parsed = parsed.getChildren().get(childIndex);
     }
 
-    assertEquals(expectedExpression, parsed.getExpression());
+    assertArrayEquals(StringUtils.toByteArray(expectedExpression), parsed.getExpression());
     assertEquals(expectedType, parsed.getType());
     assertEquals(expectedChildren, parsed.getChildren().size());
     assertSame(parsed, parsed.parse());

@@ -19,6 +19,8 @@
 package org.apache.accumulo.access;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -29,20 +31,22 @@ import java.util.Set;
  * Instances of this class are thread-safe.
  *
  * <p>
- * Note: The underlying implementation uses UTF-8 when converting between bytes and Strings.
+ * Note: The underlying implementation uses byte arrays. Any methods that accept or return a String
+ * explicitly uses UTF-8 for the conversion. If you are using non-UTF-8 characters, then use the
+ * methods that use byte[].
  *
  * @since 1.0.0
  */
-public final class Authorizations implements Iterable<String>, Serializable {
+public final class Authorizations implements Iterable<BytesWrapper>, Serializable {
 
   private static final long serialVersionUID = 1L;
 
   private static final Authorizations EMPTY = new Authorizations(Set.of());
 
-  private final Set<String> authorizations;
+  private final Set<BytesWrapper> authorizations;
 
-  private Authorizations(Set<String> authorizations) {
-    this.authorizations = Set.copyOf(authorizations);
+  private Authorizations(final Set<BytesWrapper> authorizations) {
+    this.authorizations = authorizations;
   }
 
   /**
@@ -50,7 +54,7 @@ public final class Authorizations implements Iterable<String>, Serializable {
    *
    * @return immutable set of authorization strings
    */
-  public Set<String> asSet() {
+  public Set<BytesWrapper> asSet() {
     return authorizations;
   }
 
@@ -82,21 +86,50 @@ public final class Authorizations implements Iterable<String>, Serializable {
   }
 
   /**
+   * Creates an Authorizations object from the set of input authorization byte[].
+   *
+   * @param authorizations collection of authorization byte[]
+   * @return Authorizations object
+   */
+  public static Authorizations fromBytes(final Collection<byte[]> authorizations) {
+    if (authorizations.isEmpty()) {
+      return EMPTY;
+    } else {
+      final Set<BytesWrapper> authBytes = new HashSet<>(authorizations.size());
+      for (final byte[] auth : authorizations) {
+        if (auth.length == 0) {
+          throw new IllegalArgumentException("Empty authorization");
+        }
+        authBytes.add(new BytesWrapper(AccessEvaluatorImpl.escape(auth, false)));
+      }
+      return new Authorizations(authBytes);
+    }
+  }
+
+  /**
    * Creates an Authorizations object from the set of input authorization strings.
    *
    * @param authorizations set of authorization strings
    * @return Authorizations object
    */
-  public static Authorizations of(Set<String> authorizations) {
+  public static Authorizations of(final Set<String> authorizations) {
     if (authorizations.isEmpty()) {
       return EMPTY;
     } else {
-      return new Authorizations(authorizations);
+      final Set<BytesWrapper> authBytes = new HashSet<>(authorizations.size());
+      for (final String auth : authorizations) {
+        if (auth.length() == 0) {
+          throw new IllegalArgumentException("Empty authorization");
+        }
+        authBytes.add(
+            new BytesWrapper(AccessEvaluatorImpl.escape(StringUtils.toByteArray(auth), false)));
+      }
+      return new Authorizations(authBytes);
     }
   }
 
   @Override
-  public Iterator<String> iterator() {
+  public Iterator<BytesWrapper> iterator() {
     return authorizations.iterator();
   }
 }

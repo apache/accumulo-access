@@ -29,6 +29,13 @@ import java.util.Collection;
  *
  * <pre>
  * {@code
+ * var evaluator = AccessEvaluator.of("ALPHA".getBytes(UTF_8), "OMEGA".getBytes(UTF_8));
+ *
+ * System.out.println(evaluator.canAccess("ALPHA&BETA".getBytes(UTF_8))); // should print 'false'
+ * System.out.println(evaluator.canAccess("(ALPHA|BETA)&(OMEGA|EPSILON)".getBytes(UTF_8))); // should
+ *                                                                                          // print
+ *                                                                                          // 'true'
+ *
  * var evaluator = AccessEvaluator.of("ALPHA", "OMEGA");
  *
  * System.out.println(evaluator.canAccess("ALPHA&BETA")); // should print 'false'
@@ -47,7 +54,9 @@ import java.util.Collection;
  * Instances of this class are thread-safe.
  *
  * <p>
- * Note: The underlying implementation uses UTF-8 when converting between bytes and Strings.
+ * Note: The underlying implementation uses byte arrays. Any methods that accept or return a String
+ * explicitly uses UTF-8 for the conversion. If you are using non-UTF-8 characters, then use the
+ * methods that use byte[].
  *
  * @see <a href="https://github.com/apache/accumulo-access">Accumulo Access Documentation</a>
  * @since 1.0.0
