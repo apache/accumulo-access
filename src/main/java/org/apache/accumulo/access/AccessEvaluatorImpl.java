@@ -45,7 +45,7 @@ final class AccessEvaluatorImpl implements AccessEvaluator {
     authorizedPredicate = authsSet::contains;
   }
 
-  static String unescape(BytesImpl auth) {
+  static String unescape(Bytes auth) {
     int escapeCharCount = 0;
     for (int i = 0; i < auth.length(); i++) {
       byte b = auth.byteAt(i);

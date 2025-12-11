@@ -308,8 +308,8 @@ public abstract class AccessExpression implements Serializable {
       throw new IllegalArgumentException("Empty strings are not legal authorizations.");
     }
     if (term[0] == QUOTE && term[term.length - 1] == QUOTE) {
-      return StringUtils.toByteArray(AccessEvaluatorImpl
-          .unescape(new BytesImpl(Arrays.copyOfRange(term, 1, term.length - 1))));
+      return StringUtils.toByteArray(
+          AccessEvaluatorImpl.unescape(Bytes.of(Arrays.copyOfRange(term, 1, term.length - 1))));
     } else {
       return term;
     }
@@ -328,7 +328,7 @@ public abstract class AccessExpression implements Serializable {
 
     if (term.charAt(0) == '"' && term.charAt(term.length() - 1) == '"') {
       term = term.substring(1, term.length() - 1);
-      return AccessEvaluatorImpl.unescape(new BytesImpl(StringUtils.toByteArray(term)));
+      return AccessEvaluatorImpl.unescape(Bytes.of(StringUtils.toByteArray(term)));
     } else {
       return term;
     }

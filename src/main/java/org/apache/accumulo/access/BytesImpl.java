@@ -38,7 +38,7 @@ final class BytesImpl implements Bytes {
    *
    * @param data byte data
    */
-  public BytesImpl(byte[] data) {
+  BytesImpl(byte[] data) {
     set(data, 0, data.length);
   }
 

@@ -100,7 +100,7 @@ public final class Authorizations implements Iterable<Bytes>, Serializable {
         if (auth.length == 0) {
           throw new IllegalArgumentException("Empty authorization");
         }
-        authBytes.add(new BytesImpl(AccessEvaluatorImpl.escape(auth, false)));
+        authBytes.add(Bytes.of(AccessEvaluatorImpl.escape(auth, false)));
       }
       return new Authorizations(authBytes);
     }
@@ -121,8 +121,7 @@ public final class Authorizations implements Iterable<Bytes>, Serializable {
         if (auth.length() == 0) {
           throw new IllegalArgumentException("Empty authorization");
         }
-        authBytes
-            .add(new BytesImpl(AccessEvaluatorImpl.escape(StringUtils.toByteArray(auth), false)));
+        authBytes.add(Bytes.of(AccessEvaluatorImpl.escape(StringUtils.toByteArray(auth), false)));
       }
       return new Authorizations(authBytes);
     }
