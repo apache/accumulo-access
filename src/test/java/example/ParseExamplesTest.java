@@ -28,8 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.accumulo.access.AccessExpression;
-import org.apache.accumulo.access.BytesWrapper;
-import org.apache.accumulo.access.StringUtils;
+import org.apache.accumulo.access.Bytes;
 import org.junit.jupiter.api.Test;
 
 // In addition to testing the examples, these test also provide extensive testing of ParsedAccessExpression
@@ -90,13 +89,13 @@ public class ParseExamplesTest {
     for (var testCase : testData) {
       assertEquals(2, testCase.size());
       String expression = testCase.get(0);
-      byte[] expected = StringUtils.toByteArray(testCase.get(1));
+      byte[] expected = ParseExamples.toByteArray(testCase.get(1));
 
       byte[] actual = ParseExamples.normalize(AccessExpression.parse(expression)).expression;
       assertArrayEquals(expected, actual);
 
       actual = ParseExamples
-          .normalize(AccessExpression.parse(StringUtils.toByteArray(expression))).expression;
+          .normalize(AccessExpression.parse(ParseExamples.toByteArray(expression))).expression;
       assertArrayEquals(expected, actual);
     }
   }
@@ -107,23 +106,22 @@ public class ParseExamplesTest {
     String exp = "((RED&\"ESC\\\\\")|(PINK&BLUE))";
     var parsed = AccessExpression.parse(exp);
     ByteBuffer expressionBuilder = ByteBuffer.allocateDirect(exp.length() * 4);
-    replaceAuthorizations(parsed, expressionBuilder,
-        Map.of(new BytesWrapper(StringUtils.toByteArray("ESC\\")),
-            StringUtils.toByteArray("NEEDS+QUOTE")));
+    replaceAuthorizations(parsed, expressionBuilder, Map.of(
+        Bytes.of(ParseExamples.toByteArray("ESC\\")), ParseExamples.toByteArray("NEEDS+QUOTE")));
     byte[] buf = new byte[expressionBuilder.position()];
     expressionBuilder.flip();
     expressionBuilder.get(buf);
-    assertEquals("(RED&\"NEEDS+QUOTE\")|(PINK&BLUE)", StringUtils.toString(buf));
+    assertEquals("(RED&\"NEEDS+QUOTE\")|(PINK&BLUE)", ParseExamples.toString(buf));
 
     // Test replacing multiple
     parsed = AccessExpression.parse("((RED&(GREEN|YELLOW))|(PINK&BLUE))");
     expressionBuilder.clear();
     replaceAuthorizations(parsed, expressionBuilder,
-        Map.of(new BytesWrapper(StringUtils.toByteArray("RED")), StringUtils.toByteArray("ROUGE"),
-            new BytesWrapper(StringUtils.toByteArray("GREEN")), StringUtils.toByteArray("AQUA")));
+        Map.of(Bytes.of(ParseExamples.toByteArray("RED")), ParseExamples.toByteArray("ROUGE"),
+            Bytes.of(ParseExamples.toByteArray("GREEN")), ParseExamples.toByteArray("AQUA")));
     buf = new byte[expressionBuilder.position()];
     expressionBuilder.flip();
     expressionBuilder.get(buf);
-    assertEquals("(ROUGE&(AQUA|YELLOW))|(PINK&BLUE)", StringUtils.toString(buf));
+    assertEquals("(ROUGE&(AQUA|YELLOW))|(PINK&BLUE)", ParseExamples.toString(buf));
   }
 }

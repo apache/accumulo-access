@@ -28,7 +28,7 @@ import java.util.function.Predicate;
 
 //this class is intentionally package private and should never be made public
 final class AccessEvaluatorImpl implements AccessEvaluator {
-  private final Predicate<BytesWrapper> authorizedPredicate;
+  private final Predicate<BytesImpl> authorizedPredicate;
 
   /**
    * Create an AccessEvaluatorImpl using an Authorizer object
@@ -41,11 +41,11 @@ final class AccessEvaluatorImpl implements AccessEvaluator {
    * Create an AccessEvaluatorImpl using a collection of authorizations
    */
   AccessEvaluatorImpl(Authorizations authorizations) {
-    final Set<BytesWrapper> authsSet = authorizations.asSet();
+    final Set<Bytes> authsSet = authorizations.asSet();
     authorizedPredicate = authsSet::contains;
   }
 
-  static String unescape(BytesWrapper auth) {
+  static String unescape(BytesImpl auth) {
     int escapeCharCount = 0;
     for (int i = 0; i < auth.length(); i++) {
       byte b = auth.byteAt(i);

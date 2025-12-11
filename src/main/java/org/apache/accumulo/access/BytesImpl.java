@@ -22,10 +22,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.checkFromIndexSize;
 import static java.util.Objects.checkIndex;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
-public final class BytesWrapper implements Comparable<BytesWrapper>, Serializable {
+//this class is intentionally package private and should never be made public
+final class BytesImpl implements Bytes {
 
   private static final long serialVersionUID = 1L;
   private byte[] data;
@@ -38,11 +38,15 @@ public final class BytesWrapper implements Comparable<BytesWrapper>, Serializabl
    *
    * @param data byte data
    */
-  public BytesWrapper(byte[] data) {
+  public BytesImpl(byte[] data) {
     set(data, 0, data.length);
   }
 
-  byte byteAt(int i) {
+  public byte[] get() {
+    return Arrays.copyOfRange(data, offset, length);
+  }
+
+  public byte byteAt(int i) {
     return data[offset + checkIndex(i, length)];
   }
 
@@ -51,15 +55,20 @@ public final class BytesWrapper implements Comparable<BytesWrapper>, Serializabl
   }
 
   @Override
-  public int compareTo(BytesWrapper obs) {
-    return Arrays.compare(data, offset, offset + length(), obs.data, obs.offset,
-        obs.offset + obs.length());
+  public int compareTo(Bytes obs) {
+    if (obs instanceof BytesImpl) {
+      BytesImpl bw = (BytesImpl) obs;
+      return Arrays.compare(data, offset, offset + length(), bw.data, bw.offset,
+          bw.offset + bw.length());
+    } else {
+      return Bytes.super.compareTo(obs);
+    }
   }
 
   @Override
   public boolean equals(Object o) {
-    if (o instanceof BytesWrapper) {
-      BytesWrapper obs = (BytesWrapper) o;
+    if (o instanceof BytesImpl) {
+      BytesImpl obs = (BytesImpl) o;
 
       if (this == o) {
         return true;
@@ -95,7 +104,8 @@ public final class BytesWrapper implements Comparable<BytesWrapper>, Serializabl
 
   /*
    * Wraps the given byte[] and captures the current offset and length. This method does *not* make
-   * a copy of the input buffer
+   * a copy of the input buffer. This method is used internally as an optimization so that different
+   * instances of BytesImpl can reference the same underlying byte[] at different offsets.
    */
   void set(byte[] data, int offset, int length) {
     checkFromIndexSize(offset, length, data.length);

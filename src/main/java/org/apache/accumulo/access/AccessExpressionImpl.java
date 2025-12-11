@@ -39,7 +39,7 @@ final class AccessExpressionImpl extends AccessExpression {
 
   @Override
   public byte[] getExpression() {
-    return expression;
+    return Arrays.copyOf(expression, expression.length);
   }
 
   @Override

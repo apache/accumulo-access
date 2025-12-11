@@ -18,6 +18,7 @@
  */
 package example;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.accumulo.access.AccessExpression.quote;
 import static org.apache.accumulo.access.AccessExpression.unquote;
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.AND;
@@ -29,11 +30,9 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import org.apache.accumulo.access.AccessExpression;
-import org.apache.accumulo.access.ByteUtils;
-import org.apache.accumulo.access.BytesWrapper;
+import org.apache.accumulo.access.Bytes;
 import org.apache.accumulo.access.ParsedAccessExpression;
 import org.apache.accumulo.access.ParsedAccessExpression.ExpressionType;
-import org.apache.accumulo.access.StringUtils;
 
 /**
  * Examples of using the parse tree in {@link ParsedAccessExpression} to inspect and transform
@@ -41,11 +40,16 @@ import org.apache.accumulo.access.StringUtils;
  */
 public class ParseExamples {
 
+  private static final byte AND_OPERATOR = (byte) '&';
+  private static final byte OR_OPERATOR = (byte) '|';
+  private static final byte OPEN_PAREN = (byte) '(';
+  private static final byte CLOSE_PAREN = (byte) ')';
+
   /**
    * This example will replace authorizations in an access expression.
    */
   public static void replaceAuthorizations(ParsedAccessExpression parsed,
-      ByteBuffer expressionBuilder, Map<BytesWrapper,byte[]> replacements) {
+      ByteBuffer expressionBuilder, Map<Bytes,byte[]> replacements) {
     if (parsed.getType() == AUTHORIZATION) {
       // If the term is quoted in the expression, the quotes will be preserved. Calling unquote()
       // will only unescape and unquote if the string is quoted, otherwise it returns the string as
@@ -53,9 +57,9 @@ public class ParseExamples {
       byte[] auth = unquote(parsed.getExpression());
       // Must quote any authorization that needs it. Calling quote() will only quote and escape if
       // needed, otherwise it returns the string as is.
-      expressionBuilder.put(quote(replacements.getOrDefault(new BytesWrapper(auth), auth)));
+      expressionBuilder.put(quote(replacements.getOrDefault(Bytes.of(auth), auth)));
     } else {
-      byte operator = parsed.getType() == AND ? ByteUtils.AND_OPERATOR : ByteUtils.OR_OPERATOR;
+      byte operator = parsed.getType() == AND ? AND_OPERATOR : OR_OPERATOR;
       byte sep = '\0';
 
       for (var childExpression : parsed.getChildren()) {
@@ -65,9 +69,9 @@ public class ParseExamples {
         if (childExpression.getType() == AUTHORIZATION) {
           replaceAuthorizations(childExpression, expressionBuilder, replacements);
         } else {
-          expressionBuilder.put(ByteUtils.OPEN_PAREN);
+          expressionBuilder.put(OPEN_PAREN);
           replaceAuthorizations(childExpression, expressionBuilder, replacements);
-          expressionBuilder.put(ByteUtils.CLOSE_PAREN);
+          expressionBuilder.put(CLOSE_PAREN);
         }
         sep = operator;
       }
@@ -188,7 +192,7 @@ public class ParseExamples {
       if (normalizedChildren.size() == 1) {
         return normalizedChildren.first();
       } else {
-        byte operator = parsed.getType() == AND ? ByteUtils.AND_OPERATOR : ByteUtils.OR_OPERATOR;
+        byte operator = parsed.getType() == AND ? AND_OPERATOR : OR_OPERATOR;
         byte sep = '\0';
 
         int length = normalizedChildren.size() * 3;
@@ -208,11 +212,11 @@ public class ParseExamples {
               builder[index++] = b;
             }
           } else {
-            builder[index++] = ByteUtils.OPEN_PAREN;
+            builder[index++] = OPEN_PAREN;
             for (byte b : child.expression) {
               builder[index++] = b;
             }
-            builder[index++] = ByteUtils.CLOSE_PAREN;
+            builder[index++] = CLOSE_PAREN;
           }
           sep = operator;
         }
@@ -232,6 +236,14 @@ public class ParseExamples {
     }
   }
 
+  public static byte[] toByteArray(String s) {
+    return s.getBytes(UTF_8);
+  }
+
+  public static String toString(byte[] b) {
+    return new String(b, UTF_8);
+  }
+
   public static void main(String[] args) {
 
     String exp = "((RED&GREEN)|(PINK&BLUE))";
@@ -241,11 +253,11 @@ public class ParseExamples {
 
     System.out.printf("%n  Normalized to %s%n", normalize(parsed).expression);
     ByteBuffer expressionBuilder = ByteBuffer.allocateDirect(exp.length() * 2);
-    replaceAuthorizations(parsed, expressionBuilder, Map
-        .of(new BytesWrapper(StringUtils.toByteArray("GREEN")), StringUtils.toByteArray("GREY")));
+    replaceAuthorizations(parsed, expressionBuilder,
+        Map.of(Bytes.of(toByteArray("GREEN")), toByteArray("GREY")));
     byte[] buf = new byte[expressionBuilder.position()];
     expressionBuilder.get(buf);
-    System.out.printf("%n  Replaced GREEN with GREY : %s%n", StringUtils.toString(buf));
+    System.out.printf("%n  Replaced GREEN with GREY : %s%n", toString(buf));
     System.out.println("\n  Walking :");
     walk("    ", parsed);
   }

@@ -25,8 +25,6 @@ count=$(grep -E "public.*(class|interface|enum|record)" src/main/java/org/apache
   grep -v " enum ExpressionType " |
   grep -v " class Authorizations " |
   grep -v " class BytesWrapper " |
-  grep -v " class ByteUtils " |
-  grep -v " class StringUtils " |
   grep -c -v " class InvalidAccessExpressionException ")
 
 files=$(grep -E "public.*(class|interface|enum|record)" src/main/java/org/apache/accumulo/access/*.java |
@@ -36,8 +34,6 @@ files=$(grep -E "public.*(class|interface|enum|record)" src/main/java/org/apache
   grep -v " enum ExpressionType " |
   grep -v " class Authorizations " |
   grep -v " class BytesWrapper " |
-  grep -v " class ByteUtils " |
-  grep -v " class StringUtils " |
   grep -v " class InvalidAccessExpressionException ")
 
 if [[ 0 -ne $count ]]; then

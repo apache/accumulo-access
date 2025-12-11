@@ -27,8 +27,8 @@ import java.util.function.Predicate;
  */
 final class ParserEvaluator {
 
-  static final ThreadLocal<BytesWrapper> lookupWrappers =
-      ThreadLocal.withInitial(() -> new BytesWrapper(ByteUtils.EMPTY_BYTES));
+  static final ThreadLocal<BytesImpl> lookupWrappers =
+      ThreadLocal.withInitial(() -> new BytesImpl(ByteUtils.EMPTY_BYTES));
   private static final ThreadLocal<Tokenizer> tokenizers =
       ThreadLocal.withInitial(() -> new Tokenizer(ByteUtils.EMPTY_BYTES));
 

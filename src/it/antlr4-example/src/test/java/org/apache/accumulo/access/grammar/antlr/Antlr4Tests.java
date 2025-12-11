@@ -18,6 +18,7 @@
  */
 package org.apache.accumulo.access.grammar.antlr;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -43,7 +44,6 @@ import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
-import org.apache.accumulo.access.StringUtils;
 import org.apache.accumulo.access.antlr.TestDataLoader;
 import org.apache.accumulo.access.antlr.TestDataLoader.ExpectedResult;
 import org.apache.accumulo.access.antlr.TestDataLoader.TestDataSet;
@@ -149,7 +149,7 @@ public class Antlr4Tests {
 
       for (TestExpressions test : testSet.tests) {
         for (String expression : test.expressions) {
-          final byte[] exp = StringUtils.toByteArray(expression);
+          final byte[] exp = expression.getBytes(UTF_8);
           switch (test.expectedResult) {
             case ACCESSIBLE:
               assertTrue(evaluator.canAccess(expression), expression);

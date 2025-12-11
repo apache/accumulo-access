@@ -18,6 +18,8 @@
  */
 package org.apache.accumulo.access.grammar.antlr;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -28,9 +30,8 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.Authorizations;
-import org.apache.accumulo.access.BytesWrapper;
+import org.apache.accumulo.access.Bytes;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
-import org.apache.accumulo.access.StringUtils;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_tokenContext;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.And_expressionContext;
@@ -42,7 +43,7 @@ public class AccessExpressionAntlrEvaluator implements AccessEvaluator {
 
   private class Entity {
 
-    private Set<BytesWrapper> authorizations;
+    private Set<Bytes> authorizations;
 
     @Override
     public String toString() {
@@ -57,7 +58,7 @@ public class AccessExpressionAntlrEvaluator implements AccessEvaluator {
     entities = new ArrayList<>(authSets.size());
 
     for (Authorizations a : authSets) {
-      Set<BytesWrapper> entityAuths = a.asSet();
+      Set<Bytes> entityAuths = a.asSet();
       Entity e = new Entity();
       entities.add(e);
       e.authorizations = new HashSet<>(entityAuths.size() * 2);
@@ -67,7 +68,7 @@ public class AccessExpressionAntlrEvaluator implements AccessEvaluator {
         if (!quoted.startsWith("\"")) {
           quoted = '"' + quoted + '"';
         }
-        e.authorizations.add(new BytesWrapper(StringUtils.toByteArray(quoted)));
+        e.authorizations.add(Bytes.of(quoted.getBytes(UTF_8)));
       });
     }
   }
@@ -99,7 +100,7 @@ public class AccessExpressionAntlrEvaluator implements AccessEvaluator {
   private Boolean evaluate(Entity e, ParseTree node) {
     Boolean retval;
     if (node instanceof Access_tokenContext) {
-      retval = e.authorizations.contains(new BytesWrapper(StringUtils.toByteArray(node.getText())));
+      retval = e.authorizations.contains(Bytes.of(node.getText().getBytes(UTF_8)));
     } else if (node instanceof TerminalNode
         || node instanceof And_operatorContext | node instanceof Or_operatorContext) {
       retval = null;

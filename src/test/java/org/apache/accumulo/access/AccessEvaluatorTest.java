@@ -216,7 +216,7 @@ public class AccessEvaluatorTest {
   }
 
   private static String unescape(String s) {
-    return AccessEvaluatorImpl.unescape(new BytesWrapper(s.getBytes(UTF_8)));
+    return AccessEvaluatorImpl.unescape(new BytesImpl(s.getBytes(UTF_8)));
   }
 
   @Test

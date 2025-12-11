@@ -22,7 +22,7 @@ package org.apache.accumulo.access;
  * This class exists to avoid repeat conversions from byte to char as well as to provide helper
  * methods for comparing them.
  */
-public final class ByteUtils {
+final class ByteUtils {
   public static final byte[] EMPTY_BYTES = new byte[0];
   public static final byte QUOTE = (byte) '"';
   public static final byte BACKSLASH = (byte) '\\';

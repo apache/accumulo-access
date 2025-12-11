@@ -37,15 +37,15 @@ import java.util.Set;
  *
  * @since 1.0.0
  */
-public final class Authorizations implements Iterable<BytesWrapper>, Serializable {
+public final class Authorizations implements Iterable<Bytes>, Serializable {
 
   private static final long serialVersionUID = 1L;
 
   private static final Authorizations EMPTY = new Authorizations(Set.of());
 
-  private final Set<BytesWrapper> authorizations;
+  private final Set<Bytes> authorizations;
 
-  private Authorizations(final Set<BytesWrapper> authorizations) {
+  private Authorizations(final Set<Bytes> authorizations) {
     this.authorizations = authorizations;
   }
 
@@ -54,7 +54,7 @@ public final class Authorizations implements Iterable<BytesWrapper>, Serializabl
    *
    * @return immutable set of authorization strings
    */
-  public Set<BytesWrapper> asSet() {
+  public Set<Bytes> asSet() {
     return Set.copyOf(authorizations);
   }
 
@@ -95,12 +95,12 @@ public final class Authorizations implements Iterable<BytesWrapper>, Serializabl
     if (authorizations.isEmpty()) {
       return EMPTY;
     } else {
-      final Set<BytesWrapper> authBytes = new HashSet<>(authorizations.size());
+      final Set<Bytes> authBytes = new HashSet<>(authorizations.size());
       for (final byte[] auth : authorizations) {
         if (auth.length == 0) {
           throw new IllegalArgumentException("Empty authorization");
         }
-        authBytes.add(new BytesWrapper(AccessEvaluatorImpl.escape(auth, false)));
+        authBytes.add(new BytesImpl(AccessEvaluatorImpl.escape(auth, false)));
       }
       return new Authorizations(authBytes);
     }
@@ -116,20 +116,20 @@ public final class Authorizations implements Iterable<BytesWrapper>, Serializabl
     if (authorizations.isEmpty()) {
       return EMPTY;
     } else {
-      final Set<BytesWrapper> authBytes = new HashSet<>(authorizations.size());
+      final Set<Bytes> authBytes = new HashSet<>(authorizations.size());
       for (final String auth : authorizations) {
         if (auth.length() == 0) {
           throw new IllegalArgumentException("Empty authorization");
         }
-        authBytes.add(
-            new BytesWrapper(AccessEvaluatorImpl.escape(StringUtils.toByteArray(auth), false)));
+        authBytes
+            .add(new BytesImpl(AccessEvaluatorImpl.escape(StringUtils.toByteArray(auth), false)));
       }
       return new Authorizations(authBytes);
     }
   }
 
   @Override
-  public Iterator<BytesWrapper> iterator() {
+  public Iterator<Bytes> iterator() {
     return authorizations.iterator();
   }
 }

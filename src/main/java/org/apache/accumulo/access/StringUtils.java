@@ -23,7 +23,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * Utilities for String to byte[] conversion and vice-versa
  */
-public class StringUtils {
+class StringUtils {
 
   public static byte[] toByteArray(String s) {
     return s.getBytes(UTF_8);
