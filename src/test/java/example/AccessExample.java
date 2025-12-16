@@ -58,7 +58,7 @@ public class AccessExample {
         Arrays.toString(authorizations));
 
     // Create an access evaluator using the provided authorizations
-    AccessEvaluator evaluator = AccessEvaluator.of(Authorizations.of(Set.of(authorizations)));
+    AccessEvaluator evaluator = AccessEvaluator.of(new Authorizations(Set.of(authorizations)));
 
     // Print each record whose access expression permits viewing using the provided authorizations
     getData().forEach((record, accessExpression) -> {

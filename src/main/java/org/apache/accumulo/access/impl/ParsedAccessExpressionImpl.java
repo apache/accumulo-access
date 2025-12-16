@@ -16,22 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access;
+package org.apache.accumulo.access.impl;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.accumulo.access.ByteUtils.AND_OPERATOR;
-import static org.apache.accumulo.access.ByteUtils.OR_OPERATOR;
-import static org.apache.accumulo.access.ByteUtils.isAndOrOperator;
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.AND;
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.AUTHORIZATION;
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.OR;
+import static org.apache.accumulo.access.impl.ByteUtils.AND_OPERATOR;
+import static org.apache.accumulo.access.impl.ByteUtils.OR_OPERATOR;
+import static org.apache.accumulo.access.impl.ByteUtils.isAndOrOperator;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-// This class is intentionally package private
-final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
+import org.apache.accumulo.access.ParsedAccessExpression;
+
+public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
 
   private static final long serialVersionUID = 1L;
 
@@ -44,7 +45,7 @@ final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
 
   private final AtomicReference<String> stringExpression = new AtomicReference<>(null);
 
-  static final ParsedAccessExpression EMPTY = new ParsedAccessExpressionImpl();
+  public static final ParsedAccessExpression EMPTY = new ParsedAccessExpressionImpl();
 
   ParsedAccessExpressionImpl(byte operator, byte[] expression, int offset, int length,
       List<ParsedAccessExpression> children) {
@@ -108,7 +109,7 @@ final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
     return children;
   }
 
-  static ParsedAccessExpression parseExpression(byte[] expression) {
+  public static ParsedAccessExpression parseExpression(byte[] expression) {
     if (expression.length == 0) {
       return ParsedAccessExpressionImpl.EMPTY;
     }

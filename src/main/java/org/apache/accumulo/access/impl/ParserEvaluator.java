@@ -16,28 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access;
+package org.apache.accumulo.access.impl;
 
-import static org.apache.accumulo.access.ByteUtils.isAndOrOperator;
+import static org.apache.accumulo.access.impl.ByteUtils.isAndOrOperator;
 
 import java.util.function.Predicate;
 
 /**
  * Code for parsing and evaluating an access expression at the same time.
  */
-final class ParserEvaluator {
+public final class ParserEvaluator {
 
   static final byte OPEN_PAREN = (byte) '(';
   static final byte CLOSE_PAREN = (byte) ')';
 
   private static final byte[] EMPTY = new byte[0];
 
-  static final ThreadLocal<BytesWrapper> lookupWrappers =
+  public static final ThreadLocal<BytesWrapper> lookupWrappers =
       ThreadLocal.withInitial(() -> new BytesWrapper(EMPTY));
   private static final ThreadLocal<Tokenizer> tokenizers =
       ThreadLocal.withInitial(() -> new Tokenizer(EMPTY));
 
-  static boolean parseAccessExpression(byte[] expression,
+  public static boolean parseAccessExpression(byte[] expression,
       Predicate<Tokenizer.AuthorizationToken> authorizedPredicate,
       Predicate<Tokenizer.AuthorizationToken> shortCircuitPredicate) {
     var tokenizer = tokenizers.get();

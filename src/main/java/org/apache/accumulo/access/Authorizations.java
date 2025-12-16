@@ -33,70 +33,24 @@ import java.util.Set;
  *
  * @since 1.0.0
  */
-public final class Authorizations implements Iterable<String>, Serializable {
+public final record Authorizations(Set<String> authorizations)
+    implements Iterable<String>, Serializable {
 
   private static final long serialVersionUID = 1L;
 
   private static final Authorizations EMPTY = new Authorizations(Set.of());
 
-  private final Set<String> authorizations;
-
-  private Authorizations(Set<String> authorizations) {
+  public Authorizations(Set<String> authorizations) {
     this.authorizations = Set.copyOf(authorizations);
-  }
-
-  /**
-   * Returns the set of authorization strings in this Authorization object
-   *
-   * @return immutable set of authorization strings
-   */
-  public Set<String> asSet() {
-    return authorizations;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (o instanceof Authorizations) {
-      var oa = (Authorizations) o;
-      return authorizations.equals(oa.authorizations);
-    }
-
-    return false;
-  }
-
-  @Override
-  public int hashCode() {
-    return authorizations.hashCode();
-  }
-
-  @Override
-  public String toString() {
-    return authorizations.toString();
-  }
-
-  /**
-   * @return a pre-allocated empty Authorizations object
-   */
-  public static Authorizations of() {
-    return EMPTY;
-  }
-
-  /**
-   * Creates an Authorizations object from the set of input authorization strings.
-   *
-   * @param authorizations set of authorization strings
-   * @return Authorizations object
-   */
-  public static Authorizations of(Set<String> authorizations) {
-    if (authorizations.isEmpty()) {
-      return EMPTY;
-    } else {
-      return new Authorizations(authorizations);
-    }
   }
 
   @Override
   public Iterator<String> iterator() {
     return authorizations.iterator();
   }
+
+  public static Authorizations empty() {
+    return EMPTY;
+  }
+
 }

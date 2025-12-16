@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access;
+package org.apache.accumulo.access.impl;
 
 /**
  * This class exists to avoid repeat conversions from byte to char as well as to provide helper
  * methods for comparing them.
  */
-final class ByteUtils {
+public final class ByteUtils {
   static final byte QUOTE = (byte) '"';
   static final byte BACKSLASH = (byte) '\\';
   static final byte AND_OPERATOR = (byte) '&';

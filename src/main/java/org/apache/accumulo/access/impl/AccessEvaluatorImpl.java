@@ -16,34 +16,39 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access;
+package org.apache.accumulo.access.impl;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.accumulo.access.ByteUtils.BACKSLASH;
-import static org.apache.accumulo.access.ByteUtils.QUOTE;
-import static org.apache.accumulo.access.ByteUtils.isQuoteOrSlash;
-import static org.apache.accumulo.access.ByteUtils.isQuoteSymbol;
+import static org.apache.accumulo.access.impl.ByteUtils.BACKSLASH;
+import static org.apache.accumulo.access.impl.ByteUtils.QUOTE;
+import static org.apache.accumulo.access.impl.ByteUtils.isQuoteOrSlash;
+import static org.apache.accumulo.access.impl.ByteUtils.isQuoteSymbol;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
-//this class is intentionally package private and should never be made public
-final class AccessEvaluatorImpl implements AccessEvaluator {
+import org.apache.accumulo.access.AccessEvaluator;
+import org.apache.accumulo.access.AccessExpression;
+import org.apache.accumulo.access.Authorizations;
+import org.apache.accumulo.access.InvalidAccessExpressionException;
+
+public final class AccessEvaluatorImpl implements AccessEvaluator {
+
   private final Predicate<BytesWrapper> authorizedPredicate;
 
   /**
    * Create an AccessEvaluatorImpl using an Authorizer object
    */
-  AccessEvaluatorImpl(Authorizer authorizationChecker) {
+  public AccessEvaluatorImpl(Authorizer authorizationChecker) {
     this.authorizedPredicate = auth -> authorizationChecker.isAuthorized(unescape(auth));
   }
 
   /**
    * Create an AccessEvaluatorImpl using a collection of authorizations
    */
-  AccessEvaluatorImpl(Authorizations authorizations) {
-    var authsSet = authorizations.asSet();
+  public AccessEvaluatorImpl(Authorizations authorizations) {
+    var authsSet = authorizations.authorizations();
     final Set<BytesWrapper> authBytes = new HashSet<>(authsSet.size());
     for (String authorization : authsSet) {
       var auth = authorization.getBytes(UTF_8);
@@ -56,7 +61,7 @@ final class AccessEvaluatorImpl implements AccessEvaluator {
     authorizedPredicate = authBytes::contains;
   }
 
-  static String unescape(BytesWrapper auth) {
+  public static String unescape(BytesWrapper auth) {
     int escapeCharCount = 0;
     for (int i = 0; i < auth.length(); i++) {
       byte b = auth.byteAt(i);
@@ -102,7 +107,7 @@ final class AccessEvaluatorImpl implements AccessEvaluator {
    * @param shouldQuote true to wrap escaped authorization in quotes
    * @return escaped authorization string
    */
-  static byte[] escape(byte[] auth, boolean shouldQuote) {
+  public static byte[] escape(byte[] auth, boolean shouldQuote) {
     int escapeCount = 0;
 
     for (byte value : auth) {

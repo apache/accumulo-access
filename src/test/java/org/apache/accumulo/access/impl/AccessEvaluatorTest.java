@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access;
+package org.apache.accumulo.access.impl;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.accumulo.access.AccessExpression.quote;
@@ -34,6 +34,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.accumulo.access.AccessEvaluator;
+import org.apache.accumulo.access.AccessExpression;
+import org.apache.accumulo.access.Authorizations;
+import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.junit.jupiter.api.Test;
 
 import com.google.gson.Gson;
@@ -43,22 +47,22 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class AccessEvaluatorTest {
 
-  enum ExpectedResult {
+  public enum ExpectedResult {
     ACCESSIBLE, INACCESSIBLE, ERROR
   }
 
   public static class TestExpressions {
-    ExpectedResult expectedResult;
-    String[] expressions;
+    public ExpectedResult expectedResult;
+    public String[] expressions;
   }
 
   public static class TestDataSet {
-    String description;
-    String[][] auths;
-    List<TestExpressions> tests;
+    public String description;
+    public String[][] auths;
+    public List<TestExpressions> tests;
   }
 
-  static List<TestDataSet> readTestData() throws IOException {
+  public static List<TestDataSet> readTestData() throws IOException {
     try (var input =
         AccessEvaluatorTest.class.getClassLoader().getResourceAsStream("testdata.json")) {
       if (input == null) {
@@ -84,14 +88,14 @@ public class AccessEvaluatorTest {
       AccessEvaluator evaluator;
       assertTrue(testSet.auths.length >= 1);
       if (testSet.auths.length == 1) {
-        evaluator = AccessEvaluator.of(Authorizations.of(Set.of(testSet.auths[0])));
+        evaluator = AccessEvaluator.of(new Authorizations(Set.of(testSet.auths[0])));
         runTestCases(testSet, evaluator);
 
         Set<String> auths = Stream.of(testSet.auths[0]).collect(Collectors.toSet());
         evaluator = AccessEvaluator.of(auths::contains);
         runTestCases(testSet, evaluator);
       } else {
-        var authSets = Stream.of(testSet.auths).map(a -> Authorizations.of(Set.of(a)))
+        var authSets = Stream.of(testSet.auths).map(a -> new Authorizations(Set.of(a)))
             .collect(Collectors.toList());
         evaluator = AccessEvaluator.of(authSets);
         runTestCases(testSet, evaluator);
@@ -173,13 +177,13 @@ public class AccessEvaluatorTest {
   @Test
   public void testEmptyAuthorizations() {
     assertThrows(IllegalArgumentException.class,
-        () -> AccessEvaluator.of(Authorizations.of(Set.of(""))));
+        () -> AccessEvaluator.of(new Authorizations(Set.of(""))));
     assertThrows(IllegalArgumentException.class,
-        () -> AccessEvaluator.of(Authorizations.of(Set.of("", "A"))));
+        () -> AccessEvaluator.of(new Authorizations(Set.of("", "A"))));
     assertThrows(IllegalArgumentException.class,
-        () -> AccessEvaluator.of(Authorizations.of(Set.of("A", ""))));
+        () -> AccessEvaluator.of(new Authorizations(Set.of("A", ""))));
     assertThrows(IllegalArgumentException.class,
-        () -> AccessEvaluator.of(Authorizations.of(Set.of(""))));
+        () -> AccessEvaluator.of(new Authorizations(Set.of(""))));
   }
 
   @Test

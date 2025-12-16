@@ -16,21 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access;
+package org.apache.accumulo.access.impl;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.accumulo.access.ByteUtils.isBackslashSymbol;
-import static org.apache.accumulo.access.ByteUtils.isQuoteOrSlash;
-import static org.apache.accumulo.access.ByteUtils.isQuoteSymbol;
+import static org.apache.accumulo.access.impl.ByteUtils.isBackslashSymbol;
+import static org.apache.accumulo.access.impl.ByteUtils.isQuoteOrSlash;
+import static org.apache.accumulo.access.impl.ByteUtils.isQuoteSymbol;
 
 import java.util.stream.IntStream;
+
+import org.apache.accumulo.access.InvalidAccessExpressionException;
 
 /**
  * A simple wrapper around a byte array that keeps some state and provides high level operations to
  * the {@link ParserEvaluator} class. The purpose of this class is to make {@link ParserEvaluator}
  * as simple and easy to understand as possible while still being performant.
  */
-final class Tokenizer {
+public final class Tokenizer {
 
   private static final boolean[] validAuthChars = new boolean[256];
 
@@ -45,7 +47,7 @@ final class Tokenizer {
     "_-:./".chars().forEach(c -> validAuthChars[c] = true);
   }
 
-  static boolean isValidAuthChar(byte b) {
+  public static boolean isValidAuthChar(byte b) {
     return validAuthChars[0xff & b];
   }
 
@@ -54,10 +56,10 @@ final class Tokenizer {
 
   private final AuthorizationToken authorizationToken = new AuthorizationToken();
 
-  static class AuthorizationToken {
-    byte[] data;
-    int start;
-    int len;
+  public static class AuthorizationToken {
+    public byte[] data;
+    public int start;
+    public int len;
   }
 
   Tokenizer(byte[] expression) {

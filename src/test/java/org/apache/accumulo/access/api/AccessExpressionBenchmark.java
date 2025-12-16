@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access;
+package org.apache.accumulo.access.api;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -28,6 +28,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.accumulo.access.AccessEvaluator;
+import org.apache.accumulo.access.AccessExpression;
+import org.apache.accumulo.access.Authorizations;
+import org.apache.accumulo.access.impl.AccessEvaluatorTest;
 import org.apache.accumulo.core.security.ColumnVisibility;
 import org.apache.accumulo.core.security.VisibilityEvaluator;
 import org.apache.accumulo.core.security.VisibilityParseException;
@@ -117,9 +121,9 @@ public class AccessExpressionBenchmark {
         et.expressions = new ArrayList<>();
 
         if (testDataSet.auths.length == 1) {
-          et.evaluator = AccessEvaluator.of(Authorizations.of(Set.of(testDataSet.auths[0])));
+          et.evaluator = AccessEvaluator.of(new Authorizations(Set.of(testDataSet.auths[0])));
         } else {
-          var authSets = Stream.of(testDataSet.auths).map(a -> Authorizations.of(Set.of(a)))
+          var authSets = Stream.of(testDataSet.auths).map(a -> new Authorizations(Set.of(a)))
               .collect(Collectors.toList());
           et.evaluator = AccessEvaluator.of(authSets);
         }

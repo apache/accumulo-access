@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access;
+package org.apache.accumulo.access.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -24,19 +24,20 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.util.Set;
 
+import org.apache.accumulo.access.Authorizations;
 import org.junit.jupiter.api.Test;
 
 public class AuthorizationTest {
 
   @Test
   public void testEquality() {
-    Authorizations auths1 = Authorizations.of(Set.of("A", "B", "C"));
-    Authorizations auths2 = Authorizations.of(Set.of("A", "B", "C"));
+    Authorizations auths1 = new Authorizations(Set.of("A", "B", "C"));
+    Authorizations auths2 = new Authorizations(Set.of("A", "B", "C"));
 
     assertEquals(auths1, auths2);
     assertEquals(auths1.hashCode(), auths2.hashCode());
 
-    Authorizations auths3 = Authorizations.of(Set.of("D", "E", "F"));
+    Authorizations auths3 = new Authorizations(Set.of("D", "E", "F"));
 
     assertNotEquals(auths1, auths3);
     assertNotEquals(auths1.hashCode(), auths3.hashCode());
@@ -45,10 +46,8 @@ public class AuthorizationTest {
   @Test
   public void testEmpty() {
     // check if new object is allocated
-    assertSame(Authorizations.of(), Authorizations.of());
-    // check if optimization is working
-    assertSame(Authorizations.of(), Authorizations.of(Set.of()));
-    assertEquals(Set.of(), Authorizations.of().asSet());
-    assertSame(Set.of(), Authorizations.of().asSet());
+    assertSame(Authorizations.empty(), Authorizations.empty());
+    assertEquals(Set.of(), Authorizations.empty().authorizations());
+    assertSame(Set.of(), Authorizations.empty().authorizations());
   }
 }

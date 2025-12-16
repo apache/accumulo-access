@@ -25,6 +25,13 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import org.apache.accumulo.access.impl.AccessEvaluatorImpl;
+import org.apache.accumulo.access.impl.AccessExpressionImpl;
+import org.apache.accumulo.access.impl.BytesWrapper;
+import org.apache.accumulo.access.impl.ParsedAccessExpressionImpl;
+import org.apache.accumulo.access.impl.ParserEvaluator;
+import org.apache.accumulo.access.impl.Tokenizer;
+
 /**
  * This class offers the ability to operate on access expressions.
  *
@@ -94,16 +101,12 @@ import java.util.function.Predicate;
  * @see <a href="https://github.com/apache/accumulo-access">Accumulo Access Documentation</a>
  * @since 1.0.0
  */
-public abstract class AccessExpression implements Serializable {
+public abstract sealed class AccessExpression implements Serializable
+    permits ParsedAccessExpression, AccessExpressionImpl {
+
+  private static final AccessExpression EMPTY = new AccessExpressionImpl("");
 
   private static final long serialVersionUID = 1L;
-
-  /*
-   * This is package private so that it can not be extended by classes outside of this package and
-   * create a mutable implementation. In this package all implementations that extends are
-   * immutable.
-   */
-  AccessExpression() {}
 
   /**
    * @return the expression that was used to create this object.
@@ -164,7 +167,7 @@ public abstract class AccessExpression implements Serializable {
    * @return an empty AccessExpression that is immutable.
    */
   public static AccessExpression of() {
-    return AccessExpressionImpl.EMPTY;
+    return EMPTY;
   }
 
   /**
