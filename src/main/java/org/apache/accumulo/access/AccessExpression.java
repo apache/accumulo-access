@@ -108,6 +108,8 @@ public abstract sealed class AccessExpression implements Serializable
 
   private static final long serialVersionUID = 1L;
 
+  protected AccessExpression() {}
+
   /**
    * @return the expression that was used to create this object.
    */
