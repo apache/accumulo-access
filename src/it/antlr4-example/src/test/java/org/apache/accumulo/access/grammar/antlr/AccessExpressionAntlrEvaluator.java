@@ -55,11 +55,11 @@ public class AccessExpressionAntlrEvaluator implements AccessEvaluator {
     entities = new ArrayList<>(authSets.size());
 
     for (Authorizations a : authSets) {
-      Set<String> entityAuths = a.asSet();
+      Set<String> entityAuths = a.authorizations();
       Entity e = new Entity();
       entities.add(e);
       e.authorizations = new HashSet<>(entityAuths.size() * 2);
-      a.asSet().stream().forEach(auth -> {
+      a.authorizations().stream().forEach(auth -> {
         e.authorizations.add(auth);
         String quoted = AccessExpression.quote(auth);
         if (!quoted.startsWith("\"")) {
