@@ -18,15 +18,24 @@
 # under the License.
 #
 
+files=$(grep -E "public.*(class|interface|enum|record)" src/main/java/org/apache/accumulo/access/*.java |
+  grep -v " interface AccessEvaluator " |
+  grep -v " class AccessExpression " |
+  grep -v " class ParsedAccessExpression " |
+  grep -v " enum ExpressionType " |
+  grep -v " record Authorizations" |
+  grep -v " class InvalidAccessExpressionException ")
+
 count=$(grep -E "public.*(class|interface|enum|record)" src/main/java/org/apache/accumulo/access/*.java |
   grep -v " interface AccessEvaluator " |
   grep -v " class AccessExpression " |
   grep -v " class ParsedAccessExpression " |
   grep -v " enum ExpressionType " |
-  grep -v " class Authorizations " |
+  grep -v " record Authorizations" |
   grep -c -v " class InvalidAccessExpressionException ")
 
 if [[ 0 -ne $count ]]; then
   echo "$count unapproved public classes found"
+  echo "${files[@]}"
   exit 1
 fi
