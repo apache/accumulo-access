@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access;
+package org.apache.accumulo.access.impl;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -24,10 +24,20 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-class MultiAccessEvaluatorImpl implements AccessEvaluator {
-  final List<AccessEvaluatorImpl> evaluators;
+import org.apache.accumulo.access.AccessEvaluator;
+import org.apache.accumulo.access.AccessExpression;
+import org.apache.accumulo.access.Authorizations;
+import org.apache.accumulo.access.InvalidAccessExpressionException;
 
-  MultiAccessEvaluatorImpl(Collection<Authorizations> authorizationSets) {
+public final class MultiAccessEvaluatorImpl implements AccessEvaluator {
+
+  public static AccessEvaluator of(Collection<Authorizations> authorizationSets) {
+    return new MultiAccessEvaluatorImpl(authorizationSets);
+  }
+
+  private final List<AccessEvaluator> evaluators;
+
+  private MultiAccessEvaluatorImpl(Collection<Authorizations> authorizationSets) {
     evaluators = new ArrayList<>(authorizationSets.size());
     for (Authorizations authorizations : authorizationSets) {
       evaluators.add(new AccessEvaluatorImpl(authorizations));
@@ -41,7 +51,7 @@ class MultiAccessEvaluatorImpl implements AccessEvaluator {
 
   @Override
   public boolean canAccess(byte[] accessExpression) throws InvalidAccessExpressionException {
-    for (AccessEvaluatorImpl evaluator : evaluators) {
+    for (AccessEvaluator evaluator : evaluators) {
       if (!evaluator.canAccess(accessExpression)) {
         return false;
       }

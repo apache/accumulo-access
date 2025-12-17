@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access;
+package org.apache.accumulo.access.impl;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.checkFromIndexSize;
@@ -24,7 +24,7 @@ import static java.util.Objects.checkIndex;
 
 import java.util.Arrays;
 
-final class BytesWrapper implements Comparable<BytesWrapper> {
+public final class BytesWrapper implements Comparable<BytesWrapper> {
 
   private byte[] data;
   private int offset;
@@ -40,7 +40,7 @@ final class BytesWrapper implements Comparable<BytesWrapper> {
     set(data, 0, data.length);
   }
 
-  byte byteAt(int i) {
+  public byte byteAt(int i) {
     return data[offset + checkIndex(i, length)];
   }
 

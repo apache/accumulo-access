@@ -36,7 +36,7 @@ import org.apache.accumulo.access.grammars.AccessExpressionParser.And_operatorCo
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Or_expressionContext;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Or_operatorContext;
 
-public class AccessExpressionAntlrEvaluator implements AccessEvaluator {
+public class AccessExpressionAntlrEvaluator {
 
   private class Entity {
 

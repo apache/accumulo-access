@@ -16,16 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access;
+package org.apache.accumulo.access.impl;
 
-import static org.apache.accumulo.access.ByteUtils.isAndOrOperator;
+import static org.apache.accumulo.access.impl.ByteUtils.isAndOrOperator;
 
+import java.util.function.Consumer;
 import java.util.function.Predicate;
+
+import org.apache.accumulo.access.InvalidAccessExpressionException;
 
 /**
  * Code for parsing and evaluating an access expression at the same time.
  */
-final class ParserEvaluator {
+public final class ParserEvaluator {
 
   static final byte OPEN_PAREN = (byte) '(';
   static final byte CLOSE_PAREN = (byte) ')';
@@ -37,7 +40,18 @@ final class ParserEvaluator {
   private static final ThreadLocal<Tokenizer> tokenizers =
       ThreadLocal.withInitial(() -> new Tokenizer(EMPTY));
 
-  static boolean parseAccessExpression(byte[] expression,
+  public static void findAuthorizations(byte[] expression, Consumer<String> authorizationConsumer)
+      throws InvalidAccessExpressionException {
+    var bytesWrapper = ParserEvaluator.lookupWrappers.get();
+    Predicate<Tokenizer.AuthorizationToken> atp = authToken -> {
+      bytesWrapper.set(authToken.data, authToken.start, authToken.len);
+      authorizationConsumer.accept(AccessEvaluatorImpl.unescape(bytesWrapper));
+      return true;
+    };
+    ParserEvaluator.parseAccessExpression(expression, atp, atp);
+  }
+
+  public static boolean parseAccessExpression(byte[] expression,
       Predicate<Tokenizer.AuthorizationToken> authorizedPredicate,
       Predicate<Tokenizer.AuthorizationToken> shortCircuitPredicate) {
     var tokenizer = tokenizers.get();

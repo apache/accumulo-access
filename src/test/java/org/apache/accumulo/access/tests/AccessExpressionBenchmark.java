@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access;
+package org.apache.accumulo.access.tests;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -28,6 +28,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.accumulo.access.AccessEvaluator;
+import org.apache.accumulo.access.AccessExpression;
+import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.core.security.ColumnVisibility;
 import org.apache.accumulo.core.security.VisibilityEvaluator;
 import org.apache.accumulo.core.security.VisibilityParseException;
@@ -58,6 +61,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  *
  * </blockquote>
  */
+@SuppressFBWarnings(value = {"NP_UNWRITTEN_FIELD"}, justification = "Field is written by Gson")
 public class AccessExpressionBenchmark {
 
   public static class VisibilityEvaluatorTests {
@@ -83,8 +87,6 @@ public class AccessExpressionBenchmark {
 
     private ArrayList<VisibilityEvaluatorTests> visibilityEvaluatorTests;
 
-    @SuppressFBWarnings(value = {"UWF_UNWRITTEN_FIELD", "NP_UNWRITTEN_FIELD"},
-        justification = "Field is written by Gson")
     @Setup
     public void loadData() throws IOException {
       List<AccessEvaluatorTest.TestDataSet> testData = AccessEvaluatorTest.readTestData();
