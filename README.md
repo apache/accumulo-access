@@ -63,8 +63,8 @@ To run [AccessExample](examples/src/main/java/org/apache/accumulo/access/example
 ```
 mvn clean package
 
-java --module-path=core/target/accumulo-access-core-1.0.0-SNAPSHOT.jar:examples/target/accumulo-access-examples-1.0.0-SNAPSHOT.jar --add-modules=accumulo.access,accumulo.access.examples --module=accumulo.access.examples/org.apache.accumulo.access.examples.AccessExample
-java --module-path=core/target/accumulo-access-core-1.0.0-SNAPSHOT.jar:examples/target/accumulo-access-examples-1.0.0-SNAPSHOT.jar --add-modules=accumulo.access,accumulo.access.examples --module=accumulo.access.examples/org.apache.accumulo.access.examples.AccessExample RED BLUE
+java --module-path=core/target/accumulo-access-core-1.0.0-SNAPSHOT.jar:examples/target/accumulo-access-examples-1.0.0-SNAPSHOT.jar  --module=accumulo.access.examples/org.apache.accumulo.access.examples.AccessExample
+java --module-path=core/target/accumulo-access-core-1.0.0-SNAPSHOT.jar:examples/target/accumulo-access-examples-1.0.0-SNAPSHOT.jar  --module=accumulo.access.examples/org.apache.accumulo.access.examples.AccessExample RED BLUE
 ```
 
 Note that `data6` is always returned, because it has no access expression. And
@@ -74,7 +74,7 @@ To run [ParseExamples](examples/src/main/java/org/apache/accumulo/access/example
 
 ```
 mvn clean package
-java --module-path=core/target/accumulo-access-core-1.0.0-SNAPSHOT.jar:examples/target/accumulo-access-examples-1.0.0-SNAPSHOT.jar --add-modules=accumulo.access,accumulo.access.examples --module=accumulo.access.examples/org.apache.accumulo.access.examples.ParseExamples
+java --module-path=core/target/accumulo-access-core-1.0.0-SNAPSHOT.jar:examples/target/accumulo-access-examples-1.0.0-SNAPSHOT.jar --module=accumulo.access.examples/org.apache.accumulo.access.examples.ParseExamples
 ```
 
 For an ANTLRv4 example, see its [README](antlr4-example/README.md).
