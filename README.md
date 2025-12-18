@@ -58,35 +58,33 @@ Add the library to your CLASSPATH. For Maven, use:
 
 ## Running the [Examples](src/test/java/example)
 
-To run [AccessExample](src/test/java/example/AccessExample.java)
+To run [AccessExample](examples/src/main/java/org/apache/accumulo/access/examples/AccessExample.java)
 
 ```
 mvn clean package
 
-java --module-path=$(ls target/accumulo-access-*.jar) --add-modules=accumulo.access src/test/java/example/AccessExample.java
-java --module-path=$(ls target/accumulo-access-*.jar) --add-modules=accumulo.access src/test/java/example/AccessExample.java RED BLUE
+java --module-path=core/target/accumulo-access-core-1.0.0-SNAPSHOT.jar:examples/target/accumulo-access-examples-1.0.0-SNAPSHOT.jar --add-modules=accumulo.access,accumulo.access.examples --module=accumulo.access.examples/org.apache.accumulo.access.examples.AccessExample
+java --module-path=core/target/accumulo-access-core-1.0.0-SNAPSHOT.jar:examples/target/accumulo-access-examples-1.0.0-SNAPSHOT.jar --add-modules=accumulo.access,accumulo.access.examples --module=accumulo.access.examples/org.apache.accumulo.access.examples.AccessExample RED BLUE
 ```
 
 Note that `data6` is always returned, because it has no access expression. And
 remember, authorizations are case-sensitive.
 
-To run [ParseExamples](src/test/java/example/ParseExamples.java)
+To run [ParseExamples](examples/src/main/java/org/apache/accumulo/access/examples/ParseExamples.java)
 
 ```
 mvn clean package
-java --module-path=$(ls target/accumulo-access-*.jar) --add-modules=accumulo.access src/test/java/example/ParseExamples.java
+java --module-path=core/target/accumulo-access-core-1.0.0-SNAPSHOT.jar:examples/target/accumulo-access-examples-1.0.0-SNAPSHOT.jar --add-modules=accumulo.access,accumulo.access.examples --module=accumulo.access.examples/org.apache.accumulo.access.examples.ParseExamples
 ```
 
-
-For an ANTLRv4 example, see antlr-example integration test's
-[README](src/it/antlr4-example/README.md).
+For an ANTLRv4 example, see its [README](antlr4-example/README.md).
 
 ## Running the Benchmark
 
 This project includes a JMH Benchmark. To run it:
 
 ```
-mvn clean verify -Pbenchmark
+mvn clean verify -pl core -Pbenchmark
 ```
 
 

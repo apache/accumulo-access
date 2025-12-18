@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+      https://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.accumulo</groupId>
+    <artifactId>accumulo-access</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>accumulo-access-antlr4-example</artifactId>
+  <packaging>jar</packaging>
+  <properties>  
+    <checkstyle.skip>true</checkstyle.skip>
+    <formatter.skip>true</formatter.skip>
+    <impsort.skip>true</impsort.skip>
+    <modernizer.skip>true</modernizer.skip>
+    <sort.skip>true</sort.skip>
+    <spotbugs.skip>true</spotbugs.skip>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr4-runtime</artifactId>
+      <version>4.13.1</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.accumulo</groupId>
+      <artifactId>accumulo-access-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.openjdk.jmh</groupId>
+      <artifactId>jmh-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.openjdk.jmh</groupId>
+      <artifactId>jmh-generator-annprocess</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-maven-plugin</artifactId>
+        <version>4.13.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <arguments>
+                <arg>-package</arg>
+                <arg>org.apache.accumulo.access.grammars</arg>
+              </arguments>
+              <listener>false</listener>
+              <visitor>false</visitor>
+              <outputDirectory>${project.basedir}/src/main/generated-antlr4-sources/org/apache/accumulo/access/grammars</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-abnf-test-resources</id>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <phase>process-test-resources</phase>
+            <configuration>
+              <outputDirectory>${project.basedir}/target/test-classes</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${project.basedir}/../core/src/main/resources/org/apache/accumulo/access/specification</directory>
+                  <filtering>false</filtering>
+                  <includes>
+                    <include>AccessExpression.abnf</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.5.0</version>
+        <executions>
+          <execution>
+            <id>add-antlr4-sources</id>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <phase>process-sources</phase>
+            <configuration>
+              <sources>
+                <source>${project.basedir}/src/main/antlr4/generated-antlr4-sources</source>
+              </sources>
+            </configuration>
+          </execution>
+          <execution>
+            <id>create-automatic-module-name</id>
+            <goals>
+              <goal>regex-property</goal>
+            </goals>
+            <configuration>
+              <name>accumulo.module.name</name>
+              <regex>-</regex>
+              <replacement>.</replacement>
+              <value>org-apache-${project.artifactId}</value>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  <profiles>
+    <profile>
+      <id>benchmark</id>
+      <activation>
+        <property>
+          <name>benchmark</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>3.3.0</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <phase>verify</phase>
+                <configuration>
+                  <classpathScope>test</classpathScope>
+                  <executable>java</executable>
+                  <arguments>
+                    <argument>-classpath</argument>
+                    <classpath />
+                    <argument>org.apache.accumulo.access.grammar.antlr.AccessExpressionAntlrBenchmark</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles> 
+</project>
