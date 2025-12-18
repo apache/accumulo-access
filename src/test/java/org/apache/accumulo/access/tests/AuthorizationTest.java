@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access;
+package org.apache.accumulo.access.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.util.Set;
 
+import org.apache.accumulo.access.Authorizations;
 import org.junit.jupiter.api.Test;
 
 public class AuthorizationTest {

@@ -16,27 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access;
+package org.apache.accumulo.access.impl;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-final class AccessExpressionImpl extends AccessExpression {
+import org.apache.accumulo.access.AccessExpression;
+import org.apache.accumulo.access.ParsedAccessExpression;
+
+public final class AccessExpressionImpl extends AccessExpression {
 
   private static final long serialVersionUID = 1L;
-
   public static final AccessExpression EMPTY = new AccessExpressionImpl("");
 
   private final String expression;
   private final AtomicReference<ParsedAccessExpression> parseTreeRef = new AtomicReference<>();
 
-  AccessExpressionImpl(String expression) {
+  public AccessExpressionImpl(String expression) {
     validate(expression);
     this.expression = expression;
   }
 
-  AccessExpressionImpl(byte[] expression) {
+  public AccessExpressionImpl(byte[] expression) {
     validate(expression);
     this.expression = new String(expression, UTF_8);
   }

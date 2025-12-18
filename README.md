@@ -62,8 +62,9 @@ To run [AccessExample](src/test/java/example/AccessExample.java)
 
 ```
 mvn clean package
-CLASSPATH=$(ls target/accumulo-access-*.jar) java src/test/java/example/AccessExample.java
-CLASSPATH=$(ls target/accumulo-access-*.jar) java src/test/java/example/AccessExample.java RED BLUE
+
+java --module-path=$(ls target/accumulo-access-*.jar) --add-modules=accumulo.access src/test/java/example/AccessExample.java
+java --module-path=$(ls target/accumulo-access-*.jar) --add-modules=accumulo.access src/test/java/example/AccessExample.java RED BLUE
 ```
 
 Note that `data6` is always returned, because it has no access expression. And
@@ -73,7 +74,7 @@ To run [ParseExamples](src/test/java/example/ParseExamples.java)
 
 ```
 mvn clean package
-CLASSPATH=$(ls target/accumulo-access-*.jar) java src/test/java/example/ParseExamples.java
+java --module-path=$(ls target/accumulo-access-*.jar) --add-modules=accumulo.access src/test/java/example/ParseExamples.java
 ```
 
 

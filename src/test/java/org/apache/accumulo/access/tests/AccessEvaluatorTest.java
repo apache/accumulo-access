@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access;
+package org.apache.accumulo.access.tests;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.accumulo.access.AccessExpression.quote;
@@ -34,6 +34,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.accumulo.access.AccessEvaluator;
+import org.apache.accumulo.access.AccessExpression;
+import org.apache.accumulo.access.Authorizations;
+import org.apache.accumulo.access.InvalidAccessExpressionException;
+import org.apache.accumulo.access.impl.AccessEvaluatorImpl;
+import org.apache.accumulo.access.impl.BytesWrapper;
 import org.junit.jupiter.api.Test;
 
 import com.google.gson.Gson;
@@ -41,6 +47,8 @@ import com.google.gson.reflect.TypeToken;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+@SuppressFBWarnings(value = {"UWF_UNWRITTEN_FIELD", "NP_UNWRITTEN_FIELD"},
+    justification = "Field is written by Gson")
 public class AccessEvaluatorTest {
 
   enum ExpectedResult {
@@ -71,8 +79,6 @@ public class AccessEvaluatorTest {
     }
   }
 
-  @SuppressFBWarnings(value = {"UWF_UNWRITTEN_FIELD", "NP_UNWRITTEN_FIELD"},
-      justification = "Field is written by Gson")
   @Test
   public void runTestCases() throws IOException {
     List<TestDataSet> testData = readTestData();
@@ -100,8 +106,6 @@ public class AccessEvaluatorTest {
 
   }
 
-  @SuppressFBWarnings(value = {"UWF_UNWRITTEN_FIELD", "NP_UNWRITTEN_FIELD"},
-      justification = "Field is written by Gson")
   private static void runTestCases(TestDataSet testSet, AccessEvaluator evaluator) {
 
     assertFalse(testSet.tests.isEmpty());

@@ -88,9 +88,9 @@
   </ciManagement>
   <properties>
     <extraTestArgs>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.management/java.lang.management=ALL-UNNAMED --add-opens java.management/sun.management=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED</extraTestArgs>
-    <maven.compiler.release>11</maven.compiler.release>
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>11</maven.compiler.target>
+    <maven.compiler.release>17</maven.compiler.release>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
     <maven.javadoc.failOnWarnings>true</maven.javadoc.failOnWarnings>
     <maven.site.deploy.skip>true</maven.site.deploy.skip>
     <maven.site.skip>true</maven.site.skip>
@@ -113,7 +113,7 @@
     <dependency>
       <groupId>com.github.spotbugs</groupId>
       <artifactId>spotbugs-annotations</artifactId>
-      <version>4.8.3</version>
+      <version>4.9.3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -289,7 +289,7 @@
       <plugin>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-maven-plugin</artifactId>
-        <version>4.8.3.1</version>
+        <version>4.9.3.0</version>
         <configuration>
           <excludeFilterFile>src/build/ci/spotbugs-exclude.xml</excludeFilterFile>
           <xmlOutput>true</xmlOutput>
@@ -414,7 +414,7 @@
           </checkstyleRules>
           <violationSeverity>warning</violationSeverity>
           <includeTestSourceDirectory>true</includeTestSourceDirectory>
-          <excludes>**/jmh_generated/</excludes>
+          <excludes>**/jmh_generated/,**/module-info.java</excludes>
         </configuration>
         <dependencies>
           <dependency>
@@ -778,7 +778,7 @@
                   <arguments>
                     <argument>-classpath</argument>
                     <classpath />
-                    <argument>org.apache.accumulo.access.AccessExpressionBenchmark</argument>
+                    <argument>org.apache.accumulo.access.tests.AccessExpressionBenchmark</argument>
                   </arguments>
                 </configuration>
               </execution>

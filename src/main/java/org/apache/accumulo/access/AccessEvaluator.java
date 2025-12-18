@@ -20,6 +20,9 @@ package org.apache.accumulo.access;
 
 import java.util.Collection;
 
+import org.apache.accumulo.access.impl.AccessEvaluatorImpl;
+import org.apache.accumulo.access.impl.MultiAccessEvaluatorImpl;
+
 /**
  * This class is used to decide if an entity with a given set of authorizations can access
  * subsequent access expressions.
@@ -52,7 +55,7 @@ import java.util.Collection;
  * @see <a href="https://github.com/apache/accumulo-access">Accumulo Access Documentation</a>
  * @since 1.0.0
  */
-public interface AccessEvaluator {
+public sealed interface AccessEvaluator permits AccessEvaluatorImpl, MultiAccessEvaluatorImpl {
 
   /**
    * @param accessExpression for this parameter a valid access expression is expected.
@@ -149,7 +152,7 @@ public interface AccessEvaluator {
    *
    */
   static AccessEvaluator of(Collection<Authorizations> authorizationSets) {
-    return new MultiAccessEvaluatorImpl(authorizationSets);
+    return MultiAccessEvaluatorImpl.of(authorizationSets);
   }
 
   /**
