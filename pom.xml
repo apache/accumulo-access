@@ -168,8 +168,7 @@
               <header>src/build/license-header.txt</header>
               <excludes>
                 <exclude>antlr4-example/src/main/antlr4/Abnf.g4</exclude>
-                <exclude>**/*.interp</exclude>
-                <exclude>**/*.tokens</exclude>
+                <exclude>src/main/generated-antlr4-sources/**</exclude>
                 <exclude>**/DEPENDENCIES</exclude>
                 <exclude>**/LICENSE</exclude>
                 <exclude>**/NOTICE</exclude>
@@ -480,8 +479,7 @@
         <artifactId>apache-rat-plugin</artifactId>
         <configuration>
           <excludes>
-            <exclude>src/main/generated-antlr4-sources/org/apache/accumulo/access/grammars/*.interp</exclude>
-            <exclude>src/main/generated-antlr4-sources/org/apache/accumulo/access/grammars/*.tokens</exclude>
+            <exclude>src/main/generated-antlr4-sources/**</exclude>
             <exclude>src/main/antlr4/Abnf.g4</exclude>
             <exclude>src/test/resources/testdata.json</exclude>
             <exclude>**/.github/**</exclude>
