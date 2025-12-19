@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 
 import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AccessExpression;
+import org.apache.accumulo.access.AccumuloAccess;
 import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.impl.AccessEvaluatorImpl;
@@ -85,21 +86,23 @@ public class AccessEvaluatorTest {
 
     assertFalse(testData.isEmpty());
 
+    var accumuloAccess = AccumuloAccess.builder().build();
+
     for (var testSet : testData) {
       System.out.println("runTestCases for " + testSet.description);
       AccessEvaluator evaluator;
       assertTrue(testSet.auths.length >= 1);
       if (testSet.auths.length == 1) {
-        evaluator = AccessEvaluator.of(Authorizations.of(Set.of(testSet.auths[0])));
+        evaluator = accumuloAccess.newEvaluator(Authorizations.of(Set.of(testSet.auths[0])));
         runTestCases(testSet, evaluator);
 
         Set<String> auths = Stream.of(testSet.auths[0]).collect(Collectors.toSet());
-        evaluator = AccessEvaluator.of(auths::contains);
+        evaluator = accumuloAccess.newEvaluator(auths::contains);
         runTestCases(testSet, evaluator);
       } else {
         var authSets = Stream.of(testSet.auths).map(a -> Authorizations.of(Set.of(a)))
             .collect(Collectors.toList());
-        evaluator = AccessEvaluator.of(authSets);
+        evaluator = accumuloAccess.newEvaluator(authSets);
         runTestCases(testSet, evaluator);
       }
     }

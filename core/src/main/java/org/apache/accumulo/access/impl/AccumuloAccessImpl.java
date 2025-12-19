@@ -18,6 +18,7 @@
  */
 package org.apache.accumulo.access.impl;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -120,7 +121,7 @@ public class AccumuloAccessImpl implements AccumuloAccess {
     @Override
     public boolean canAccess(byte[] accessExpression) throws InvalidAccessExpressionException {
       // this method would eventually go away in the super type when byte methods are removed
-      throw new UnsupportedOperationException();
+      return evaluator.canAccess(accessExpression);
     }
 
     @Override
@@ -143,7 +144,7 @@ public class AccumuloAccessImpl implements AccumuloAccess {
   }
 
   @Override
-  public AccessEvaluator newEvaluator(Set<Authorizations> authorizationSets) {
+  public AccessEvaluator newEvaluator(Collection<Authorizations> authorizationSets) {
     return new ValidatingAccessEvaluator(AccessEvaluator.of(authorizationSets));
   }
 }

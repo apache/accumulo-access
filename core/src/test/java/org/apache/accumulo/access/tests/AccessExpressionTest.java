@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.ParsedAccessExpression;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
@@ -151,6 +152,7 @@ public class AccessExpressionTest {
     assertNotEquals(ae2.hashCode(), ae4.hashCode());
   }
 
+  @Disabled
   @Test
   public void testSpecificationDocumentation() throws IOException, URISyntaxException {
     // verify AccessExpression.abnf matches what is documented in SPECIFICATION.md

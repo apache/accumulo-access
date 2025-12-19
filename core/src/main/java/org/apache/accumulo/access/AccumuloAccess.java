@@ -18,6 +18,7 @@
  */
 package org.apache.accumulo.access;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -45,21 +46,23 @@ public interface AccumuloAccess {
     return new BuilderImpl();
   }
 
-  AccessExpression newExpression(String expression);
+  AccessExpression newExpression(String expression)
+      throws InvalidAccessExpressionException, InvalidAuthorizationException;
 
-  ParsedAccessExpression newParsedExpression(String expression);
+  ParsedAccessExpression newParsedExpression(String expression)
+      throws InvalidAccessExpressionException, InvalidAuthorizationException;
 
   Authorizations newAuthorizations();
 
   // TODO this could throw an exception now
-  Authorizations newAuthorizations(Set<String> authorizations);
+  Authorizations newAuthorizations(Set<String> authorizations) throws InvalidAuthorizationException;
 
   void findAuthorizations(String expression, Consumer<String> authorizationConsumer)
       throws InvalidAccessExpressionException;
 
-  String quote(String authorization);
+  String quote(String authorization) throws InvalidAuthorizationException;
 
-  String unquote(String authorization);
+  String unquote(String authorization) throws InvalidAuthorizationException;
 
   void validate(String expression) throws InvalidAccessExpressionException;
 
@@ -67,5 +70,5 @@ public interface AccumuloAccess {
 
   AccessEvaluator newEvaluator(AccessEvaluator.Authorizer authorizer);
 
-  AccessEvaluator newEvaluator(Set<Authorizations> authorizationSets);
+  AccessEvaluator newEvaluator(Collection<Authorizations> authorizationSets);
 }
