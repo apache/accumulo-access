@@ -35,12 +35,12 @@ section](#getting-started) for an example of how to use this java library.
 The following types constitute the public API of this library. All other types
 are package private and are not part of the public API.
 
-  * [InvalidAccessExpressionException](src/main/java/org/apache/accumulo/access/InvalidAccessExpressionException.java).
-  * [AccessEvaluator](src/main/java/org/apache/accumulo/access/AccessEvaluator.java).
-  * [AccessExpression](src/main/java/org/apache/accumulo/access/AccessExpression.java).
-  * [ParsedAccessExpression](src/main/java/org/apache/accumulo/access/ParsedAccessExpression.java).
-  * [ExpressionType](src/main/java/org/apache/accumulo/access/ParsedAccessExpression.java).
-  * [Authorizations](src/main/java/org/apache/accumulo/access/Authorizations.java).
+  * [InvalidAccessExpressionException](core/src/main/java/org/apache/accumulo/access/InvalidAccessExpressionException.java).
+  * [AccessEvaluator](core/src/main/java/org/apache/accumulo/access/AccessEvaluator.java).
+  * [AccessExpression](core/src/main/java/org/apache/accumulo/access/AccessExpression.java).
+  * [ParsedAccessExpression](core/src/main/java/org/apache/accumulo/access/ParsedAccessExpression.java).
+  * [ExpressionType](core/src/main/java/org/apache/accumulo/access/ParsedAccessExpression.java).
+  * [Authorizations](core/src/main/java/org/apache/accumulo/access/Authorizations.java).
 
 ## Getting Started
 
@@ -56,39 +56,37 @@ Add the library to your CLASSPATH. For Maven, use:
 </dependencies>
 ```
 
-## Running the [Examples](src/test/java/example)
+## Running the [Examples](examples/src/main/java)
 
-To run [AccessExample](src/test/java/example/AccessExample.java)
+To run [AccessExample](examples/src/main/java/org/apache/accumulo/access/examples/AccessExample.java)
 
 ```
 mvn clean package
 
-java --module-path=$(ls target/accumulo-access-*.jar) --add-modules=accumulo.access src/test/java/example/AccessExample.java
-java --module-path=$(ls target/accumulo-access-*.jar) --add-modules=accumulo.access src/test/java/example/AccessExample.java RED BLUE
+java --module-path=core/target/accumulo-access-core-1.0.0-SNAPSHOT.jar:examples/target/accumulo-access-examples-1.0.0-SNAPSHOT.jar  --module=accumulo.access.examples/org.apache.accumulo.access.examples.AccessExample
+java --module-path=core/target/accumulo-access-core-1.0.0-SNAPSHOT.jar:examples/target/accumulo-access-examples-1.0.0-SNAPSHOT.jar  --module=accumulo.access.examples/org.apache.accumulo.access.examples.AccessExample RED BLUE
 ```
 
 Note that `data6` is always returned, because it has no access expression. And
 remember, authorizations are case-sensitive.
 
-To run [ParseExamples](src/test/java/example/ParseExamples.java)
+To run [ParseExamples](examples/src/main/java/org/apache/accumulo/access/examples/ParseExamples.java)
 
 ```
 mvn clean package
-java --module-path=$(ls target/accumulo-access-*.jar) --add-modules=accumulo.access src/test/java/example/ParseExamples.java
+java --module-path=core/target/accumulo-access-core-1.0.0-SNAPSHOT.jar:examples/target/accumulo-access-examples-1.0.0-SNAPSHOT.jar --module=accumulo.access.examples/org.apache.accumulo.access.examples.ParseExamples
 ```
 
-
-For an ANTLRv4 example, see antlr-example integration test's
-[README](src/it/antlr4-example/README.md).
+For an ANTLRv4 example, see its [README](antlr4-example/README.md).
 
 ## Running the Benchmark
 
 This project includes a JMH Benchmark. To run it:
 
 ```
-mvn clean verify -Pbenchmark
+mvn clean verify -pl core -Pbenchmark
 ```
 
 
-[1]: https://github.com/apache/accumulo/blob/rel/2.1.2/core/src/main/java/org/apache/accumulo/core/security/ColumnVisibility.java
-[2]: https://github.com/apache/accumulo/blob/rel/2.1.2/core/src/main/java/org/apache/accumulo/core/security/VisibilityEvaluator.java
+[1]: https://github.com/apache/accumulo/blob/rel/2.1.4/core/src/main/java/org/apache/accumulo/core/security/ColumnVisibility.java
+[2]: https://github.com/apache/accumulo/blob/rel/2.1.4/core/src/main/java/org/apache/accumulo/core/security/VisibilityEvaluator.java
