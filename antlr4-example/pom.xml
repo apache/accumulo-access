@@ -83,12 +83,14 @@
             <phase>generate-sources</phase>
             <configuration>
               <arguments>
+                <arg>-o</arg>
+                <arg>${project.basedir}/src/main/generated-antlr4-sources/org/apache/accumulo/access/grammars</arg>
                 <arg>-package</arg>
                 <arg>org.apache.accumulo.access.grammars</arg>
               </arguments>
               <listener>false</listener>
               <visitor>false</visitor>
-              <outputDirectory>${project.basedir}/src/main/generated-antlr4-sources/org/apache/accumulo/access/grammars</outputDirectory>
+              <outputDirectory>${project.basedir}/src/main/generated-antlr4-sources</outputDirectory>
             </configuration>
           </execution>
         </executions>
