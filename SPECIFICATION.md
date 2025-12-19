@@ -49,13 +49,16 @@ and-expression          =  "&" (access-token / paren-expression) [and-expression
 or-expression           =  "|" (access-token / paren-expression) [or-expression]
 
 access-token            = 1*( ALPHA / DIGIT / "_" / "-" / "." / ":" / slash )
-access-token            =/ DQUOTE 1*(utf8-subset / escaped) DQUOTE
+access-token            =/ DQUOTE 1*(unicode-subset / escaped) DQUOTE
 
-utf8-subset             = %x20-21 / %x23-5B / %x5D-7E / unicode-beyond-ascii ; utf8 minus '"' and '\'
-unicode-beyond-ascii    = %x0080-D7FF / %xE000-10FFFF
+unicode-subset          = %x00-21 / %x23-5B / %x5D-7F / unicode-beyond-ascii ; unicode minus '"' and '\'
 escaped                 = "\" DQUOTE / "\\"
 slash                   = "/"
 ```
+
+Authorizations must be Unicode characters. Not all Unicode characters are human readable 
+(see [Unicode control characters][6]), implementations should provide a way to limit valid authorizations to human
+readable characters.
 
 ### Examples of Proper Expressions
 
@@ -73,8 +76,8 @@ slash                   = "/"
 
 ## Serialization
 
-An AccessExpression is a UTF-8 string. It can be serialized using a byte array as long as it
-can be deserialized back into the same UTF-8 string.
+An access expression or authorization must be a Unicode string. Serialization of an access expression or authorization
+should use UTF-8.
 
 ## Evaluation
 
@@ -140,3 +143,4 @@ within the Authorizations object, the token is unquoted, and the `\` character i
 [3]: https://en.wikipedia.org/wiki/Boolean_algebra
 [4]: https://en.wikipedia.org/wiki/Logical_conjunction
 [5]: https://en.wikipedia.org/wiki/Logical_disjunction
+[6]: https://en.wikipedia.org/wiki/Unicode_control_characters

@@ -24,6 +24,7 @@ import java.util.function.Consumer;
 import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.AccumuloAccess;
+import org.apache.accumulo.access.AuthorizationValidator;
 import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.InvalidAuthorizationException;
@@ -45,20 +46,16 @@ public class AccumuloAccessImpl implements AccumuloAccess {
 
   @Override
   public AccessExpression newExpression(String expression) {
-    if (authValidator != null) {
-      // TODO push this down into the parsing code, this parses twice
-      AccessExpression.findAuthorizations(expression, this::validateAuthorization);
-    }
+    // TODO push this down into the parsing code, this parses twice
+    AccessExpression.findAuthorizations(expression, this::validateAuthorization);
 
     return AccessExpression.of(expression);
   }
 
   @Override
   public ParsedAccessExpression newParsedExpression(String expression) {
-    if (authValidator != null) {
-      // TODO push this down into the parsing code, this parses twice
-      AccessExpression.findAuthorizations(expression, this::validateAuthorization);
-    }
+    // TODO push this down into the parsing code, this parses twice
+    AccessExpression.findAuthorizations(expression, this::validateAuthorization);
 
     return AccessExpression.parse(expression);
   }
@@ -70,19 +67,16 @@ public class AccumuloAccessImpl implements AccumuloAccess {
 
   @Override
   public Authorizations newAuthorizations(Set<String> authorizations) {
-    if (authValidator != null) {
-      authorizations.forEach(this::validateAuthorization);
-    }
+    authorizations.forEach(this::validateAuthorization);
+
     return Authorizations.of(authorizations);
   }
 
   @Override
   public void findAuthorizations(String expression, Consumer<String> authorizationConsumer)
       throws InvalidAccessExpressionException {
-    if (authValidator != null) {
-      // TODO push this down into the parsing code, this parses twice
-      AccessExpression.findAuthorizations(expression, this::validateAuthorization);
-    }
+    // TODO push this down into the parsing code, this parses twice
+    AccessExpression.findAuthorizations(expression, this::validateAuthorization);
     AccessExpression.findAuthorizations(expression, authorizationConsumer);
   }
 
@@ -94,17 +88,16 @@ public class AccumuloAccessImpl implements AccumuloAccess {
 
   @Override
   public String unquote(String authorization) {
-    return "";
+    var unquoted = AccessExpression.unquote(authorization);
+    validateAuthorization(unquoted);
+    return unquoted;
   }
 
   @Override
   public void validate(String expression) throws InvalidAccessExpressionException {
-    if (authValidator != null) {
-      // TODO push this down into the parsing code, this parses twice
-      AccessExpression.findAuthorizations(expression, this::validateAuthorization);
-    } else {
-      AccessExpression.validate(expression);
-    }
+    // TODO push this down into the parsing code, this parses twice
+    AccessExpression.findAuthorizations(expression, this::validateAuthorization);
+    AccessExpression.validate(expression);
   }
 
   // TODO remove this class and push the authorization validation down into AccessEvaluatorImpl
@@ -118,11 +111,9 @@ public class AccumuloAccessImpl implements AccumuloAccess {
 
     @Override
     public boolean canAccess(String accessExpression) throws InvalidAccessExpressionException {
-      if (authValidator != null) {
-        // TODO push this down into the parsing code, this parses twice
-        AccessExpression.findAuthorizations(accessExpression,
-            AccumuloAccessImpl.this::validateAuthorization);
-      }
+      // TODO push this down into the parsing code, this parses twice
+      AccessExpression.findAuthorizations(accessExpression,
+          AccumuloAccessImpl.this::validateAuthorization);
       return evaluator.canAccess(accessExpression);
     }
 
@@ -134,11 +125,9 @@ public class AccumuloAccessImpl implements AccumuloAccess {
 
     @Override
     public boolean canAccess(AccessExpression accessExpression) {
-      if (authValidator != null) {
-        // TODO push this down into the parsing code, this parses twice
-        AccessExpression.findAuthorizations(accessExpression.getExpression(),
-            AccumuloAccessImpl.this::validateAuthorization);
-      }
+      // TODO push this down into the parsing code, this parses twice
+      AccessExpression.findAuthorizations(accessExpression.getExpression(),
+          AccumuloAccessImpl.this::validateAuthorization);
       return evaluator.canAccess(accessExpression);
     }
   }

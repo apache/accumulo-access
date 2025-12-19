@@ -21,22 +21,21 @@ package org.apache.accumulo.access.impl;
 import java.util.Objects;
 
 import org.apache.accumulo.access.AccumuloAccess;
+import org.apache.accumulo.access.AuthorizationValidator;
 
 public class BuilderImpl implements AccumuloAccess.Builder {
 
-  private AccumuloAccess.AuthorizationValidator validator;
+  private AuthorizationValidator validator;
 
   @Override
-  public AccumuloAccess.Builder
-      authorizationValidator(AccumuloAccess.AuthorizationValidator validator) {
+  public AccumuloAccess.Builder authorizationValidator(AuthorizationValidator validator) {
     this.validator = Objects.requireNonNull(validator);
     return this;
   }
 
   @Override
   public AccumuloAccess build() {
-
-    return new AccumuloAccessImpl(validator);
+    return new AccumuloAccessImpl(validator == null ? AuthorizationValidator.UNICODE : validator);
   }
 
   public static void main(String[] args) {

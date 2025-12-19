@@ -27,6 +27,7 @@ import java.util.TreeMap;
 
 import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AccumuloAccess;
+import org.apache.accumulo.access.AuthorizationValidator;
 
 public class AccessExample {
 
@@ -57,16 +58,8 @@ public class AccessExample {
     out.printf("Showing accessible records using authorizations: %s%n",
         Arrays.toString(authorizations));
 
-    var accumuloAccess = AccumuloAccess.builder().authorizationValidator(auth -> {
-      for (int i = 0; i < auth.length(); i++) {
-        var c = auth.charAt(i);
-        if (Character.isISOControl(c) || Character.isWhitespace(c) || !Character.isDefined(c)
-            || c == '\uFFFD') {
-          return false;
-        }
-      }
-      return true;
-    }).build();
+    var accumuloAccess =
+        AccumuloAccess.builder().authorizationValidator(AuthorizationValidator.READABLE).build();
 
     // Create an access evaluator using the provided authorizations
     AccessEvaluator evaluator =

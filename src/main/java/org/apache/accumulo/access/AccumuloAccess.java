@@ -20,16 +20,12 @@ package org.apache.accumulo.access;
 
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 import org.apache.accumulo.access.impl.BuilderImpl;
 
 // TODO javadoc
 // TODO remove all of the static entry points and use this instead
 public interface AccumuloAccess {
-
-  // TODO maybe move to top level
-  interface AuthorizationValidator extends Predicate<CharSequence> {}
 
   interface Builder {
     /**
