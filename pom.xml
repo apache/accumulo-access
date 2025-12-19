@@ -29,6 +29,7 @@
   <groupId>org.apache.accumulo</groupId>
   <artifactId>accumulo-access</artifactId>
   <version>1.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
   <name>Apache Accumulo Access Project</name>
   <description>Apache Accumulo Access is a library that provides the same functionality, semantics, and syntax
   as the Apache Accumulo ColumnVisibility and VisibilityEvaluator classes. This functionality is provided in a
@@ -72,6 +73,11 @@
       <archive>https://lists.apache.org/list.html?notifications@accumulo.apache.org</archive>
     </mailingList>
   </mailingLists>
+  <modules>
+    <module>core</module>
+    <module>examples</module>
+    <module>antlr4-example</module>
+  </modules>
   <scm>
     <connection>scm:git:https://gitbox.apache.org/repos/asf/accumulo-access.git</connection>
     <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/accumulo-access.git</developerConnection>
@@ -104,49 +110,52 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <rat.consoleOutput>true</rat.consoleOutput>
     <sourceReleaseAssemblyDescriptor>source-release-tar</sourceReleaseAssemblyDescriptor>
+    <version.accumulo>3.0.0</version.accumulo>
     <version.errorprone>2.24.1</version.errorprone>
     <version.gson>2.10.1</version.gson>
     <version.jmh>1.37</version.jmh>
     <version.junit>5.10.2</version.junit>
   </properties>
-  <dependencies>
-    <dependency>
-      <groupId>com.github.spotbugs</groupId>
-      <artifactId>spotbugs-annotations</artifactId>
-      <version>4.9.3</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
-      <version>${version.gson}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.accumulo</groupId>
-      <artifactId>accumulo-core</artifactId>
-      <version>3.0.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <version>${version.junit}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.openjdk.jmh</groupId>
-      <artifactId>jmh-core</artifactId>
-      <version>${version.jmh}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.openjdk.jmh</groupId>
-      <artifactId>jmh-generator-annprocess</artifactId>
-      <version>${version.jmh}</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-annotations</artifactId>
+        <version>4.9.3</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.google.code.gson</groupId>
+        <artifactId>gson</artifactId>
+        <version>${version.gson}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.accumulo</groupId>
+        <artifactId>accumulo-core</artifactId>
+        <version>${version.accumulo}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>${version.junit}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.openjdk.jmh</groupId>
+        <artifactId>jmh-core</artifactId>
+        <version>${version.jmh}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.openjdk.jmh</groupId>
+        <artifactId>jmh-generator-annprocess</artifactId>
+        <version>${version.jmh}</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <build>
     <plugins>
       <plugin>
@@ -158,7 +167,8 @@
             <licenseSet>
               <header>src/build/license-header.txt</header>
               <excludes>
-                <exclude>src/it/antlr4-example/src/main/antlr4/Abnf.g4</exclude>
+                <exclude>src/main/antlr4/Abnf.g4</exclude>
+                <exclude>src/main/generated-antlr4-sources/**</exclude>
                 <exclude>**/DEPENDENCIES</exclude>
                 <exclude>**/LICENSE</exclude>
                 <exclude>**/NOTICE</exclude>
@@ -222,7 +232,7 @@
         <artifactId>formatter-maven-plugin</artifactId>
         <version>2.23.0</version>
         <configuration>
-          <configFile>src/build/eclipse-codestyle.xml</configFile>
+          <configFile>../src/build/eclipse-codestyle.xml</configFile>
           <lineEnding>LF</lineEnding>
           <skipCssFormatting>true</skipCssFormatting>
           <skipHtmlFormatting>true</skipHtmlFormatting>
@@ -236,28 +246,6 @@
             <goals>
               <goal>format</goal>
             </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>net.revelc.code</groupId>
-        <artifactId>apilyzer-maven-plugin</artifactId>
-        <version>1.3.0</version>
-        <executions>
-          <execution>
-            <id>apilyzer</id>
-            <goals>
-              <goal>analyze</goal>
-            </goals>
-            <configuration>
-              <includes>
-                <include>org[.]apache[.]accumulo[.]access[.]InvalidAccessExpressionException</include>
-                <include>org[.]apache[.]accumulo[.]access[.]AccessExpression</include>
-                <include>org[.]apache[.]accumulo[.]access[.]AccessEvaluator</include>
-                <include>org[.]apache[.]accumulo[.]access[.]Authorizations</include>
-                <include>org[.]apache[.]accumulo[.]access[.]ParsedAccessExpression</include>
-              </includes>
-            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -291,7 +279,7 @@
         <artifactId>spotbugs-maven-plugin</artifactId>
         <version>4.9.3.0</version>
         <configuration>
-          <excludeFilterFile>src/build/ci/spotbugs-exclude.xml</excludeFilterFile>
+          <excludeFilterFile>../src/build/ci/spotbugs-exclude.xml</excludeFilterFile>
           <xmlOutput>true</xmlOutput>
           <effort>Max</effort>
           <failOnError>true</failOnError>
@@ -454,7 +442,6 @@
         <configuration>
           <archive>
             <manifestEntries>
-              <Automatic-Module-Name>${accumulo.module.name}</Automatic-Module-Name>
               <Implementation-Build>${mvngit.commit.id}</Implementation-Build>
               <Sealed>true</Sealed>
             </manifestEntries>
@@ -468,26 +455,8 @@
           <quiet>true</quiet>
           <additionalJOption>-J-Xmx512m</additionalJOption>
           <doclint>all,-missing</doclint>
-          <legacyMode>true</legacyMode>
+          <legacyMode>false</legacyMode>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-invoker-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>invoked-integration-tests</id>
-            <goals>
-              <goal>install</goal>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <cloneProjectsTo>${project.build.directory}/its</cloneProjectsTo>
-              <localRepositoryPath>${project.build.directory}/it-repo</localRepositoryPath>
-              <settingsFile>src/it/settings.xml</settingsFile>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -509,9 +478,10 @@
         <artifactId>apache-rat-plugin</artifactId>
         <configuration>
           <excludes>
-            <exclude>src/it/antlr4-example/src/main/antlr4/Abnf.g4</exclude>
+            <exclude>src/main/generated-antlr4-sources/**</exclude>
+            <exclude>src/main/antlr4/Abnf.g4</exclude>
             <exclude>src/test/resources/testdata.json</exclude>
-            <exclude>.github/**</exclude>
+            <exclude>**/.github/**</exclude>
           </excludes>
         </configuration>
         <executions>
@@ -525,20 +495,32 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.5.0</version>
+        <artifactId>maven-resources-plugin</artifactId>
         <executions>
           <execution>
-            <id>create-automatic-module-name</id>
+            <id>copy-test-resources</id>
             <goals>
-              <goal>regex-property</goal>
+              <goal>copy-resources</goal>
             </goals>
+            <phase>process-test-resources</phase>
             <configuration>
-              <name>accumulo.module.name</name>
-              <regex>-</regex>
-              <replacement>.</replacement>
-              <value>org-apache-${project.artifactId}</value>
+              <outputDirectory>${basedir}/target/test-classes</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${maven.multiModuleProjectDirectory}</directory>
+                  <filtering>false</filtering>
+                  <includes>
+                    <include>SPECIFICATION.md</include>
+                  </includes>
+                </resource>
+                <resource>
+                  <directory>${maven.multiModuleProjectDirectory}/src/test/resources</directory>
+                  <filtering>false</filtering>
+                  <includes>
+                    <include>testdata.json</include>
+                  </includes>
+                </resource>
+              </resources>
             </configuration>
           </execution>
         </executions>
@@ -749,40 +731,6 @@
                 </path>
               </annotationProcessorPaths>
             </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>benchmark</id>
-      <activation>
-        <property>
-          <name>benchmark</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>3.3.0</version>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>exec</goal>
-                </goals>
-                <phase>verify</phase>
-                <configuration>
-                  <classpathScope>test</classpathScope>
-                  <executable>java</executable>
-                  <arguments>
-                    <argument>-classpath</argument>
-                    <classpath />
-                    <argument>org.apache.accumulo.access.tests.AccessExpressionBenchmark</argument>
-                  </arguments>
-                </configuration>
-              </execution>
-            </executions>
           </plugin>
         </plugins>
       </build>
