@@ -26,7 +26,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.accumulo.access.AccessEvaluator;
-import org.apache.accumulo.access.Authorizations;
+import org.apache.accumulo.access.AccumuloAccess;
 
 public class AccessExample {
 
@@ -57,8 +57,20 @@ public class AccessExample {
     out.printf("Showing accessible records using authorizations: %s%n",
         Arrays.toString(authorizations));
 
+    var accumuloAccess = AccumuloAccess.builder().authorizationValidator(auth -> {
+      for (int i = 0; i < auth.length(); i++) {
+        var c = auth.charAt(i);
+        if (Character.isISOControl(c) || Character.isWhitespace(c) || !Character.isDefined(c)
+            || c == '\uFFFD') {
+          return false;
+        }
+      }
+      return true;
+    }).build();
+
     // Create an access evaluator using the provided authorizations
-    AccessEvaluator evaluator = AccessEvaluator.of(Authorizations.of(Set.of(authorizations)));
+    AccessEvaluator evaluator =
+        accumuloAccess.newEvaluator(accumuloAccess.newAuthorizations(Set.of(authorizations)));
 
     // Print each record whose access expression permits viewing using the provided authorizations
     getData().forEach((record, accessExpression) -> {
