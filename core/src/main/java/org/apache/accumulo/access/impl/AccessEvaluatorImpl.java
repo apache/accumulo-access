@@ -19,12 +19,14 @@
 package org.apache.accumulo.access.impl;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Objects.requireNonNull;
 import static org.apache.accumulo.access.impl.ByteUtils.BACKSLASH;
 import static org.apache.accumulo.access.impl.ByteUtils.QUOTE;
 import static org.apache.accumulo.access.impl.ByteUtils.isQuoteOrSlash;
 import static org.apache.accumulo.access.impl.ByteUtils.isQuoteSymbol;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -32,6 +34,7 @@ import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
+import org.apache.accumulo.access.ParsedAccessExpression;
 
 public final class AccessEvaluatorImpl implements AccessEvaluator {
 
@@ -159,4 +162,60 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
     };
     return ParserEvaluator.parseAccessExpression(accessExpression, atp, authToken -> true);
   }
+
+  @Override
+  public boolean canAccess(ParsedAccessExpression pae) {
+    switch (pae.getType()) {
+      case AND:
+        return canAccessParsedAnd(pae.getChildren());
+      case OR:
+        return canAccessParsedOr(pae.getChildren());
+      case AUTHORIZATION:
+        return canAccessParsedAuthorization(pae.getExpression());
+      case EMPTY:
+        return true;
+      default:
+        throw new IllegalArgumentException("Unhandled type: " + pae.getType());
+    }
+  }
+
+  private boolean canAccessParsedAnd(List<ParsedAccessExpression> children) {
+    requireNonNull(children, "null children list passed to method");
+    if (children.isEmpty() || children.size() < 2) {
+      throw new IllegalArgumentException(
+          "Malformed AND expression, children: " + children.size() + " -> " + children);
+    }
+    boolean result = true;
+    for (ParsedAccessExpression child : children) {
+      result &= canAccess(child);
+      if (result == false) {
+        return result;
+      }
+    }
+    return result;
+  }
+
+  private boolean canAccessParsedOr(List<ParsedAccessExpression> children) {
+    requireNonNull(children, "null children list passed to method");
+    if (children.isEmpty()) {
+      throw new IllegalArgumentException("Malformed OR expression, no children");
+    }
+    boolean result = false;
+    for (ParsedAccessExpression child : children) {
+      result |= canAccess(child);
+    }
+    return result;
+  }
+
+  private boolean canAccessParsedAuthorization(String token) {
+    var bytesWrapper = ParserEvaluator.lookupWrappers.get();
+    var authToken = token.getBytes(UTF_8);
+    if (authToken[0] == '"' && authToken[authToken.length - 1] == '"') {
+      bytesWrapper.set(authToken, 1, authToken.length - 2);
+    } else {
+      bytesWrapper.set(authToken, 0, authToken.length);
+    }
+    return authorizedPredicate.test(bytesWrapper);
+  }
+
 }

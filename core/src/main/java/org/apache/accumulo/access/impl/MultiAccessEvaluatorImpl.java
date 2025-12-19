@@ -18,8 +18,6 @@
  */
 package org.apache.accumulo.access.impl;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -28,6 +26,7 @@ import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
+import org.apache.accumulo.access.ParsedAccessExpression;
 
 public final class MultiAccessEvaluatorImpl implements AccessEvaluator {
 
@@ -46,21 +45,26 @@ public final class MultiAccessEvaluatorImpl implements AccessEvaluator {
 
   @Override
   public boolean canAccess(String accessExpression) throws InvalidAccessExpressionException {
-    return canAccess(accessExpression.getBytes(UTF_8));
+    return canAccess(AccessExpression.of(accessExpression));
   }
 
   @Override
   public boolean canAccess(byte[] accessExpression) throws InvalidAccessExpressionException {
-    for (AccessEvaluator evaluator : evaluators) {
-      if (!evaluator.canAccess(accessExpression)) {
-        return false;
-      }
-    }
-    return true;
+    return canAccess(AccessExpression.of(accessExpression));
   }
 
   @Override
   public boolean canAccess(AccessExpression accessExpression) {
-    return canAccess(accessExpression.getExpression());
+    return canAccess(accessExpression.parse());
+  }
+
+  @Override
+  public boolean canAccess(ParsedAccessExpression parsedAccessExpression) {
+    for (AccessEvaluator evaluator : evaluators) {
+      if (!evaluator.canAccess(parsedAccessExpression)) {
+        return false;
+      }
+    }
+    return true;
   }
 }

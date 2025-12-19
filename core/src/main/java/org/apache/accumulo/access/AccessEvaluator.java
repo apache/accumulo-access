@@ -81,6 +81,14 @@ public sealed interface AccessEvaluator permits AccessEvaluatorImpl, MultiAccess
   boolean canAccess(AccessExpression accessExpression);
 
   /**
+   * @param parsedAccessExpression object resulting from call to AccessExpression.parse. This method
+   *        would be useful if passing a single AccessExpression to multiple AccessEvaluators.
+   * @return true if the expression is visible using the authorizations supplied at creation, false
+   *         otherwise
+   */
+  boolean canAccess(ParsedAccessExpression parsedAccessExpression);
+
+  /**
    * Creates an AccessEvaluator from an Authorizations object
    *
    * @param authorizations auths to use in the AccessEvaluator
