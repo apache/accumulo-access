@@ -167,7 +167,7 @@
             <licenseSet>
               <header>src/build/license-header.txt</header>
               <excludes>
-                <exclude>antlr4-example/src/main/antlr4/Abnf.g4</exclude>
+                <exclude>src/main/antlr4/Abnf.g4</exclude>
                 <exclude>src/main/generated-antlr4-sources/**</exclude>
                 <exclude>**/DEPENDENCIES</exclude>
                 <exclude>**/LICENSE</exclude>
