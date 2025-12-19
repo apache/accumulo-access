@@ -18,5 +18,5 @@
  */
 module accumulo.access.examples {
   exports org.apache.accumulo.access.examples;
-  requires transitive accumulo.access;
+  requires transitive accumulo.access.core;
 }

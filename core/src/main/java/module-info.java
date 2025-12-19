@@ -16,6 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-module accumulo.access {
+module accumulo.access.core {
   exports org.apache.accumulo.access;
 }

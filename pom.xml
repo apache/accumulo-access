@@ -442,7 +442,6 @@
         <configuration>
           <archive>
             <manifestEntries>
-              <Automatic-Module-Name>${accumulo.module.name}</Automatic-Module-Name>
               <Implementation-Build>${mvngit.commit.id}</Implementation-Build>
               <Sealed>true</Sealed>
             </manifestEntries>
@@ -522,25 +521,6 @@
                   </includes>
                 </resource>
               </resources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.5.0</version>
-        <executions>
-          <execution>
-            <id>create-automatic-module-name</id>
-            <goals>
-              <goal>regex-property</goal>
-            </goals>
-            <configuration>
-              <name>accumulo.module.name</name>
-              <regex>-</regex>
-              <replacement>.</replacement>
-              <value>org-apache-${project.artifactId}</value>
             </configuration>
           </execution>
         </executions>

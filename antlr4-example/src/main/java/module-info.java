@@ -19,6 +19,6 @@
 module accumulo.access.examples.antlr {
   exports org.apache.accumulo.access.antlr4;
   exports org.apache.accumulo.access.grammars;
-  requires transitive accumulo.access;
+  requires transitive accumulo.access.core;
   requires transitive org.antlr.antlr4.runtime;
 }

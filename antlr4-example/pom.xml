@@ -134,18 +134,6 @@
               </sources>
             </configuration>
           </execution>
-          <execution>
-            <id>create-automatic-module-name</id>
-            <goals>
-              <goal>regex-property</goal>
-            </goals>
-            <configuration>
-              <name>accumulo.module.name</name>
-              <regex>-</regex>
-              <replacement>.</replacement>
-              <value>org-apache-${project.artifactId}</value>
-            </configuration>
-          </execution>
         </executions>
       </plugin>
     </plugins>
