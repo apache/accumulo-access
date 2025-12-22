@@ -31,16 +31,12 @@ import org.apache.accumulo.access.InvalidAccessExpressionException;
 
 public final class MultiAccessEvaluatorImpl implements AccessEvaluator {
 
-  public static AccessEvaluator of(Collection<Authorizations> authorizationSets) {
-    return new MultiAccessEvaluatorImpl(authorizationSets);
-  }
-
   private final List<AccessEvaluator> evaluators;
 
-  private MultiAccessEvaluatorImpl(Collection<Authorizations> authorizationSets) {
+  public MultiAccessEvaluatorImpl(Collection<Authorizations> authorizationSets) {
     evaluators = new ArrayList<>(authorizationSets.size());
     for (Authorizations authorizations : authorizationSets) {
-      evaluators.add(new AccessEvaluatorImpl(authorizations));
+      evaluators.add(authorizations.evaluator());
     }
   }
 

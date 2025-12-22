@@ -41,7 +41,6 @@ import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AccessExpression;
-import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.antlr.TestDataLoader;
 import org.apache.accumulo.access.antlr.TestDataLoader.ExpectedResult;
@@ -51,6 +50,7 @@ import org.apache.accumulo.access.antlr4.AccessExpressionAntlrEvaluator;
 import org.apache.accumulo.access.grammars.AccessExpressionLexer;
 import org.apache.accumulo.access.grammars.AccessExpressionParser;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
+import org.apache.accumulo.access.Authorizations;
 import org.junit.jupiter.api.Test;
 
 public class Antlr4Tests {
@@ -144,7 +144,7 @@ public class Antlr4Tests {
 
       List<Authorizations> authSets = Stream.of(testSet.auths)
           .map(a -> Authorizations.of(Set.of(a))).collect(Collectors.toList());
-      AccessEvaluator evaluator = AccessEvaluator.of(authSets);
+      AccessEvaluator evaluator = Authorizations.evaluator(authSets);
       AccessExpressionAntlrEvaluator antlr = new AccessExpressionAntlrEvaluator(authSets);
 
       for (TestExpressions test : testSet.tests) {

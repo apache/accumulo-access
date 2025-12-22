@@ -19,66 +19,31 @@
 package org.apache.accumulo.access;
 
 import java.io.Serializable;
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.Set;
 
-/**
- * An immutable collection of authorization strings.
- *
- * <p>
- * Instances of this class are thread-safe.
- *
- * <p>
- * Note: The underlying implementation uses UTF-8 when converting between bytes and Strings.
- *
- * @since 1.0.0
- */
-public final class Authorizations implements Iterable<String>, Serializable {
+import org.apache.accumulo.access.impl.AccessEvaluatorImpl;
+import org.apache.accumulo.access.impl.AuthorizationsImpl;
+import org.apache.accumulo.access.impl.MultiAccessEvaluatorImpl;
 
-  private static final long serialVersionUID = 1L;
-
-  private static final Authorizations EMPTY = new Authorizations(Set.of());
-
-  private final Set<String> authorizations;
-
-  private Authorizations(Set<String> authorizations) {
-    this.authorizations = Set.copyOf(authorizations);
-  }
+public sealed interface Authorizations extends Iterable<String>, Serializable
+    permits AuthorizationsImpl {
 
   /**
-   * Returns the set of authorization strings in this Authorization object
+   * An interface that is used to check if an authorization seen in an access expression is
+   * authorized.
    *
-   * @return immutable set of authorization strings
+   * @since 1.0.0
    */
-  public Set<String> asSet() {
-    return authorizations;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (o instanceof Authorizations) {
-      var oa = (Authorizations) o;
-      return authorizations.equals(oa.authorizations);
-    }
-
-    return false;
-  }
-
-  @Override
-  public int hashCode() {
-    return authorizations.hashCode();
-  }
-
-  @Override
-  public String toString() {
-    return authorizations.toString();
+  interface Authorizer {
+    boolean isAuthorized(String auth);
   }
 
   /**
    * @return a pre-allocated empty Authorizations object
    */
   public static Authorizations of() {
-    return EMPTY;
+    return AuthorizationsImpl.EMPTY;
   }
 
   /**
@@ -89,14 +54,89 @@ public final class Authorizations implements Iterable<String>, Serializable {
    */
   public static Authorizations of(Set<String> authorizations) {
     if (authorizations.isEmpty()) {
-      return EMPTY;
+      return AuthorizationsImpl.EMPTY;
     } else {
-      return new Authorizations(authorizations);
+      return new AuthorizationsImpl(authorizations);
     }
   }
 
-  @Override
-  public Iterator<String> iterator() {
-    return authorizations.iterator();
+  /**
+   * Returns the set of authorization strings in this Authorization object
+   *
+   * @return immutable set of authorization strings
+   */
+  public Set<String> asSet();
+
+  /**
+   * Creates an AccessEvaluator from an Authorizations object
+   *
+   * @return AccessEvaluator object
+   */
+  AccessEvaluator evaluator();
+
+  /**
+   * Creates an AccessEvaluator from an Authorizer object
+   *
+   * @param authorizer authorizer to use in the AccessEvaluator
+   * @return AccessEvaluator object
+   */
+  static AccessEvaluator using(Authorizer authorizer) {
+    return new AccessEvaluatorImpl(authorizer);
   }
+
+  /**
+   * Allows providing multiple sets of authorizations. Each expression will be evaluated
+   * independently against each set of authorizations and will only be deemed accessible if
+   * accessible for all. For example the following code would print false, true, and then false.
+   *
+   * <pre>
+   *     {@code
+   * Collection<Authorizations> authSets =
+   *     List.of(Authorizations.of("A", "B"), Authorizations.of("C", "D"));
+   * var evaluator = AccessEvaluator.of(authSets);
+   *
+   * System.out.println(evaluator.canAccess("A"));
+   * System.out.println(evaluator.canAccess("A|D"));
+   * System.out.println(evaluator.canAccess("A&D"));
+   *
+   * }
+   * </pre>
+   *
+   * <p>
+   * The following table shows how each expression in the example above will evaluate for each
+   * authorization set. In order to return true for {@code canAccess()} the expression must evaluate
+   * to true for each authorization set.
+   *
+   * <table>
+   * <caption>Evaluations</caption>
+   * <tr>
+   * <td></td>
+   * <td>[A,B]</td>
+   * <td>[C,D]</td>
+   * </tr>
+   * <tr>
+   * <td>A</td>
+   * <td>True</td>
+   * <td>False</td>
+   * </tr>
+   * <tr>
+   * <td>A|D</td>
+   * <td>True</td>
+   * <td>True</td>
+   * </tr>
+   * <tr>
+   * <td>A&amp;D</td>
+   * <td>False</td>
+   * <td>False</td>
+   * </tr>
+   *
+   * </table>
+   *
+   *
+   *
+   */
+  static AccessEvaluator evaluator(Collection<Authorizations> authorizationSets) {
+    return new MultiAccessEvaluatorImpl(authorizationSets);
+  }
+
 }

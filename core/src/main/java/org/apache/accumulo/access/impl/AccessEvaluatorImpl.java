@@ -30,7 +30,7 @@ import java.util.function.Predicate;
 
 import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AccessExpression;
-import org.apache.accumulo.access.Authorizations;
+import org.apache.accumulo.access.Authorizations.Authorizer;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 
 public final class AccessEvaluatorImpl implements AccessEvaluator {
@@ -47,7 +47,7 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
   /**
    * Create an AccessEvaluatorImpl using a collection of authorizations
    */
-  public AccessEvaluatorImpl(Authorizations authorizations) {
+  public AccessEvaluatorImpl(AuthorizationsImpl authorizations) {
     var authsSet = authorizations.asSet();
     final Set<BytesWrapper> authBytes = new HashSet<>(authsSet.size());
     for (String authorization : authsSet) {
