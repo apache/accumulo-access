@@ -18,6 +18,7 @@
  */
 package org.apache.accumulo.access.antlr4;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.Set;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.accumulo.access.AccessExpression;
+import org.apache.accumulo.access.AccumuloAccess;
 import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
@@ -35,7 +37,11 @@ import org.apache.accumulo.access.grammars.AccessExpressionParser.And_operatorCo
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Or_expressionContext;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Or_operatorContext;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class AccessExpressionAntlrEvaluator {
+
+  public static final AccumuloAccess ACCUMULO_ACCESS = AccumuloAccess.builder().build();
 
   private class Entity {
 
@@ -60,21 +66,13 @@ public class AccessExpressionAntlrEvaluator {
       e.authorizations = new HashSet<>(entityAuths.size() * 2);
       a.asSet().stream().forEach(auth -> {
         e.authorizations.add(auth);
-        String quoted = AccessExpression.quote(auth);
+        String quoted = ACCUMULO_ACCESS.quote(auth);
         if (!quoted.startsWith("\"")) {
           quoted = '"' + quoted + '"';
         }
         e.authorizations.add(quoted);
       });
     }
-  }
-
-  public boolean canAccess(byte[] accessExpression) throws InvalidAccessExpressionException {
-    return canAccess(AccessExpression.of(accessExpression));
-  }
-
-  public boolean canAccess(AccessExpression accessExpression) {
-    return canAccess(accessExpression.getExpression());
   }
 
   public boolean canAccess(String accessExpression) {
