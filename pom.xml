@@ -507,14 +507,14 @@
               <outputDirectory>${basedir}/target/test-classes</outputDirectory>
               <resources>
                 <resource>
-                  <directory>${maven.multiModuleProjectDirectory}</directory>
+                  <directory>..</directory>
                   <filtering>false</filtering>
                   <includes>
                     <include>SPECIFICATION.md</include>
                   </includes>
                 </resource>
                 <resource>
-                  <directory>${maven.multiModuleProjectDirectory}/src/test/resources</directory>
+                  <directory>../src/test/resources</directory>
                   <filtering>false</filtering>
                   <includes>
                     <include>testdata.json</include>
