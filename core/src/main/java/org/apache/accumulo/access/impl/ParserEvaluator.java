@@ -23,7 +23,9 @@ import static org.apache.accumulo.access.impl.ByteUtils.isAndOrOperator;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import org.apache.accumulo.access.AuthorizationValidator;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
+import org.apache.accumulo.access.InvalidAuthorizationException;
 
 /**
  * Code for parsing and evaluating an access expression at the same time.
@@ -33,25 +35,53 @@ public final class ParserEvaluator {
   static final byte OPEN_PAREN = (byte) '(';
   static final byte CLOSE_PAREN = (byte) ')';
 
-  private static final byte[] EMPTY = new byte[0];
-
-  static final ThreadLocal<BytesWrapper> lookupWrappers =
-      ThreadLocal.withInitial(() -> new BytesWrapper(EMPTY));
+  static final ThreadLocal<CharsWrapper> lookupWrappers =
+      ThreadLocal.withInitial(() -> new CharsWrapper("", 0, 0));
   private static final ThreadLocal<Tokenizer> tokenizers =
-      ThreadLocal.withInitial(() -> new Tokenizer(EMPTY));
+      ThreadLocal.withInitial(() -> new Tokenizer(""));
 
-  public static void findAuthorizations(byte[] expression, Consumer<String> authorizationConsumer)
+  public static void validate(String expression, AuthorizationValidator authValidator)
       throws InvalidAccessExpressionException {
-    var bytesWrapper = ParserEvaluator.lookupWrappers.get();
+    if (expression.isEmpty()) {
+      return;
+    }
+
+    var charsWrapper = ParserEvaluator.lookupWrappers.get();
+    Predicate<Tokenizer.AuthorizationToken> vp = authToken -> {
+      var authorizations = unescape(authToken, charsWrapper);
+      if (!authValidator.test(authorizations)) {
+        throw new InvalidAuthorizationException(authorizations.toString());
+      }
+      return true;
+    };
+
+    ParserEvaluator.parseAccessExpression(expression, vp, vp);
+  }
+
+  public static void findAuthorizations(CharSequence expression,
+      Consumer<String> authorizationConsumer, AuthorizationValidator authValidator)
+      throws InvalidAccessExpressionException {
+    var charsWrapper = ParserEvaluator.lookupWrappers.get();
     Predicate<Tokenizer.AuthorizationToken> atp = authToken -> {
-      bytesWrapper.set(authToken.data, authToken.start, authToken.len);
-      authorizationConsumer.accept(AccessEvaluatorImpl.unescape(bytesWrapper));
+      var authorizations = unescape(authToken, charsWrapper);
+      if (!authValidator.test(authorizations)) {
+        throw new InvalidAuthorizationException(authorizations.toString());
+      }
+      authorizationConsumer.accept(authorizations.toString());
       return true;
     };
     ParserEvaluator.parseAccessExpression(expression, atp, atp);
   }
 
-  public static boolean parseAccessExpression(byte[] expression,
+  static CharSequence unescape(Tokenizer.AuthorizationToken token, CharsWrapper wrapper) {
+    wrapper.set(token.data, token.start, token.len);
+    if (token.hasEscapes) {
+      return AccessEvaluatorImpl.unescape(wrapper);
+    }
+    return wrapper;
+  }
+
+  public static boolean parseAccessExpression(CharSequence expression,
       Predicate<Tokenizer.AuthorizationToken> authorizedPredicate,
       Predicate<Tokenizer.AuthorizationToken> shortCircuitPredicate) {
     var tokenizer = tokenizers.get();

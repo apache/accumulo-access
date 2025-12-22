@@ -18,4 +18,5 @@
  */
 module accumulo.access.core {
   exports org.apache.accumulo.access;
+  exports org.apache.accumulo.access.impl;
 }

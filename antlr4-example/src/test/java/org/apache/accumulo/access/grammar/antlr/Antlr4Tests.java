@@ -42,6 +42,7 @@ import org.antlr.v4.runtime.Recognizer;
 import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.Authorizations;
+import org.apache.accumulo.access.impl.AuthorizationsImpl;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.antlr.TestDataLoader;
 import org.apache.accumulo.access.antlr.TestDataLoader.ExpectedResult;
@@ -122,7 +123,7 @@ public class Antlr4Tests {
   @Test
   public void testSimpleEvaluation() throws Exception {
     String accessExpression = "(one&two)|(foo&bar)";
-    Authorizations auths = Authorizations.of(Set.of("four", "three", "one", "two"));
+    Authorizations auths = AuthorizationsImpl.of(Set.of("four", "three", "one", "two"));
     AccessExpressionAntlrEvaluator eval = new AccessExpressionAntlrEvaluator(List.of(auths));
     assertTrue(eval.canAccess(accessExpression));
   }
@@ -130,7 +131,7 @@ public class Antlr4Tests {
   @Test
   public void testSimpleEvaluationFailure() throws Exception {
     String accessExpression = "(A&B&C)";
-    Authorizations auths = Authorizations.of(Set.of("A", "C"));
+    Authorizations auths = AuthorizationsImpl.of(Set.of("A", "C"));
     AccessExpressionAntlrEvaluator eval = new AccessExpressionAntlrEvaluator(List.of(auths));
     assertFalse(eval.canAccess(accessExpression));
   }
@@ -143,7 +144,7 @@ public class Antlr4Tests {
     for (TestDataSet testSet : testData) {
 
       List<Authorizations> authSets = Stream.of(testSet.auths)
-          .map(a -> Authorizations.of(Set.of(a))).collect(Collectors.toList());
+          .map(a -> AuthorizationsImpl.of(Set.of(a))).collect(Collectors.toList());
       AccessEvaluator evaluator = AccessEvaluator.of(authSets);
       AccessExpressionAntlrEvaluator antlr = new AccessExpressionAntlrEvaluator(authSets);
 

@@ -19,8 +19,6 @@
 package org.apache.accumulo.access.tests;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.accumulo.access.AccessExpression.quote;
-import static org.apache.accumulo.access.AccessExpression.unquote;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -35,12 +33,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.accumulo.access.AccessEvaluator;
-import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.AccumuloAccess;
-import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.impl.AccessEvaluatorImpl;
-import org.apache.accumulo.access.impl.BytesWrapper;
 import org.junit.jupiter.api.Test;
 
 import com.google.gson.Gson;
@@ -93,23 +88,24 @@ public class AccessEvaluatorTest {
       AccessEvaluator evaluator;
       assertTrue(testSet.auths.length >= 1);
       if (testSet.auths.length == 1) {
-        evaluator = accumuloAccess.newEvaluator(Authorizations.of(Set.of(testSet.auths[0])));
-        runTestCases(testSet, evaluator);
+        evaluator =
+            accumuloAccess.newEvaluator(accumuloAccess.newAuthorizations(Set.of(testSet.auths[0])));
+        runTestCases(accumuloAccess, testSet, evaluator);
 
         Set<String> auths = Stream.of(testSet.auths[0]).collect(Collectors.toSet());
         evaluator = accumuloAccess.newEvaluator(auths::contains);
-        runTestCases(testSet, evaluator);
+        runTestCases(accumuloAccess, testSet, evaluator);
       } else {
-        var authSets = Stream.of(testSet.auths).map(a -> Authorizations.of(Set.of(a)))
-            .collect(Collectors.toList());
+        var authSets = Stream.of(testSet.auths)
+            .map(a -> accumuloAccess.newAuthorizations(Set.of(a))).collect(Collectors.toList());
         evaluator = accumuloAccess.newEvaluator(authSets);
-        runTestCases(testSet, evaluator);
+        runTestCases(accumuloAccess, testSet, evaluator);
       }
     }
-
   }
 
-  private static void runTestCases(TestDataSet testSet, AccessEvaluator evaluator) {
+  private static void runTestCases(AccumuloAccess accumuloAccess, TestDataSet testSet,
+      AccessEvaluator evaluator) {
 
     assertFalse(testSet.tests.isEmpty());
 
@@ -123,52 +119,42 @@ public class AccessEvaluatorTest {
         // exception
         if (tests.expectedResult == ExpectedResult.ACCESSIBLE
             || tests.expectedResult == ExpectedResult.INACCESSIBLE) {
-          AccessExpression.validate(expression);
-          AccessExpression.validate(expression.getBytes(UTF_8));
-          assertEquals(expression, AccessExpression.of(expression).getExpression());
-          assertEquals(expression, AccessExpression.of(expression.getBytes(UTF_8)).getExpression());
-          // parsing an expression will strip uneeded outer parens
-          assertTrue(expression.contains(AccessExpression.parse(expression).getExpression()));
-          assertTrue(expression
-              .contains(AccessExpression.parse(expression.getBytes(UTF_8)).getExpression()));
-          AccessExpression.findAuthorizations(expression, auth -> {});
-          AccessExpression.findAuthorizations(expression.getBytes(UTF_8), auth -> {});
+          accumuloAccess.validate(expression);
+          assertEquals(expression, accumuloAccess.newExpression(expression).getExpression());
+          // parsing an expression will strip unneeded outer parens
+          assertTrue(
+              expression.contains(accumuloAccess.newParsedExpression(expression).getExpression()));
+          accumuloAccess.findAuthorizations(expression, auth -> {});
         }
 
         switch (tests.expectedResult) {
           case ACCESSIBLE:
             assertTrue(evaluator.canAccess(expression), expression);
-            assertTrue(evaluator.canAccess(expression.getBytes(UTF_8)), expression);
-            assertTrue(evaluator.canAccess(AccessExpression.of(expression)), expression);
-            assertTrue(evaluator.canAccess(AccessExpression.parse(expression)), expression);
-            assertTrue(evaluator.canAccess(AccessExpression.parse(expression).getExpression()),
+            assertTrue(evaluator.canAccess(accumuloAccess.newExpression(expression)), expression);
+            assertTrue(evaluator.canAccess(accumuloAccess.newParsedExpression(expression)),
+                expression);
+            assertTrue(
+                evaluator.canAccess(accumuloAccess.newParsedExpression(expression).getExpression()),
                 expression);
             break;
           case INACCESSIBLE:
             assertFalse(evaluator.canAccess(expression), expression);
-            assertFalse(evaluator.canAccess(expression.getBytes(UTF_8)), expression);
-            assertFalse(evaluator.canAccess(AccessExpression.of(expression)), expression);
-            assertFalse(evaluator.canAccess(AccessExpression.parse(expression)), expression);
-            assertFalse(evaluator.canAccess(AccessExpression.parse(expression).getExpression()),
+            assertFalse(evaluator.canAccess(accumuloAccess.newExpression(expression)), expression);
+            assertFalse(evaluator.canAccess(accumuloAccess.newParsedExpression(expression)),
+                expression);
+            assertFalse(
+                evaluator.canAccess(accumuloAccess.newParsedExpression(expression).getExpression()),
                 expression);
             break;
           case ERROR:
             assertThrows(InvalidAccessExpressionException.class,
                 () -> evaluator.canAccess(expression), expression);
             assertThrows(InvalidAccessExpressionException.class,
-                () -> evaluator.canAccess(expression.getBytes(UTF_8)), expression);
+                () -> accumuloAccess.validate(expression), expression);
             assertThrows(InvalidAccessExpressionException.class,
-                () -> AccessExpression.validate(expression), expression);
+                () -> accumuloAccess.newExpression(expression), expression);
             assertThrows(InvalidAccessExpressionException.class,
-                () -> AccessExpression.validate(expression.getBytes(UTF_8)), expression);
-            assertThrows(InvalidAccessExpressionException.class,
-                () -> AccessExpression.of(expression), expression);
-            assertThrows(InvalidAccessExpressionException.class,
-                () -> AccessExpression.of(expression.getBytes(UTF_8)), expression);
-            assertThrows(InvalidAccessExpressionException.class,
-                () -> AccessExpression.parse(expression), expression);
-            assertThrows(InvalidAccessExpressionException.class,
-                () -> AccessExpression.parse(expression.getBytes(UTF_8)), expression);
+                () -> accumuloAccess.newParsedExpression(expression), expression);
             break;
           default:
             throw new IllegalArgumentException();
@@ -179,48 +165,52 @@ public class AccessEvaluatorTest {
 
   @Test
   public void testEmptyAuthorizations() {
+    var accumuloAccess = AccumuloAccess.builder().build();
+    // TODO what part of the code throwing the exception?
     assertThrows(IllegalArgumentException.class,
-        () -> AccessEvaluator.of(Authorizations.of(Set.of(""))));
+        () -> accumuloAccess.newEvaluator(accumuloAccess.newAuthorizations(Set.of(""))));
     assertThrows(IllegalArgumentException.class,
-        () -> AccessEvaluator.of(Authorizations.of(Set.of("", "A"))));
+        () -> accumuloAccess.newEvaluator(accumuloAccess.newAuthorizations(Set.of("", "A"))));
     assertThrows(IllegalArgumentException.class,
-        () -> AccessEvaluator.of(Authorizations.of(Set.of("A", ""))));
+        () -> accumuloAccess.newEvaluator(accumuloAccess.newAuthorizations(Set.of("A", ""))));
     assertThrows(IllegalArgumentException.class,
-        () -> AccessEvaluator.of(Authorizations.of(Set.of(""))));
+        () -> accumuloAccess.newEvaluator(accumuloAccess.newAuthorizations(Set.of(""))));
   }
 
   @Test
   public void testSpecialChars() {
+    var accumuloAccess = AccumuloAccess.builder().build();
     // special chars do not need quoting
     for (String qt : List.of("A_", "_", "A_C", "_C")) {
-      assertEquals(qt, quote(qt));
+      assertEquals(qt, accumuloAccess.quote(qt));
       for (char c : new char[] {'/', ':', '-', '.'}) {
         String qt2 = qt.replace('_', c);
-        assertEquals(qt2, quote(qt2));
+        assertEquals(qt2, accumuloAccess.quote(qt2));
       }
     }
 
-    assertEquals("a_b:c/d.e", quote("a_b:c/d.e"));
+    assertEquals("a_b:c/d.e", accumuloAccess.quote("a_b:c/d.e"));
   }
 
   @Test
   public void testQuote() {
-    assertEquals("\"A#C\"", quote("A#C"));
-    assertEquals("A#C", unquote(quote("A#C")));
-    assertEquals("\"A\\\"C\"", quote("A\"C"));
-    assertEquals("A\"C", unquote(quote("A\"C")));
-    assertEquals("\"A\\\"\\\\C\"", quote("A\"\\C"));
-    assertEquals("A\"\\C", unquote(quote("A\"\\C")));
-    assertEquals("ACS", quote("ACS"));
-    assertEquals("ACS", unquote(quote("ACS")));
-    assertEquals("\"九\"", quote("九"));
-    assertEquals("九", unquote(quote("九")));
-    assertEquals("\"五十\"", quote("五十"));
-    assertEquals("五十", unquote(quote("五十")));
+    var accumuloAccess = AccumuloAccess.builder().build();
+    assertEquals("\"A#C\"", accumuloAccess.quote("A#C"));
+    assertEquals("A#C", accumuloAccess.unquote(accumuloAccess.quote("A#C")));
+    assertEquals("\"A\\\"C\"", accumuloAccess.quote("A\"C"));
+    assertEquals("A\"C", accumuloAccess.unquote(accumuloAccess.quote("A\"C")));
+    assertEquals("\"A\\\"\\\\C\"", accumuloAccess.quote("A\"\\C"));
+    assertEquals("A\"\\C", accumuloAccess.unquote(accumuloAccess.quote("A\"\\C")));
+    assertEquals("ACS", accumuloAccess.quote("ACS"));
+    assertEquals("ACS", accumuloAccess.unquote(accumuloAccess.quote("ACS")));
+    assertEquals("\"九\"", accumuloAccess.quote("九"));
+    assertEquals("九", accumuloAccess.unquote(accumuloAccess.quote("九")));
+    assertEquals("\"五十\"", accumuloAccess.quote("五十"));
+    assertEquals("五十", accumuloAccess.unquote(accumuloAccess.quote("五十")));
   }
 
   private static String unescape(String s) {
-    return AccessEvaluatorImpl.unescape(new BytesWrapper(s.getBytes(UTF_8)));
+    return AccessEvaluatorImpl.unescape(s).toString();
   }
 
   @Test

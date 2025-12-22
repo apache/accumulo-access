@@ -18,8 +18,6 @@
  */
 package org.apache.accumulo.access.impl;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.accumulo.access.AccessExpression;
@@ -34,13 +32,7 @@ public final class AccessExpressionImpl extends AccessExpression {
   private final AtomicReference<ParsedAccessExpression> parseTreeRef = new AtomicReference<>();
 
   public AccessExpressionImpl(String expression) {
-    validate(expression);
     this.expression = expression;
-  }
-
-  public AccessExpressionImpl(byte[] expression) {
-    validate(expression);
-    this.expression = new String(expression, UTF_8);
   }
 
   @Override
@@ -52,12 +44,48 @@ public final class AccessExpressionImpl extends AccessExpression {
   public ParsedAccessExpression parse() {
     ParsedAccessExpression parseTree = parseTreeRef.get();
     if (parseTree == null) {
+      // This expression authorizations were already validated, so can pass a lambda that always
+      // returns true
       parseTreeRef.compareAndSet(null,
-          ParsedAccessExpressionImpl.parseExpression(expression.getBytes(UTF_8)));
+          ParsedAccessExpressionImpl.parseExpression(expression, auth -> true));
       // must get() again in case another thread won w/ the compare and set, this ensures this
       // method always returns the exact same object
       parseTree = parseTreeRef.get();
     }
     return parseTree;
+  }
+
+  public static CharSequence quote(CharSequence term) {
+    if (term.isEmpty()) {
+      throw new IllegalArgumentException("Empty strings are not legal authorizations.");
+    }
+
+    boolean needsQuote = false;
+
+    for (int i = 0; i < term.length(); i++) {
+      if (!Tokenizer.isValidAuthChar(term.charAt(i))) {
+        needsQuote = true;
+        break;
+      }
+    }
+
+    if (!needsQuote) {
+      return term;
+    }
+
+    return AccessEvaluatorImpl.escape(term, true);
+  }
+
+  public static String unquote(String term) {
+    if (term.equals("\"\"") || term.isEmpty()) {
+      throw new IllegalArgumentException("Empty strings are not legal authorizations.");
+    }
+
+    if (term.charAt(0) == '"' && term.charAt(term.length() - 1) == '"') {
+      term = term.substring(1, term.length() - 1);
+      return AccessEvaluatorImpl.unescape(term).toString();
+    } else {
+      return term;
+    }
   }
 }

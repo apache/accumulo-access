@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.util.Set;
 
+import org.apache.accumulo.access.AccumuloAccess;
 import org.apache.accumulo.access.Authorizations;
 import org.junit.jupiter.api.Test;
 
@@ -31,13 +32,14 @@ public class AuthorizationTest {
 
   @Test
   public void testEquality() {
-    Authorizations auths1 = Authorizations.of(Set.of("A", "B", "C"));
-    Authorizations auths2 = Authorizations.of(Set.of("A", "B", "C"));
+    var accumuloAccess = AccumuloAccess.builder().build();
+    Authorizations auths1 = accumuloAccess.newAuthorizations(Set.of("A", "B", "C"));
+    Authorizations auths2 = accumuloAccess.newAuthorizations(Set.of("A", "B", "C"));
 
     assertEquals(auths1, auths2);
     assertEquals(auths1.hashCode(), auths2.hashCode());
 
-    Authorizations auths3 = Authorizations.of(Set.of("D", "E", "F"));
+    Authorizations auths3 = accumuloAccess.newAuthorizations(Set.of("D", "E", "F"));
 
     assertNotEquals(auths1, auths3);
     assertNotEquals(auths1.hashCode(), auths3.hashCode());
@@ -45,11 +47,12 @@ public class AuthorizationTest {
 
   @Test
   public void testEmpty() {
+    var accumuloAccess = AccumuloAccess.builder().build();
     // check if new object is allocated
-    assertSame(Authorizations.of(), Authorizations.of());
+    assertSame(accumuloAccess.newAuthorizations(), accumuloAccess.newAuthorizations());
     // check if optimization is working
-    assertSame(Authorizations.of(), Authorizations.of(Set.of()));
-    assertEquals(Set.of(), Authorizations.of().asSet());
-    assertSame(Set.of(), Authorizations.of().asSet());
+    assertSame(accumuloAccess.newAuthorizations(), accumuloAccess.newAuthorizations(Set.of()));
+    assertEquals(Set.of(), accumuloAccess.newAuthorizations().asSet());
+    assertSame(Set.of(), accumuloAccess.newAuthorizations().asSet());
   }
 }

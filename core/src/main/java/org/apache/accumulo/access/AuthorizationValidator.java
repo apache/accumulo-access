@@ -20,6 +20,8 @@ package org.apache.accumulo.access;
 
 import java.util.function.Predicate;
 
+// TODO empty auth is not valid
+// TODO pass in if known to be ascii?
 public interface AuthorizationValidator extends Predicate<CharSequence> {
   // TODO document
   AuthorizationValidator UNICODE = auth -> {

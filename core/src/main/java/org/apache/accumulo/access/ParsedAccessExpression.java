@@ -25,8 +25,8 @@ import org.apache.accumulo.access.impl.ParsedAccessExpressionImpl;
 /**
  * Instances of this class are immutable and wrap a verified access expression and a parse tree for
  * the access expression. To create an instance of this class call
- * {@link AccessExpression#parse(String)}. The Accumulo Access project has examples that show how to
- * use the parse tree.
+ * {@link AccumuloAccess#newParsedExpression(String)}. The Accumulo Access project has examples that
+ * show how to use the parse tree.
  *
  * @since 1.0.0
  */
@@ -52,7 +52,7 @@ public sealed abstract class ParsedAccessExpression extends AccessExpression
     /**
      * Indicates an access expression is a single authorization. For this type
      * {@link #getExpression()} will return the authorization in quoted and escaped form. Depending
-     * on the use case {@link #unquote(String)} may need to be called.
+     * on the use case {@link AccumuloAccess#unquote(String)} may need to be called.
      */
     AUTHORIZATION,
     /**

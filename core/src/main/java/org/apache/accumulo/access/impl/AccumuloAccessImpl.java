@@ -47,104 +47,69 @@ public class AccumuloAccessImpl implements AccumuloAccess {
 
   @Override
   public AccessExpression newExpression(String expression) {
-    // TODO push this down into the parsing code, this parses twice
-    AccessExpression.findAuthorizations(expression, this::validateAuthorization);
-
-    return AccessExpression.of(expression);
+    if (expression.isEmpty()) {
+      return AccessExpressionImpl.EMPTY;
+    }
+    validate(expression);
+    return new AccessExpressionImpl(expression);
   }
 
   @Override
   public ParsedAccessExpression newParsedExpression(String expression) {
-    // TODO push this down into the parsing code, this parses twice
-    AccessExpression.findAuthorizations(expression, this::validateAuthorization);
-
-    return AccessExpression.parse(expression);
+    return ParsedAccessExpressionImpl.parseExpression(expression, authValidator);
   }
 
   @Override
   public Authorizations newAuthorizations() {
-    return Authorizations.of();
+    return AuthorizationsImpl.EMPTY;
   }
 
   @Override
   public Authorizations newAuthorizations(Set<String> authorizations) {
-    authorizations.forEach(this::validateAuthorization);
-
-    return Authorizations.of(authorizations);
+    if (authorizations.isEmpty()) {
+      return AuthorizationsImpl.EMPTY;
+    } else {
+      authorizations.forEach(this::validateAuthorization);
+      return new AuthorizationsImpl(authorizations);
+    }
   }
 
   @Override
   public void findAuthorizations(String expression, Consumer<String> authorizationConsumer)
       throws InvalidAccessExpressionException {
-    // TODO push this down into the parsing code, this parses twice
-    AccessExpression.findAuthorizations(expression, this::validateAuthorization);
-    AccessExpression.findAuthorizations(expression, authorizationConsumer);
+    ParserEvaluator.findAuthorizations(expression, authorizationConsumer, authValidator);
   }
 
   @Override
   public String quote(String authorization) {
     validateAuthorization(authorization);
-    return AccessExpression.quote(authorization);
+    return AccessExpressionImpl.quote(authorization).toString();
   }
 
   @Override
   public String unquote(String authorization) {
-    var unquoted = AccessExpression.unquote(authorization);
+    var unquoted = AccessExpressionImpl.unquote(authorization);
     validateAuthorization(unquoted);
     return unquoted;
   }
 
   @Override
   public void validate(String expression) throws InvalidAccessExpressionException {
-    // TODO push this down into the parsing code, this parses twice
-    AccessExpression.findAuthorizations(expression, this::validateAuthorization);
-    AccessExpression.validate(expression);
-  }
-
-  // TODO remove this class and push the authorization validation down into AccessEvaluatorImpl
-  public final class ValidatingAccessEvaluator implements AccessEvaluator {
-
-    private final AccessEvaluator evaluator;
-
-    private ValidatingAccessEvaluator(AccessEvaluator evaluator) {
-      this.evaluator = evaluator;
-    }
-
-    @Override
-    public boolean canAccess(String accessExpression) throws InvalidAccessExpressionException {
-      // TODO push this down into the parsing code, this parses twice
-      AccessExpression.findAuthorizations(accessExpression,
-          AccumuloAccessImpl.this::validateAuthorization);
-      return evaluator.canAccess(accessExpression);
-    }
-
-    @Override
-    public boolean canAccess(byte[] accessExpression) throws InvalidAccessExpressionException {
-      // this method would eventually go away in the super type when byte methods are removed
-      return evaluator.canAccess(accessExpression);
-    }
-
-    @Override
-    public boolean canAccess(AccessExpression accessExpression) {
-      // TODO push this down into the parsing code, this parses twice
-      AccessExpression.findAuthorizations(accessExpression.getExpression(),
-          AccumuloAccessImpl.this::validateAuthorization);
-      return evaluator.canAccess(accessExpression);
-    }
+    ParserEvaluator.validate(expression, authValidator);
   }
 
   @Override
   public AccessEvaluator newEvaluator(Authorizations authorizations) {
-    return new ValidatingAccessEvaluator(AccessEvaluator.of(authorizations));
+    return new AccessEvaluatorImpl(authorizations, authValidator);
   }
 
   @Override
   public AccessEvaluator newEvaluator(AccessEvaluator.Authorizer authorizer) {
-    return new ValidatingAccessEvaluator(AccessEvaluator.of(authorizer));
+    return new AccessEvaluatorImpl(authorizer, authValidator);
   }
 
   @Override
   public AccessEvaluator newEvaluator(Collection<Authorizations> authorizationSets) {
-    return new ValidatingAccessEvaluator(AccessEvaluator.of(authorizationSets));
+    return new MultiAccessEvaluatorImpl(authorizationSets, authValidator);
   }
 }
