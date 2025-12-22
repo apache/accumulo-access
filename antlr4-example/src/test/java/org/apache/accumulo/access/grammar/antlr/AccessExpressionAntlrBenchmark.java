@@ -29,11 +29,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.antlr.TestDataLoader;
 import org.apache.accumulo.access.antlr4.AccessExpressionAntlrEvaluator;
 import org.apache.accumulo.access.antlr4.AccessExpressionAntlrParser;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
+import org.apache.accumulo.access.Authorizations;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.Scope;

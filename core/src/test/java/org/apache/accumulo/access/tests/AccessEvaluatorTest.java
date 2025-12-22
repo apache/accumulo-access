@@ -90,16 +90,16 @@ public class AccessEvaluatorTest {
       AccessEvaluator evaluator;
       assertTrue(testSet.auths.length >= 1);
       if (testSet.auths.length == 1) {
-        evaluator = AccessEvaluator.of(Authorizations.of(Set.of(testSet.auths[0])));
+        evaluator = Authorizations.of(Set.of(testSet.auths[0])).evaluator();
         runTestCases(testSet, evaluator);
 
         Set<String> auths = Stream.of(testSet.auths[0]).collect(Collectors.toSet());
-        evaluator = AccessEvaluator.of(auths::contains);
+        evaluator = Authorizations.using(auths::contains);
         runTestCases(testSet, evaluator);
       } else {
         var authSets = Stream.of(testSet.auths).map(a -> Authorizations.of(Set.of(a)))
             .collect(Collectors.toList());
-        evaluator = AccessEvaluator.of(authSets);
+        evaluator = Authorizations.evaluator(authSets);
         runTestCases(testSet, evaluator);
       }
     }
@@ -176,14 +176,12 @@ public class AccessEvaluatorTest {
 
   @Test
   public void testEmptyAuthorizations() {
+    assertThrows(IllegalArgumentException.class, () -> Authorizations.of(Set.of("")).evaluator());
     assertThrows(IllegalArgumentException.class,
-        () -> AccessEvaluator.of(Authorizations.of(Set.of(""))));
+        () -> Authorizations.of(Set.of("", "A")).evaluator());
     assertThrows(IllegalArgumentException.class,
-        () -> AccessEvaluator.of(Authorizations.of(Set.of("", "A"))));
-    assertThrows(IllegalArgumentException.class,
-        () -> AccessEvaluator.of(Authorizations.of(Set.of("A", ""))));
-    assertThrows(IllegalArgumentException.class,
-        () -> AccessEvaluator.of(Authorizations.of(Set.of(""))));
+        () -> Authorizations.of(Set.of("A", "")).evaluator());
+    assertThrows(IllegalArgumentException.class, () -> Authorizations.of(Set.of("")).evaluator());
   }
 
   @Test

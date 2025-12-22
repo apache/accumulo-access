@@ -26,7 +26,6 @@ import java.util.Set;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.accumulo.access.AccessExpression;
-import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_tokenContext;
@@ -34,6 +33,7 @@ import org.apache.accumulo.access.grammars.AccessExpressionParser.And_expression
 import org.apache.accumulo.access.grammars.AccessExpressionParser.And_operatorContext;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Or_expressionContext;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Or_operatorContext;
+import org.apache.accumulo.access.Authorizations;
 
 public class AccessExpressionAntlrEvaluator {
 
