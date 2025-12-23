@@ -75,7 +75,7 @@ public interface AccumuloAccess {
 
   /**
    * Validates an access expression and returns an immutable object with a parse tree. Creating the
-   * parse tree is expensive relative to calling {@link # newExpression(String)} or
+   * parse tree is expensive relative to calling {@link #newExpression(String)} or
    * {@link #validate(String)}, so only use this method when the parse tree is always needed. If the
    * code may only use the parse tree sometimes, then it may be best to call
    * {@link #newExpression(String)} to create the access expression and then call

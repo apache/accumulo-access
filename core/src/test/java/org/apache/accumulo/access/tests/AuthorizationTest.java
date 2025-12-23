@@ -33,7 +33,6 @@ import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.InvalidAuthorizationException;
 import org.apache.accumulo.access.impl.Tokenizer;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class AuthorizationTest {
@@ -134,7 +133,7 @@ public class AuthorizationTest {
     // are escaped in the expression
     var accumuloAccess = AccumuloAccess.builder().authorizationValidator(auth -> {
       for (int i = 0; i < auth.length(); i++) {
-        Assertions.assertNotEquals('\\', auth.charAt(i));
+        assertNotEquals('\\', auth.charAt(i));
       }
       return true;
     }).build();
