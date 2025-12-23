@@ -18,6 +18,7 @@
  */
 package org.apache.accumulo.access.tests;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -109,6 +110,16 @@ public class AuthorizationTest {
     char c = '\u000c';
     assertTrue(Character.isDefined(c));
     assertTrue(Character.isISOControl(c));
+
+    var accumuloAccess = AccumuloAccess.builder().build();
+    var badAuth = new String(new char[] {'a', c});
+    runTest("ac", "a9", "dc", badAuth, accumuloAccess);
+  }
+
+  @Test
+  public void testReplacementCharacter() {
+    char c = '\uFFFD';
+    assertEquals(c + "", UTF_8.newDecoder().replacement());
 
     var accumuloAccess = AccumuloAccess.builder().build();
     var badAuth = new String(new char[] {'a', c});
