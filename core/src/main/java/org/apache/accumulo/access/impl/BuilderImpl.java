@@ -38,18 +38,4 @@ public class BuilderImpl implements AccumuloAccess.Builder {
     return new AccumuloAccessImpl(
         validator == null ? AuthorizationValidator.UNICODE_AND_NOT_ISO_CONTROL : validator);
   }
-
-  public static void main(String[] args) {
-    var accumuloAccess = AccumuloAccess.builder().authorizationValidator(auth -> {
-      for (int i = 0; i < auth.length(); i++) {
-        var c = auth.charAt(i);
-        if (Character.isISOControl(c) || Character.isWhitespace(c) || !Character.isDefined(c)
-            || c == '\uFFFD') {
-          return false;
-        }
-      }
-      return true;
-    }).build();
-    var expression = accumuloAccess.newExpression("a|b");
-  }
 }
