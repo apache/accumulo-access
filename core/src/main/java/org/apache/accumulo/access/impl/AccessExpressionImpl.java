@@ -48,6 +48,10 @@ public final class AccessExpressionImpl extends AccessExpression {
     return expression;
   }
 
+  public boolean isParsed() {
+    return parseTreeRef.get() != null;
+  }
+
   @Override
   public ParsedAccessExpression parse() {
     ParsedAccessExpression parseTree = parseTreeRef.get();

@@ -141,7 +141,11 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
 
   @Override
   public boolean canAccess(AccessExpression expression) {
-    return canAccess(expression.getExpression());
+    if (expression.isParsed()) {
+      return canAccess(expression.parse());
+    } else {
+      return canAccess(expression.getExpression());
+    }
   }
 
   @Override
@@ -163,8 +167,7 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
     return ParserEvaluator.parseAccessExpression(accessExpression, atp, authToken -> true);
   }
 
-  @Override
-  public boolean canAccess(ParsedAccessExpression pae) {
+  private boolean canAccess(ParsedAccessExpression pae) {
     switch (pae.getType()) {
       case AND:
         return canAccessParsedAnd(pae.getChildren());

@@ -174,4 +174,9 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
       return new ParsedAccessExpressionImpl(auth.data, auth.start, auth.len);
     }
   }
+
+  @Override
+  public boolean isParsed() {
+    return true;
+  }
 }
