@@ -24,25 +24,36 @@ import java.util.function.Consumer;
 
 import org.apache.accumulo.access.impl.BuilderImpl;
 
-// TODO javadoc
-// TODO remove all of the static entry points and use this instead
+/**
+ * The entry point into Accumulo Access to create access expressions, expression evaluators, and
+ * authorization sets.
+ *
+ * @see #builder()
+ * @since 1.0
+ */
 public interface AccumuloAccess {
 
   interface Builder {
     /**
-     * TODO document that users should make this as specific as possible in order to avoid creating
-     * unexpected expressions
+     * Provide a validator to accumulo access to narrow the set of valid authorizations for your
+     * specific use case. If one is not provided then
+     * {@link AuthorizationValidator#UNICODE_AND_NOT_ISO_CONTROL} will be used.
      *
-     * TODO document performance reasons for passing CharSequence (allows avoiding obj alloc)
-     *
+     * <p>
+     * The provided validator is called very frequently within accumulo access and implementations
+     * that are slow will slow down accumulo access.
      */
     Builder authorizationValidator(AuthorizationValidator validator);
 
     AccumuloAccess build();
   }
 
-  public static Builder builder() {
-    // TODO avoid object allocation when creating default
+  /**
+   * Used to create an instance of AccumuloAccess. For efficiency, the recommend way to use this is
+   * to create a single instance and somehow make it available to an entire project for use. In
+   * addition to being efficient this ensures the entire project is using the same configuration.
+   */
+  static Builder builder() {
     return new BuilderImpl();
   }
 
@@ -101,9 +112,10 @@ public interface AccumuloAccess {
    *
    * <p>
    * What this method does could also be accomplished by creating a parse tree using
-   * {@link AccessExpression#parse(String)} and then recursively walking the parse tree. The
-   * implementation of this method does not create a parse tree and is much faster. If a parse tree
-   * is already available, then it would likely be faster to use it rather than call this method.
+   * {@link AccumuloAccess#newParsedExpression(String)} and then recursively walking the parse tree.
+   * The implementation of this method does not create a parse tree and is much faster. If a parse
+   * tree is already available, then it would likely be faster to use it rather than call this
+   * method.
    * </p>
    *
    * @throws InvalidAccessExpressionException when the expression is not valid.

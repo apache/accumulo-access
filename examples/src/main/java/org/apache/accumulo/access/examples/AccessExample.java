@@ -53,8 +53,8 @@ public class AccessExample {
     out.printf("Showing accessible records using authorizations: %s%n",
         Arrays.toString(authorizations));
 
-    var accumuloAccess =
-        AccumuloAccess.builder().authorizationValidator(AuthorizationValidator.READABLE).build();
+    var accumuloAccess = AccumuloAccess.builder()
+        .authorizationValidator(AuthorizationValidator.UNICODE_AND_NOT_ISO_CONTROL).build();
 
     // Create an access evaluator using the provided authorizations
     AccessEvaluator evaluator =

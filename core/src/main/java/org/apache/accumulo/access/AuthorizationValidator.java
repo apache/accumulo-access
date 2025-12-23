@@ -20,29 +20,51 @@ package org.apache.accumulo.access;
 
 import java.util.function.Predicate;
 
-// TODO empty auth is not valid
-// TODO pass in if known to be ascii?
+// TODO pass in if known to be an unquoted string?  This means something is already known about the characters
+/**
+ * Implementations validate authorizations for Accumulo Access. Creating implementations that are
+ * stricter for a given domain can help avoid expressions that contain unexpected and unused
+ * authorizations.
+ *
+ * <p>
+ * A CharSequence is passed to this predicate for efficiency. It allows having a view into the
+ * larger expression at parse time without any memory allocations. It is not safe to keep a
+ * reference to the passed in char sequence as it is only stable while the predicate is called. If a
+ * reference needs to be kept for some side effect, then call {@code toString()} to allocate a copy.
+ * Avoiding calls to {@code toString()} will result in faster parsing.
+ * </p>
+ */
 public interface AuthorizationValidator extends Predicate<CharSequence> {
-  // TODO document
-  AuthorizationValidator UNICODE = auth -> {
-    for (int i = 0; i < auth.length(); i++) {
-      if (!Character.isDefined(auth.charAt(i))) {
-        return false;
-      }
-    }
-    return true;
-  };
 
-  // TODO document
-  AuthorizationValidator READABLE = auth -> {
+  /**
+   * This is the default validator for Accumulo Access. It does the following check of characters in
+   * an authorization.
+   *
+   * <pre>
+   *     {@code
+   *     AuthorizationValidator UNICODE_AND_NOT_ISO_CONTROL = auth -> {
+   *       for (int i = 0; i < auth.length(); i++) {
+   *         var c = auth.charAt(i);
+   *         if (!Character.isDefined(auth.charAt(i)) || Character.isISOControl(c)) {
+   *           return false;
+   *         }
+   *       }
+   *       return true;
+   *     }
+   *     }
+   * </pre>
+   *
+   * @see Character#isDefined(char)
+   * @see Character#isISOControl(char)
+   * @since 1.0.0
+   */
+  AuthorizationValidator UNICODE_AND_NOT_ISO_CONTROL = auth -> {
     for (int i = 0; i < auth.length(); i++) {
       var c = auth.charAt(i);
-      if (Character.isISOControl(c) || Character.isWhitespace(c) || !Character.isDefined(c)
-          || c == '\uFFFD') {
+      if (!Character.isDefined(auth.charAt(i)) || Character.isISOControl(c)) {
         return false;
       }
     }
     return true;
   };
-
 }

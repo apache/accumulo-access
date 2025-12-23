@@ -56,9 +56,9 @@ escaped                 = "\" DQUOTE / "\\"
 slash                   = "/"
 ```
 
-Authorizations must be Unicode characters. Not all Unicode characters are human readable
-(see [Unicode control characters][6]), implementations should provide a way to limit valid authorizations to human
-readable characters.
+Authorizations must be Unicode characters. Not all Unicode characters are human readable or even visible
+(see [Unicode control characters][6]), implementations should provide a way to limit valid authorizations to
+a subset of unicode characters (like human-readable characters).
 
 ### Examples of Proper Expressions
 

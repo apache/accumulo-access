@@ -31,6 +31,7 @@ import java.util.Set;
 import org.apache.accumulo.access.AccumuloAccess;
 import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAuthorizationException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class AuthorizationTest {
@@ -99,6 +100,88 @@ public class AuthorizationTest {
 
     var accumuloAccess = AccumuloAccess.builder().build();
     runTest("ac", "a9", "dc", badAuth, accumuloAccess);
+  }
+
+  @Test
+  public void testUnescaped() {
+    // This test ensures that auth passed to the authorization validator are unescaped, even if they
+    // are escaped in the expression
+    var accumuloAccess = AccumuloAccess.builder().authorizationValidator(auth -> {
+      for (int i = 0; i < auth.length(); i++) {
+        Assertions.assertNotEquals('\\', auth.charAt(i));
+      }
+      return true;
+    }).build();
+
+    var quoted = accumuloAccess.quote("ABC\"D");
+    assertEquals('"' + "ABC\\\"D" + '"', quoted);
+    assertEquals("ABC\"D", accumuloAccess.unquote(quoted));
+
+    var auths1 = accumuloAccess.newAuthorizations(Set.of("ABC\"D", "DEF"));
+    var auths2 = accumuloAccess.newAuthorizations(Set.of("ABC\"D", "XYZ"));
+    var evaluator = accumuloAccess.newEvaluator(auths1);
+
+    assertTrue(evaluator.canAccess(quoted + "|XYZ"));
+    assertTrue(evaluator.canAccess("(XYZ&RST)|" + quoted));
+
+    assertTrue(evaluator.canAccess(accumuloAccess.newExpression("(XYZ&RST)|" + quoted)));
+    assertTrue(evaluator.canAccess(accumuloAccess.newParsedExpression("(XYZ&RST)|" + quoted)));
+    assertTrue(evaluator.canAccess(accumuloAccess.newExpression("(XYZ&RST)|" + quoted).parse()));
+
+    var multiEvaluator = accumuloAccess.newEvaluator(List.of(auths1, auths2));
+    assertTrue(multiEvaluator.canAccess(quoted + "|XYZ"));
+    assertFalse(multiEvaluator.canAccess(quoted + "&DEF"));
+    assertTrue(evaluator.canAccess(quoted + "&DEF"));
+
+  }
+
+  @Test
+  public void testMultiCharCodepoint() {
+    // Some unicode characters span two UTF-16 chars, this test ensures its possible to handle
+    // those.
+
+    String doubleChar = "";
+    // find any valid code point that takes two chars
+    for (int i = 1 << 16; i < Integer.MAX_VALUE; i++) {
+      if (Character.isDefined(i)) {
+        var dc = Character.toChars(i);
+        if (dc.length == 2) {
+          System.out.printf("found %x\n", i);
+          doubleChar = new String(dc);
+          break;
+        }
+      }
+    }
+
+    assertEquals(2, doubleChar.length());
+
+    // create an auth that uses doubleChar
+    var auth1 = "a" + doubleChar;
+    var auth2 = "abc";
+
+    // Ensure the defaults fail for this auth
+    var accumuloAccess = AccumuloAccess.builder().build();
+
+    var exp1 = accumuloAccess.quote(auth1) + "&" + auth2;
+    var exp2 = accumuloAccess.quote(auth1) + "|" + auth2;
+
+    assertEquals('"' + auth1 + '"' + "&" + auth2, exp1);
+    assertEquals('"' + auth1 + '"' + "|" + auth2, exp2);
+
+    var auths1 = accumuloAccess.newAuthorizations(Set.of(auth1, auth2));
+    var evaluator1 = accumuloAccess.newEvaluator(auths1);
+    assertTrue(evaluator1.canAccess(exp1));
+    assertTrue(evaluator1.canAccess(exp2));
+
+    var auths2 = accumuloAccess.newAuthorizations(Set.of(auth1));
+    var evaluator2 = accumuloAccess.newEvaluator(auths2);
+    assertFalse(evaluator2.canAccess(exp1));
+    assertTrue(evaluator2.canAccess(exp2));
+
+    var auths3 = accumuloAccess.newAuthorizations(Set.of(auth2));
+    var evaluator3 = accumuloAccess.newEvaluator(auths3);
+    assertFalse(evaluator3.canAccess(exp1));
+    assertTrue(evaluator3.canAccess(exp2));
   }
 
   private static void runTest(String goodAuth1, String goodAuth2, String goodAuth3, String badAuth,
