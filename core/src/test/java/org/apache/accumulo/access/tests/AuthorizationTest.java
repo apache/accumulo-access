@@ -19,13 +19,18 @@
 package org.apache.accumulo.access.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import java.util.Set;
 
 import org.apache.accumulo.access.AccumuloAccess;
 import org.apache.accumulo.access.Authorizations;
+import org.apache.accumulo.access.InvalidAuthorizationException;
 import org.junit.jupiter.api.Test;
 
 public class AuthorizationTest {
@@ -54,5 +59,105 @@ public class AuthorizationTest {
     assertSame(accumuloAccess.newAuthorizations(), accumuloAccess.newAuthorizations(Set.of()));
     assertEquals(Set.of(), accumuloAccess.newAuthorizations().asSet());
     assertSame(Set.of(), accumuloAccess.newAuthorizations().asSet());
+  }
+
+  @Test
+  public void testAuthorizationValidation() {
+
+    // create an instance of accumulo access that expects all auths to start with a lower case
+    // letter followed by one or more lower case letters or digits.
+    var accumuloAccess = AccumuloAccess.builder().authorizationValidator(auth -> {
+      if (auth.length() < 2) {
+        return false;
+      }
+
+      char c = auth.charAt(0);
+      if (!Character.isLowerCase(c) || !Character.isLetter(c)) {
+        return false;
+      }
+
+      for (int i = 1; i < auth.length(); i++) {
+        c = auth.charAt(i);
+        boolean valid = Character.isDigit(c) || (Character.isLetter(c) && Character.isLowerCase(c));
+        if (!valid) {
+          return false;
+        }
+      }
+
+      return true;
+    }).build();
+
+    runTest("ac", "a9", "dc", "9a", accumuloAccess);
+  }
+
+  @Test
+  public void testNonUnicode() {
+    // test with a character that is not unicode
+    char c = '\u0378';
+    assertFalse(Character.isDefined(c));
+    var badAuth = new String(new char[] {'a', c});
+
+    var accumuloAccess = AccumuloAccess.builder().build();
+    runTest("ac", "a9", "dc", badAuth, accumuloAccess);
+  }
+
+  private static void runTest(String goodAuth1, String goodAuth2, String goodAuth3, String badAuth,
+      AccumuloAccess accumuloAccess) {
+    List<String> auths = List.of(goodAuth1, goodAuth2, badAuth, goodAuth3);
+
+    var auths1 = accumuloAccess.newAuthorizations(Set.of(goodAuth1, goodAuth2));
+    var auths2 = accumuloAccess.newAuthorizations(Set.of(goodAuth3, goodAuth2));
+
+    var evaluator = accumuloAccess.newEvaluator(auths1);
+    var multiEvaluator = accumuloAccess.newEvaluator(List.of(auths1, auths2));
+    var evaluator2 = accumuloAccess.newEvaluator(auth -> auth.equals(goodAuth3));
+
+    for (int i = 0; i < 4; i++) {
+      var a1 = auths.get(i);
+      var a2 = auths.get((i + 1) % 4);
+      var a3 = auths.get((i + 2) % 4);
+      var a4 = auths.get((i + 3) % 4);
+
+      // create the same expression with the invalid auth in different places
+      var exp = a1 + "|(" + a2 + "&" + a3 + ")|" + a4;
+      var exception =
+          assertThrows(InvalidAuthorizationException.class, () -> accumuloAccess.validate(exp));
+      assertTrue(exception.getMessage().contains(badAuth));
+
+      exception = assertThrows(InvalidAuthorizationException.class,
+          () -> accumuloAccess.newExpression(exp));
+      assertTrue(exception.getMessage().contains(badAuth));
+
+      exception = assertThrows(InvalidAuthorizationException.class,
+          () -> accumuloAccess.newParsedExpression(exp));
+      assertTrue(exception.getMessage().contains(badAuth));
+
+      exception = assertThrows(InvalidAuthorizationException.class, () -> evaluator.canAccess(exp));
+      assertTrue(exception.getMessage().contains(badAuth));
+
+      exception =
+          assertThrows(InvalidAuthorizationException.class, () -> multiEvaluator.canAccess(exp));
+      assertTrue(exception.getMessage().contains(badAuth));
+
+      exception =
+          assertThrows(InvalidAuthorizationException.class, () -> evaluator2.canAccess(exp));
+      assertTrue(exception.getMessage().contains(badAuth));
+
+      exception = assertThrows(InvalidAuthorizationException.class,
+          () -> accumuloAccess.findAuthorizations(exp, a -> {}));
+      assertTrue(exception.getMessage().contains(badAuth));
+
+      exception = assertThrows(InvalidAuthorizationException.class,
+          () -> accumuloAccess.newAuthorizations(Set.of(a1, a2, a3, a4)));
+      assertTrue(exception.getMessage().contains(badAuth));
+    }
+
+    var exception =
+        assertThrows(InvalidAuthorizationException.class, () -> accumuloAccess.quote(badAuth));
+    assertTrue(exception.getMessage().contains(badAuth));
+
+    exception = assertThrows(InvalidAuthorizationException.class,
+        () -> accumuloAccess.unquote('"' + badAuth + '"'));
+    assertTrue(exception.getMessage().contains(badAuth));
   }
 }
