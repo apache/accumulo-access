@@ -31,6 +31,7 @@ import java.util.stream.Stream;
 import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.Authorizations;
+import org.apache.accumulo.access.ParsedAccessExpression;
 import org.apache.accumulo.core.security.ColumnVisibility;
 import org.apache.accumulo.core.security.VisibilityEvaluator;
 import org.apache.accumulo.core.security.VisibilityParseException;
@@ -73,7 +74,13 @@ public class AccessExpressionBenchmark {
   public static class EvaluatorTests {
     AccessEvaluator evaluator;
 
-    List<byte[]> expressions;
+    List<byte[]> byteExpressions;
+
+    List<String> strExpressions;
+
+    List<AccessExpression> accessExpressions;
+
+    List<ParsedAccessExpression> parsedExpressions;
   }
 
   @State(Scope.Benchmark)
@@ -116,7 +123,10 @@ public class AccessExpressionBenchmark {
 
         // Create new
         EvaluatorTests et = new EvaluatorTests();
-        et.expressions = new ArrayList<>();
+        et.byteExpressions = new ArrayList<>();
+        et.strExpressions = new ArrayList<>();
+        et.accessExpressions = new ArrayList<>();
+        et.parsedExpressions = new ArrayList<>();
 
         if (testDataSet.auths.length == 1) {
           et.evaluator = AccessEvaluator.of(Authorizations.of(Set.of(testDataSet.auths[0])));
@@ -132,7 +142,11 @@ public class AccessExpressionBenchmark {
               allTestExpressionsStr.add(exp);
               byte[] byteExp = exp.getBytes(UTF_8);
               allTestExpressions.add(byteExp);
-              et.expressions.add(byteExp);
+              et.byteExpressions.add(byteExp);
+              et.strExpressions.add(exp);
+              AccessExpression ae = AccessExpression.of(byteExp);
+              et.accessExpressions.add(ae);
+              et.parsedExpressions.add(ae.parse());
               vet.expressions.add(byteExp);
               vet.columnVisibilities.add(new ColumnVisibility(byteExp));
             }
@@ -183,13 +197,52 @@ public class AccessExpressionBenchmark {
   }
 
   /**
-   * Measures the time it takes to parse and evaluate an expression. This has to create the parse
-   * tree an operate on it.
+   * Measures the time it takes to parse and evaluate an expression byte[]. This has to create the
+   * parse tree an operate on it.
    */
   @Benchmark
-  public void measureParseAndEvaluation(BenchmarkState state, Blackhole blackhole) {
+  public void measureBytesParseAndEvaluation(BenchmarkState state, Blackhole blackhole) {
     for (EvaluatorTests evaluatorTests : state.getEvaluatorTests()) {
-      for (byte[] expression : evaluatorTests.expressions) {
+      for (byte[] expression : evaluatorTests.byteExpressions) {
+        blackhole.consume(evaluatorTests.evaluator.canAccess(expression));
+      }
+    }
+  }
+
+  /**
+   * Measures the time it takes to parse and evaluate an expression String. This has to create the
+   * parse tree an operate on it.
+   */
+  @Benchmark
+  public void measureStringParseAndEvaluation(BenchmarkState state, Blackhole blackhole) {
+    for (EvaluatorTests evaluatorTests : state.getEvaluatorTests()) {
+      for (String expression : evaluatorTests.strExpressions) {
+        blackhole.consume(evaluatorTests.evaluator.canAccess(expression));
+      }
+    }
+  }
+
+  /**
+   * Measures the time it takes to parse and evaluate an AccessExpression. This has to create the
+   * parse tree an operate on it.
+   */
+  @Benchmark
+  public void measureExpressionEvaluation(BenchmarkState state, Blackhole blackhole) {
+    for (EvaluatorTests evaluatorTests : state.getEvaluatorTests()) {
+      for (ParsedAccessExpression expression : evaluatorTests.parsedExpressions) {
+        blackhole.consume(evaluatorTests.evaluator.canAccess(expression));
+      }
+    }
+  }
+
+  /**
+   * Measures the time it takes to evaluate a ParsedAccessExpression. This evaluates the existing
+   * parse tree.
+   */
+  @Benchmark
+  public void measureParsedEvaluation(BenchmarkState state, Blackhole blackhole) {
+    for (EvaluatorTests evaluatorTests : state.getEvaluatorTests()) {
+      for (ParsedAccessExpression expression : evaluatorTests.parsedExpressions) {
         blackhole.consume(evaluatorTests.evaluator.canAccess(expression));
       }
     }
