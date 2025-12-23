@@ -18,6 +18,8 @@
  */
 package org.apache.accumulo.access.impl;
 
+import static org.apache.accumulo.access.AuthorizationValidator.AuthorizationQuoting.QUOTED;
+
 import java.util.Collection;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -35,8 +37,9 @@ public class AccumuloAccessImpl implements AccumuloAccess {
 
   private final AuthorizationValidator authValidator;
 
-  private void validateAuthorization(CharSequence auth) {
-    if (!authValidator.test(auth)) {
+  private void validateAuthorization(CharSequence auth,
+      AuthorizationValidator.AuthorizationQuoting quoting) {
+    if (!authValidator.test(auth, quoting)) {
       throw new InvalidAuthorizationException(auth.toString());
     }
   }
@@ -69,7 +72,8 @@ public class AccumuloAccessImpl implements AccumuloAccess {
     if (authorizations.isEmpty()) {
       return AuthorizationsImpl.EMPTY;
     } else {
-      authorizations.forEach(this::validateAuthorization);
+      // not sure if the auth needs quoting or not, so assume it does
+      authorizations.forEach(auth -> validateAuthorization(auth, QUOTED));
       return new AuthorizationsImpl(authorizations);
     }
   }
@@ -82,14 +86,14 @@ public class AccumuloAccessImpl implements AccumuloAccess {
 
   @Override
   public String quote(String authorization) {
-    validateAuthorization(authorization);
+    validateAuthorization(authorization, QUOTED);
     return AccessExpressionImpl.quote(authorization).toString();
   }
 
   @Override
   public String unquote(String authorization) {
     var unquoted = AccessExpressionImpl.unquote(authorization);
-    validateAuthorization(unquoted);
+    validateAuthorization(unquoted, QUOTED);
     return unquoted;
   }
 

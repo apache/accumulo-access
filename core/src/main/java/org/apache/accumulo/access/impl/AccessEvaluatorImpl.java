@@ -164,7 +164,7 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
     var charsWrapper = ParserEvaluator.lookupWrappers.get();
     Predicate<Tokenizer.AuthorizationToken> atp = authToken -> {
       var authorization = ParserEvaluator.unescape(authToken, charsWrapper);
-      if (!authorizationValidator.test(authorization)) {
+      if (!authorizationValidator.test(authorization, authToken.quoting)) {
         throw new InvalidAuthorizationException(authorization.toString());
       }
       return authorizedPredicate.test(authorization);
@@ -174,7 +174,7 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
     // to validate authorizations, do not need to look them up in a set.
     Predicate<Tokenizer.AuthorizationToken> shortCircuit = authToken -> {
       var authorization = ParserEvaluator.unescape(authToken, charsWrapper);
-      if (!authorizationValidator.test(authorization)) {
+      if (!authorizationValidator.test(authorization, authToken.quoting)) {
         throw new InvalidAuthorizationException(authorization.toString());
       }
       return true;

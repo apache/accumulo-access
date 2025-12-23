@@ -47,7 +47,7 @@ public final class AccessExpressionImpl extends AccessExpression {
       // This expression authorizations were already validated, so can pass a lambda that always
       // returns true
       parseTreeRef.compareAndSet(null,
-          ParsedAccessExpressionImpl.parseExpression(expression, auth -> true));
+          ParsedAccessExpressionImpl.parseExpression(expression, (auth, quoting) -> true));
       // must get() again in case another thread won w/ the compare and set, this ensures this
       // method always returns the exact same object
       parseTree = parseTreeRef.get();

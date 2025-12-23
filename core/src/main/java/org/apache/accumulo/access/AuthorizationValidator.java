@@ -18,13 +18,18 @@
  */
 package org.apache.accumulo.access;
 
-import java.util.function.Predicate;
+import java.util.function.BiPredicate;
 
-// TODO pass in if known to be an unquoted string?  This means something is already known about the characters
 /**
  * Implementations validate authorizations for Accumulo Access. Creating implementations that are
  * stricter for a given domain can help avoid expressions that contain unexpected and unused
  * authorizations.
+ *
+ * <p>
+ * When an authorization is quoted and/or escaped in access expression that is undone before is
+ * passed to this predicate. Conceptually it is like {@link AccumuloAccess#unquote(String)} is
+ * called prior to being passed to this predicate. If the authorization was quoted that information
+ * is passed along is it may be useful for optimizations.
  *
  * <p>
  * A CharSequence is passed to this predicate for efficiency. It allows having a view into the
@@ -34,7 +39,21 @@ import java.util.function.Predicate;
  * Avoiding calls to {@code toString()} will result in faster parsing.
  * </p>
  */
-public interface AuthorizationValidator extends Predicate<CharSequence> {
+public interface AuthorizationValidator
+    extends BiPredicate<CharSequence,AuthorizationValidator.AuthorizationQuoting> {
+
+  enum AuthorizationQuoting {
+    /**
+     * Denotes that an authorization seen in a valid access expression was quoted. This may mean the
+     * expression has extra characters not seen in an unquoted authorization.
+     */
+    QUOTED,
+    /**
+     * Denotes that an authorization seen in a valid access expression was unquoted. This means the
+     * expression only contains the characters allowed in an unquoted authorization.
+     */
+    UNQUOTED
+  }
 
   /**
    * This is the default validator for Accumulo Access. It does the following check of characters in
@@ -42,7 +61,10 @@ public interface AuthorizationValidator extends Predicate<CharSequence> {
    *
    * <pre>
    *     {@code
-   *     AuthorizationValidator DEFAULT = auth -> {
+   *     AuthorizationValidator DEFAULT = (auth, quoting) -> {
+   *       if(quoting == AuthorizationQuoting.UNQUOTED) {
+   *         return true;
+   *       }
    *       for (int i = 0; i < auth.length(); i++) {
    *         var c = auth.charAt(i);
    *         if (!Character.isDefined(auth.charAt(i)) || Character.isISOControl(c) || c == '\uFFFD') {
@@ -64,7 +86,13 @@ public interface AuthorizationValidator extends Predicate<CharSequence> {
    * @see Character#isISOControl(char)
    * @since 1.0.0
    */
-  AuthorizationValidator DEFAULT = auth -> {
+  AuthorizationValidator DEFAULT = (auth, quoting) -> {
+    if (quoting == AuthorizationQuoting.UNQUOTED) {
+      // If a string in a valid access expression is unquoted and then its already known to only
+      // contain a small set of ASCII chars and no further validation is needed.
+      return true;
+    }
+
     for (int i = 0; i < auth.length(); i++) {
       var c = auth.charAt(i);
       if (!Character.isDefined(auth.charAt(i)) || Character.isISOControl(c) || c == '\uFFFD') {

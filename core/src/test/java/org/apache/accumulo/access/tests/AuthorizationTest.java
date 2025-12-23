@@ -69,7 +69,7 @@ public class AuthorizationTest {
 
     // create an instance of accumulo access that expects all auths to start with a lower case
     // letter followed by one or more lower case letters or digits.
-    var accumuloAccess = AccumuloAccess.builder().authorizationValidator(auth -> {
+    var accumuloAccess = AccumuloAccess.builder().authorizationValidator((auth, quoting) -> {
       if (auth.length() < 2) {
         return false;
       }
@@ -142,7 +142,7 @@ public class AuthorizationTest {
   public void testUnescaped() {
     // This test ensures that auth passed to the authorization validator are unescaped, even if they
     // are escaped in the expression
-    var accumuloAccess = AccumuloAccess.builder().authorizationValidator(auth -> {
+    var accumuloAccess = AccumuloAccess.builder().authorizationValidator((auth, quoting) -> {
       for (int i = 0; i < auth.length(); i++) {
         assertNotEquals('\\', auth.charAt(i));
       }
@@ -276,6 +276,12 @@ public class AuthorizationTest {
         var exp2 = a1 + "|(" + a2 + "&" + a3 + ")|" + a4;
         var exception2 =
             assertThrows(InvalidAccessExpressionException.class, () -> evaluator.canAccess(exp2));
+        assertTrue(exception2.getMessage().contains(badAuth));
+      } else {
+        // The bad auth does not need quoting, but should still see an invalid auth exception
+        var exp2 = a1 + "|(" + a2 + "&" + a3 + ")|" + a4;
+        var exception2 =
+            assertThrows(InvalidAuthorizationException.class, () -> evaluator.canAccess(exp2));
         assertTrue(exception2.getMessage().contains(badAuth));
       }
     }

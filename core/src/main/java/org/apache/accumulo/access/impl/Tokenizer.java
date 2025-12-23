@@ -24,6 +24,7 @@ import static org.apache.accumulo.access.impl.ByteUtils.isQuoteSymbol;
 
 import java.util.stream.IntStream;
 
+import org.apache.accumulo.access.AuthorizationValidator;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 
 /**
@@ -60,6 +61,8 @@ public final class Tokenizer {
     public int start;
     public int len;
     public boolean hasEscapes;
+    public AuthorizationValidator.AuthorizationQuoting quoting;
+
   }
 
   Tokenizer(CharSequence expression) {
@@ -140,6 +143,7 @@ public final class Tokenizer {
       authorizationToken.start = start;
       authorizationToken.len = index - start;
       authorizationToken.hasEscapes = hasEscapes;
+      authorizationToken.quoting = AuthorizationValidator.AuthorizationQuoting.QUOTED;
 
       if (includeQuotes) {
         authorizationToken.start--;
@@ -158,6 +162,7 @@ public final class Tokenizer {
       authorizationToken.start = start;
       authorizationToken.len = index - start;
       authorizationToken.hasEscapes = false;
+      authorizationToken.quoting = AuthorizationValidator.AuthorizationQuoting.UNQUOTED;
       return authorizationToken;
     } else {
       error("Expected a '(' character or an authorization token instead saw '" + peek() + "'");

@@ -49,7 +49,7 @@ public final class ParserEvaluator {
     var charsWrapper = ParserEvaluator.lookupWrappers.get();
     Predicate<Tokenizer.AuthorizationToken> vp = authToken -> {
       var authorizations = unescape(authToken, charsWrapper);
-      if (!authValidator.test(authorizations)) {
+      if (!authValidator.test(authorizations, authToken.quoting)) {
         throw new InvalidAuthorizationException(authorizations.toString());
       }
       return true;
@@ -64,7 +64,7 @@ public final class ParserEvaluator {
     var charsWrapper = ParserEvaluator.lookupWrappers.get();
     Predicate<Tokenizer.AuthorizationToken> atp = authToken -> {
       var authorizations = unescape(authToken, charsWrapper);
-      if (!authValidator.test(authorizations)) {
+      if (!authValidator.test(authorizations, authToken.quoting)) {
         throw new InvalidAuthorizationException(authorizations.toString());
       }
       authorizationConsumer.accept(authorizations.toString());
