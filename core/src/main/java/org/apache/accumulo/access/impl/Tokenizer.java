@@ -47,7 +47,7 @@ public final class Tokenizer {
   }
 
   public static boolean isValidAuthChar(char b) {
-    return validAuthChars[0xff & b];
+    return validAuthChars[0xff & b] && b < 256;
   }
 
   private CharSequence expression;
@@ -160,8 +160,7 @@ public final class Tokenizer {
       authorizationToken.hasEscapes = false;
       return authorizationToken;
     } else {
-      error(
-          "Expected a '(' character or an authorization token instead saw '" + (char) peek() + "'");
+      error("Expected a '(' character or an authorization token instead saw '" + peek() + "'");
       return null;
     }
   }

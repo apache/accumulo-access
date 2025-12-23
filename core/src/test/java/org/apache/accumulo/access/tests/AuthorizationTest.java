@@ -30,7 +30,9 @@ import java.util.Set;
 
 import org.apache.accumulo.access.AccumuloAccess;
 import org.apache.accumulo.access.Authorizations;
+import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.InvalidAuthorizationException;
+import org.apache.accumulo.access.impl.Tokenizer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -96,10 +98,34 @@ public class AuthorizationTest {
     // test with a character that is not unicode
     char c = '\u0378';
     assertFalse(Character.isDefined(c));
+    assertFalse(Character.isISOControl(c));
     var badAuth = new String(new char[] {'a', c});
 
     var accumuloAccess = AccumuloAccess.builder().build();
     runTest("ac", "a9", "dc", badAuth, accumuloAccess);
+  }
+
+  @Test
+  public void testControlCharacters() {
+    char c = '\u000c';
+    assertTrue(Character.isDefined(c));
+    assertTrue(Character.isISOControl(c));
+
+    var accumuloAccess = AccumuloAccess.builder().build();
+    var badAuth = new String(new char[] {'a', c});
+    runTest("ac", "a9", "dc", badAuth, accumuloAccess);
+  }
+
+  @Test
+  public void testAuthorizationCharacters() {
+    for (char c = 0; c < Character.MAX_VALUE; c++) {
+      boolean valid = (c >= 'a' && c <= 'z') | (c >= 'A' && c <= 'Z') | (c >= '0' && c <= '9')
+          | c == '_' | c == '-' | c == ':' | c == '.' | c == '/';
+      // This code had a bug where it was only considering the lower 8 bits of the 16 bits in the
+      // char and that caused an obscure and easy to miss problem. So this test was written to cover
+      // all 64k chars.
+      assertEquals(valid, Tokenizer.isValidAuthChar(c));
+    }
   }
 
   @Test
@@ -137,7 +163,7 @@ public class AuthorizationTest {
 
   @Test
   public void testMultiCharCodepoint() {
-    // Some unicode characters span two UTF-16 chars, this test ensures its possible to handle
+    // Some unicode code points span two UTF-16 chars, this test ensures its possible to handle
     // those.
 
     String doubleChar = "";
@@ -146,7 +172,6 @@ public class AuthorizationTest {
       if (Character.isDefined(i)) {
         var dc = Character.toChars(i);
         if (dc.length == 2) {
-          System.out.printf("found %x\n", i);
           doubleChar = new String(dc);
           break;
         }
@@ -159,7 +184,6 @@ public class AuthorizationTest {
     var auth1 = "a" + doubleChar;
     var auth2 = "abc";
 
-    // Ensure the defaults fail for this auth
     var accumuloAccess = AccumuloAccess.builder().build();
 
     var exp1 = accumuloAccess.quote(auth1) + "&" + auth2;
@@ -202,7 +226,8 @@ public class AuthorizationTest {
       var a4 = auths.get((i + 3) % 4);
 
       // create the same expression with the invalid auth in different places
-      var exp = a1 + "|(" + a2 + "&" + a3 + ")|" + a4;
+      var exp =
+          '"' + a1 + '"' + "|(" + '"' + a2 + '"' + "&" + '"' + a3 + '"' + ")|" + '"' + a4 + '"';
       var exception =
           assertThrows(InvalidAuthorizationException.class, () -> accumuloAccess.validate(exp));
       assertTrue(exception.getMessage().contains(badAuth));
@@ -233,6 +258,16 @@ public class AuthorizationTest {
       exception = assertThrows(InvalidAuthorizationException.class,
           () -> accumuloAccess.newAuthorizations(Set.of(a1, a2, a3, a4)));
       assertTrue(exception.getMessage().contains(badAuth));
+
+      if (badAuth.chars().anyMatch(c -> !Tokenizer.isValidAuthChar((char) c))) {
+        // If the expression is created w/o quoting then the bad auth should just be seen as an
+        // invalid character in the expression and it should not even consult the authorization
+        // validation code. This should result in a different exception.
+        var exp2 = a1 + "|(" + a2 + "&" + a3 + ")|" + a4;
+        var exception2 =
+            assertThrows(InvalidAccessExpressionException.class, () -> evaluator.canAccess(exp2));
+        assertTrue(exception2.getMessage().contains(badAuth));
+      }
     }
 
     var exception =
