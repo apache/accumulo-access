@@ -18,20 +18,11 @@
  */
 package org.apache.accumulo.access;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
-import org.apache.accumulo.access.impl.AccessEvaluatorImpl;
 import org.apache.accumulo.access.impl.AccessExpressionImpl;
-import org.apache.accumulo.access.impl.BytesWrapper;
-import org.apache.accumulo.access.impl.ParsedAccessExpressionImpl;
-import org.apache.accumulo.access.impl.ParserEvaluator;
-import org.apache.accumulo.access.impl.Tokenizer;
 
+// TODO update or remove example code... maybe remove it because the project has example code that is tested
 /**
  * This class offers the ability to operate on access expressions.
  *
@@ -115,10 +106,10 @@ public sealed abstract class AccessExpression implements Serializable
 
   /**
    * Parses the access expression if it was never parsed before. If this access expression was
-   * created using {@link #parse(String)} or {@link #parse(byte[])} then it will have a parse from
+   * created using {@link AccumuloAccess#newParsedExpression(String)} then it will have a parse from
    * inception and this method will return itself. If the access expression was created using
-   * {@link #of(String)} or {@link #of(byte[])} then this method will create a parse tree the first
-   * time its called and remember it, returning the remembered parse tree on subsequent calls.
+   * {@link AccumuloAccess#newExpression(String)} then this method will create a parse tree the
+   * first time its called and remember it, returning the remembered parse tree on subsequent calls.
    */
   public abstract ParsedAccessExpression parse();
 
@@ -139,181 +130,5 @@ public sealed abstract class AccessExpression implements Serializable
   @Override
   public String toString() {
     return getExpression();
-  }
-
-  /**
-   * Validates an access expression and returns an immutable AccessExpression object. If passing
-   * access expressions as arguments in code, consider using this type instead of a String. The
-   * advantage of passing this type over a String is that its known to be a valid expression. Also
-   * this type is much more informative than a String type. Conceptually this method calls
-   * {@link #validate(String)} and if that passes creates an immutable object that wraps the
-   * expression.
-   *
-   * @throws InvalidAccessExpressionException if the given expression is not valid
-   * @throws NullPointerException when the argument is null
-   */
-  public static AccessExpression of(String expression) throws InvalidAccessExpressionException {
-    return new AccessExpressionImpl(expression);
-  }
-
-  /**
-   * @see #of(String)
-   */
-  public static AccessExpression of(byte[] expression) throws InvalidAccessExpressionException {
-    return new AccessExpressionImpl(expression);
-  }
-
-  /**
-   * @return an empty AccessExpression that is immutable.
-   */
-  public static AccessExpression of() {
-    return AccessExpressionImpl.EMPTY;
-  }
-
-  /**
-   * @see #parse(String)
-   */
-  public static ParsedAccessExpression parse(byte[] expression)
-      throws InvalidAccessExpressionException {
-    if (expression.length == 0) {
-      return ParsedAccessExpressionImpl.EMPTY;
-    }
-
-    return ParsedAccessExpressionImpl.parseExpression(Arrays.copyOf(expression, expression.length));
-  }
-
-  /**
-   * Validates an access expression and returns an immutable object with a parse tree. Creating the
-   * parse tree is expensive relative to calling {@link #of(String)} or {@link #validate(String)},
-   * so only use this method when the parse tree is always needed. If the code may only use the
-   * parse tree sometimes, then it may be best to call {@link #of(String)} to create the access
-   * expression and then call {@link AccessExpression#parse()} when needed.
-   *
-   * @throws NullPointerException when the argument is null
-   * @throws InvalidAccessExpressionException if the given expression is not valid
-   */
-  public static ParsedAccessExpression parse(String expression)
-      throws InvalidAccessExpressionException {
-    if (expression.isEmpty()) {
-      return ParsedAccessExpressionImpl.EMPTY;
-    }
-    // Calling expression.getBytes(UTF8) will create a byte array that only this code has access to,
-    // so not need to copy that byte array. That is why parse(byte[]) is not called here because
-    // that would copy the array again.
-    return ParsedAccessExpressionImpl.parseExpression(expression.getBytes(UTF_8));
-  }
-
-  /**
-   * Quickly validates that an access expression is properly formed.
-   *
-   * @param expression a potential access expression that is expected to be encoded using UTF-8
-   * @throws InvalidAccessExpressionException if the given expression is not valid
-   * @throws NullPointerException when the argument is null
-   */
-  public static void validate(byte[] expression) throws InvalidAccessExpressionException {
-    if (expression.length > 0) {
-      Predicate<Tokenizer.AuthorizationToken> atp = authToken -> true;
-      ParserEvaluator.parseAccessExpression(expression, atp, atp);
-    } // else empty expression is valid, avoid object allocation
-  }
-
-  /**
-   * @see #validate(byte[])
-   */
-  public static void validate(String expression) throws InvalidAccessExpressionException {
-    if (!expression.isEmpty()) {
-      validate(expression.getBytes(UTF_8));
-    } // else empty expression is valid, avoid object allocation
-  }
-
-  /**
-   * Validates and access expression and finds all authorizations in it passing them to the
-   * authorizationConsumer. For example, for the expression {@code (A&B)|(A&C)|(A&D)}, this method
-   * would pass {@code A,B,A,C,A,D} to the consumer one at a time. The function will conceptually
-   * call {@link #unquote(String)} prior to passing an authorization to authorizationConsumer.
-   *
-   * <p>
-   * What this method does could also be accomplished by creating a parse tree using
-   * {@link AccessExpression#parse(String)} and then recursively walking the parse tree. The
-   * implementation of this method does not create a parse tree and is much faster. If a parse tree
-   * is already available, then it would likely be faster to use it rather than call this method.
-   * </p>
-   *
-   * @throws InvalidAccessExpressionException when the expression is not valid.
-   * @throws NullPointerException when any argument is null
-   */
-  public static void findAuthorizations(String expression, Consumer<String> authorizationConsumer)
-      throws InvalidAccessExpressionException {
-    findAuthorizations(expression.getBytes(UTF_8), authorizationConsumer);
-  }
-
-  /**
-   * @see #findAuthorizations(String, Consumer)
-   */
-  public static void findAuthorizations(byte[] expression, Consumer<String> authorizationConsumer)
-      throws InvalidAccessExpressionException {
-    ParserEvaluator.findAuthorizations(expression, authorizationConsumer);
-  }
-
-  /**
-   * Authorizations occurring in an access expression can only contain the characters listed in the
-   * <a href=
-   * "https://github.com/apache/accumulo-access/blob/main/SPECIFICATION.md">specification</a> unless
-   * quoted (surrounded by quotation marks). Use this method to quote authorizations that occur in
-   * an access expression. This method will only quote if it is needed.
-   *
-   * @throws NullPointerException when the argument is null
-   */
-  public static byte[] quote(byte[] term) {
-    if (term.length == 0) {
-      throw new IllegalArgumentException("Empty strings are not legal authorizations.");
-    }
-
-    boolean needsQuote = false;
-
-    for (byte b : term) {
-      if (!Tokenizer.isValidAuthChar(b)) {
-        needsQuote = true;
-        break;
-      }
-    }
-
-    if (!needsQuote) {
-      return term;
-    }
-
-    return AccessEvaluatorImpl.escape(term, true);
-  }
-
-  /**
-   * Authorizations occurring in an access expression can only contain the characters listed in the
-   * <a href=
-   * "https://github.com/apache/accumulo-access/blob/main/SPECIFICATION.md">specification</a> unless
-   * quoted (surrounded by quotation marks). Use this method to quote authorizations that occur in
-   * an access expression. This method will only quote if it is needed.
-   *
-   * @throws NullPointerException when the argument is null
-   */
-  public static String quote(String term) {
-    return new String(quote(term.getBytes(UTF_8)), UTF_8);
-  }
-
-  /**
-   * Reverses what {@link #quote(String)} does, so will unquote and unescape an authorization if
-   * needed. If the authorization is not quoted then it is returned as-is.
-   *
-   * @throws NullPointerException when the argument is null
-   */
-  public static String unquote(String term) {
-    if (term.equals("\"\"") || term.isEmpty()) {
-      throw new IllegalArgumentException("Empty strings are not legal authorizations.");
-    }
-
-    if (term.charAt(0) == '"' && term.charAt(term.length() - 1) == '"') {
-      term = term.substring(1, term.length() - 1);
-      return AccessEvaluatorImpl.unescape(new BytesWrapper(term.getBytes(UTF_8)));
-    } else {
-      return term;
-    }
   }
 }

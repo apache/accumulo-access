@@ -21,11 +21,10 @@ package org.apache.accumulo.access;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * An exception that is thrown when an access expression is not correct.
+ * An exception that is thrown when an access expression is not valid.
  *
  * @since 1.0.0
  */
-// TODO rename to illegal...
 public final class InvalidAccessExpressionException extends IllegalArgumentException {
 
   private static final long serialVersionUID = 1L;

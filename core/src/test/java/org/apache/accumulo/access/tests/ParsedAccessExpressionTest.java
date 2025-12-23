@@ -18,7 +18,6 @@
  */
 package org.apache.accumulo.access.tests;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.AND;
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.AUTHORIZATION;
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.EMPTY;
@@ -30,17 +29,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 
-import org.apache.accumulo.access.AccessExpression;
+import org.apache.accumulo.access.AccumuloAccess;
 import org.apache.accumulo.access.ParsedAccessExpression;
 import org.junit.jupiter.api.Test;
 
 public class ParsedAccessExpressionTest {
   @Test
   public void testParsing() {
+    var accumuloAccess = AccumuloAccess.builder().build();
     String expression = "(BLUE&(RED|PINK|YELLOW))|((YELLOW|\"GREEN/GREY\")&(RED|BLUE))|BLACK";
-    for (var parsed : List.of(AccessExpression.parse(expression),
-        AccessExpression.parse(expression.getBytes(UTF_8)), AccessExpression.of(expression).parse(),
-        AccessExpression.of(expression.getBytes(UTF_8)).parse())) {
+    for (var parsed : List.of(accumuloAccess.newParsedExpression(expression),
+        accumuloAccess.newExpression(expression).parse())) {
       // verify root node
       verify("(BLUE&(RED|PINK|YELLOW))|((YELLOW|\"GREEN/GREY\")&(RED|BLUE))|BLACK", OR, 3, parsed);
 
@@ -68,16 +67,15 @@ public class ParsedAccessExpressionTest {
 
   @Test
   public void testEmpty() {
-    var parsed = AccessExpression.parse("");
-    verify("", EMPTY, 0, parsed);
-    parsed = AccessExpression.parse(new byte[0]);
+    var accumuloAccess = AccumuloAccess.builder().build();
+    var parsed = accumuloAccess.newParsedExpression("");
     verify("", EMPTY, 0, parsed);
   }
 
   @Test
   public void testParseTwice() {
-    for (var expression : List.of(AccessExpression.of("A&B"),
-        AccessExpression.of("A&B".getBytes(UTF_8)))) {
+    var accumuloAccess = AccumuloAccess.builder().build();
+    for (var expression : List.of(accumuloAccess.newExpression("A&B"))) {
       var parsed = expression.parse();
       assertNotSame(expression, parsed);
       assertEquals(expression.getExpression(), parsed.getExpression());
