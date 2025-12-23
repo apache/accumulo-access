@@ -183,6 +183,11 @@ public sealed abstract class AccessExpression implements Serializable
   }
 
   /**
+   * @return true if {@link AccessExpression#parse} has been called on this object false if not.
+   */
+  public abstract boolean isParsed();
+
+  /**
    * Validates an access expression and returns an immutable object with a parse tree. Creating the
    * parse tree is expensive relative to calling {@link #of(String)} or {@link #validate(String)},
    * so only use this method when the parse tree is always needed. If the code may only use the

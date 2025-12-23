@@ -61,6 +61,11 @@ public final class MultiAccessEvaluatorImpl implements AccessEvaluator {
 
   @Override
   public boolean canAccess(AccessExpression accessExpression) {
-    return canAccess(accessExpression.getExpression());
+    for (AccessEvaluator evaluator : evaluators) {
+      if (!evaluator.canAccess(accessExpression)) {
+        return false;
+      }
+    }
+    return true;
   }
 }
