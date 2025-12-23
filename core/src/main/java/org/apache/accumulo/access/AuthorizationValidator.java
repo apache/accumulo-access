@@ -88,7 +88,7 @@ public interface AuthorizationValidator
    */
   AuthorizationValidator DEFAULT = (auth, quoting) -> {
     if (quoting == AuthorizationQuoting.UNQUOTED) {
-      // If a string in a valid access expression is unquoted and then its already known to only
+      // If an authorization in a valid access expression is unquoted then its already known to only
       // contain a small set of ASCII chars and no further validation is needed.
       return true;
     }
