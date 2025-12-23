@@ -229,7 +229,7 @@ public class AccessExpressionBenchmark {
   @Benchmark
   public void measureExpressionEvaluation(BenchmarkState state, Blackhole blackhole) {
     for (EvaluatorTests evaluatorTests : state.getEvaluatorTests()) {
-      for (ParsedAccessExpression expression : evaluatorTests.parsedExpressions) {
+      for (AccessExpression expression : evaluatorTests.accessExpressions) {
         blackhole.consume(evaluatorTests.evaluator.canAccess(expression));
       }
     }
