@@ -42,10 +42,10 @@ public interface AuthorizationValidator extends Predicate<CharSequence> {
    *
    * <pre>
    *     {@code
-   *     AuthorizationValidator UNICODE_AND_NOT_ISO_CONTROL = auth -> {
+   *     AuthorizationValidator DEFAULT = auth -> {
    *       for (int i = 0; i < auth.length(); i++) {
    *         var c = auth.charAt(i);
-   *         if (!Character.isDefined(auth.charAt(i)) || Character.isISOControl(c)) {
+   *         if (!Character.isDefined(auth.charAt(i)) || Character.isISOControl(c) || c == '\uFFFD') {
    *           return false;
    *         }
    *       }
@@ -54,14 +54,20 @@ public interface AuthorizationValidator extends Predicate<CharSequence> {
    *     }
    * </pre>
    *
+   * <p>
+   * The character U+FFFD is the Unicode replacement character and standard java libraries will
+   * insert this into strings when it has problem decoding UTF-8. Therefore, seeing this character
+   * likely means a java string was derived from corrupt or invalid UTF-8 data. This is why its
+   * considered invalid in an authorization by default.
+   *
    * @see Character#isDefined(char)
    * @see Character#isISOControl(char)
    * @since 1.0.0
    */
-  AuthorizationValidator UNICODE_AND_NOT_ISO_CONTROL = auth -> {
+  AuthorizationValidator DEFAULT = auth -> {
     for (int i = 0; i < auth.length(); i++) {
       var c = auth.charAt(i);
-      if (!Character.isDefined(auth.charAt(i)) || Character.isISOControl(c)) {
+      if (!Character.isDefined(auth.charAt(i)) || Character.isISOControl(c) || c == '\uFFFD') {
         return false;
       }
     }

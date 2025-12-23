@@ -35,7 +35,6 @@ public class BuilderImpl implements AccumuloAccess.Builder {
 
   @Override
   public AccumuloAccess build() {
-    return new AccumuloAccessImpl(
-        validator == null ? AuthorizationValidator.UNICODE_AND_NOT_ISO_CONTROL : validator);
+    return new AccumuloAccessImpl(validator == null ? AuthorizationValidator.DEFAULT : validator);
   }
 }

@@ -36,8 +36,8 @@ public interface AccumuloAccess {
   interface Builder {
     /**
      * Provide a validator to accumulo access to narrow the set of valid authorizations for your
-     * specific use case. If one is not provided then
-     * {@link AuthorizationValidator#UNICODE_AND_NOT_ISO_CONTROL} will be used.
+     * specific use case. If one is not provided then {@link AuthorizationValidator#DEFAULT} will be
+     * used.
      *
      * <p>
      * The provided validator is called very frequently within accumulo access and implementations
