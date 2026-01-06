@@ -18,19 +18,21 @@
  */
 package org.apache.accumulo.access.impl;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 public final class CharsWrapper implements CharSequence {
-  private CharSequence wrapped;
+  private char[] wrapped;
   private int offset;
   private int len;
 
-  CharsWrapper(CharSequence wrapped) {
+  CharsWrapper(char[] wrapped) {
     this.wrapped = wrapped;
     this.offset = 0;
-    this.len = wrapped.length();
+    this.len = this.wrapped.length;
   }
 
-  CharsWrapper(CharSequence wrapped, int offset, int len) {
-    // TODO bounds check
+  private CharsWrapper(char[] wrapped, int offset, int len) {
     this.wrapped = wrapped;
     this.offset = offset;
     this.len = len;
@@ -43,12 +45,13 @@ public final class CharsWrapper implements CharSequence {
 
   @Override
   public char charAt(int index) {
-    return wrapped.charAt(offset + index);
+    Objects.checkIndex(index, len);
+    return wrapped[offset + index];
   }
 
   @Override
   public CharSequence subSequence(int start, int end) {
-    // TODO bounds check
+    Objects.checkFromToIndex(start, end, len);
     return new CharsWrapper(wrapped, start + offset, end - start);
   }
 
@@ -58,7 +61,7 @@ public final class CharsWrapper implements CharSequence {
 
     int end = offset + length();
     for (int i = offset; i < end; i++) {
-      hash = (31 * hash) + wrapped.charAt(i);
+      hash = (31 * hash) + wrapped[i];
     }
 
     return hash;
@@ -77,14 +80,8 @@ public final class CharsWrapper implements CharSequence {
         return false;
       }
 
-      int end = offset + len;
-      for (int i1 = offset, i2 = obs.offset; i1 < end; i1++, i2++) {
-        if (wrapped.charAt(i1) != obs.wrapped.charAt(i2)) {
-          return false;
-        }
-      }
-
-      return true;
+      return Arrays.equals(wrapped, offset, offset + len, obs.wrapped, obs.offset,
+          obs.offset + obs.len);
     }
 
     return false;
@@ -92,16 +89,10 @@ public final class CharsWrapper implements CharSequence {
 
   @Override
   public String toString() {
-    char[] chars = new char[len];
-    int end = offset + length();
-    for (int i = offset; i < end; i++) {
-      chars[i - offset] = wrapped.charAt(i);
-    }
-    return new String(chars);
+    return new String(wrapped, offset, len);
   }
 
-  public void set(CharSequence data, int start, int len) {
-    // TODO bounds check
+  public void set(char[] data, int start, int len) {
     this.wrapped = data;
     this.offset = start;
     this.len = len;

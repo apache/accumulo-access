@@ -76,13 +76,13 @@ public final class AccessExpressionImpl extends AccessExpression {
     return AccessEvaluatorImpl.escape(term, true);
   }
 
-  public static String unquote(String term) {
+  public static CharSequence unquote(CharSequence term) {
     if (term.equals("\"\"") || term.isEmpty()) {
       throw new IllegalArgumentException("Empty strings are not legal authorizations.");
     }
 
     if (term.charAt(0) == '"' && term.charAt(term.length() - 1) == '"') {
-      term = term.substring(1, term.length() - 1);
+      term = term.subSequence(1, term.length() - 1);
       return AccessEvaluatorImpl.unescape(term).toString();
     } else {
       return term;

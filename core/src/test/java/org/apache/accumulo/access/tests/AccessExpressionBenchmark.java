@@ -168,7 +168,7 @@ public class AccessExpressionBenchmark {
   /**
    * Measures the time it takes to parse an expression stored in byte[] and produce a parse tree.
    */
-  @Benchmark
+  // @Benchmark
   public void measureBytesValidation(BenchmarkState state, Blackhole blackhole) {
     var accumuloAccess = state.accumuloAccess;
     for (byte[] accessExpression : state.getBytesExpressions()) {
@@ -205,7 +205,7 @@ public class AccessExpressionBenchmark {
    *
    * @throws VisibilityParseException error parsing expression with legacy code
    */
-  @Benchmark
+  // @Benchmark
   public void measureLegacyEvaluationOnly(BenchmarkState state, Blackhole blackhole)
       throws VisibilityParseException {
     for (VisibilityEvaluatorTests evaluatorTests : state.getVisibilityEvaluatorTests()) {
@@ -223,7 +223,7 @@ public class AccessExpressionBenchmark {
    *
    * @throws VisibilityParseException error parsing expression with legacy code
    */
-  @Benchmark
+  // @Benchmark
   public void measureLegacyParseAndEvaluation(BenchmarkState state, Blackhole blackhole)
       throws VisibilityParseException {
     for (VisibilityEvaluatorTests evaluatorTests : state.getVisibilityEvaluatorTests()) {

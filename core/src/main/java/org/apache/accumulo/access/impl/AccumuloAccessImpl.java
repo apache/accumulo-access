@@ -94,7 +94,7 @@ public class AccumuloAccessImpl implements AccumuloAccess {
   public String unquote(String authorization) {
     var unquoted = AccessExpressionImpl.unquote(authorization);
     validateAuthorization(unquoted, QUOTED);
-    return unquoted;
+    return unquoted.toString();
   }
 
   @Override

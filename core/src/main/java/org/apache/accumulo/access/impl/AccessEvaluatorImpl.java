@@ -61,14 +61,14 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
         throw new IllegalArgumentException("Empty authorization");
       }
 
-      wrappedAuths.add(new CharsWrapper(authorization));
+      wrappedAuths.add(new CharsWrapper(authorization.toCharArray()));
     }
 
     this.authorizedPredicate = auth -> {
       if (auth instanceof CharsWrapper) {
         return wrappedAuths.contains(auth);
       } else {
-        return wrappedAuths.contains(new CharsWrapper(auth));
+        return wrappedAuths.contains(new CharsWrapper(auth.toString().toCharArray()));
       }
     };
     this.authorizationValidator = authorizationValidator;

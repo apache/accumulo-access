@@ -32,13 +32,31 @@ import org.apache.accumulo.access.InvalidAuthorizationException;
  */
 public final class ParserEvaluator {
 
-  static final byte OPEN_PAREN = (byte) '(';
-  static final byte CLOSE_PAREN = (byte) ')';
+  static final char OPEN_PAREN = '(';
+  static final char CLOSE_PAREN = ')';
 
   static final ThreadLocal<CharsWrapper> lookupWrappers =
-      ThreadLocal.withInitial(() -> new CharsWrapper("", 0, 0));
-  private static final ThreadLocal<Tokenizer> tokenizers =
-      ThreadLocal.withInitial(() -> new Tokenizer(""));
+      ThreadLocal.withInitial(() -> new CharsWrapper(new char[0]));
+  static final ThreadLocal<Tokenizer> tokenizers =
+      ThreadLocal.withInitial(() -> new Tokenizer(new char[0]));
+  static final ThreadLocal<char[]> expressionArrays = ThreadLocal.withInitial(() -> new char[128]);
+
+  static Tokenizer getPerThreadTokenizer(String expression) {
+    var tokenizer = tokenizers.get();
+    var array = expressionArrays.get();
+    if (array.length < expression.length()) {
+      int newLen = array.length;
+      while (newLen < expression.length()) {
+        newLen = Math.multiplyExact(newLen, 2);
+      }
+      array = new char[newLen];
+      expressionArrays.set(array);
+    }
+    expression.getChars(0, expression.length(), array, 0);
+    tokenizer.reset(array, expression.length());
+
+    return tokenizer;
+  }
 
   public static void validate(String expression, AuthorizationValidator authValidator)
       throws InvalidAccessExpressionException {
@@ -58,9 +76,8 @@ public final class ParserEvaluator {
     ParserEvaluator.parseAccessExpression(expression, vp, vp);
   }
 
-  public static void findAuthorizations(CharSequence expression,
-      Consumer<String> authorizationConsumer, AuthorizationValidator authValidator)
-      throws InvalidAccessExpressionException {
+  public static void findAuthorizations(String expression, Consumer<String> authorizationConsumer,
+      AuthorizationValidator authValidator) throws InvalidAccessExpressionException {
     var charsWrapper = ParserEvaluator.lookupWrappers.get();
     Predicate<Tokenizer.AuthorizationToken> atp = authToken -> {
       var authorizations = unescape(authToken, charsWrapper);
@@ -81,11 +98,10 @@ public final class ParserEvaluator {
     return wrapper;
   }
 
-  public static boolean parseAccessExpression(CharSequence expression,
+  public static boolean parseAccessExpression(String expression,
       Predicate<Tokenizer.AuthorizationToken> authorizedPredicate,
       Predicate<Tokenizer.AuthorizationToken> shortCircuitPredicate) {
-    var tokenizer = tokenizers.get();
-    tokenizer.reset(expression);
+    var tokenizer = getPerThreadTokenizer(expression);
     return parseAccessExpression(tokenizer, authorizedPredicate, shortCircuitPredicate);
   }
 
@@ -101,7 +117,7 @@ public final class ParserEvaluator {
 
     if (tokenizer.hasNext()) {
       // not all input was read, so not a valid expression
-      tokenizer.error("Unexpected character '" + (char) tokenizer.peek() + "'");
+      tokenizer.error("Unexpected character '" + tokenizer.peek() + "'");
     }
 
     return node;

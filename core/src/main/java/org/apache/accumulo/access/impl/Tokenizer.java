@@ -51,13 +51,14 @@ public final class Tokenizer {
     return validAuthChars[0xff & b] && b < 256;
   }
 
-  private CharSequence expression;
+  private char[] expression;
+  private int len;
   private int index;
 
   private final AuthorizationToken authorizationToken = new AuthorizationToken();
 
   public static class AuthorizationToken {
-    public CharSequence data;
+    public char[] data;
     public int start;
     public int len;
     public boolean hasEscapes;
@@ -65,33 +66,32 @@ public final class Tokenizer {
 
   }
 
-  Tokenizer(CharSequence expression) {
-    this.expression = expression;
-    authorizationToken.data = expression;
+  Tokenizer(char[] expression) {
+    reset(expression, expression.length);
   }
 
-  void reset(CharSequence expression) {
+  void reset(char[] expression, int len) {
     this.expression = expression;
-    authorizationToken.data = expression;
     this.index = 0;
+    this.len = len;
+    this.authorizationToken.data = expression;
   }
 
   boolean hasNext() {
-    return index < expression.length();
+    return index < len;
   }
 
   public void advance() {
     index++;
   }
 
-  public void next(byte expected) {
+  public void next(char expected) {
     if (!hasNext()) {
-      error("Expected '" + (char) expected + "' instead saw end of input");
+      error("Expected '" + expected + "' instead saw end of input");
     }
 
-    if (expression.charAt(index) != expected) {
-      error("Expected '" + (char) expected + "' instead saw '" + (char) (expression.charAt(index))
-          + "'");
+    if (expression[index] != expected) {
+      error("Expected '" + expected + "' instead saw '" + (expression[index]) + "'");
     }
     index++;
   }
@@ -101,15 +101,11 @@ public final class Tokenizer {
   }
 
   public void error(String msg, int idx) {
-    throw new InvalidAccessExpressionException(msg, expression.toString(), idx);
+    throw new InvalidAccessExpressionException(msg, new String(expression, 0, len), idx);
   }
 
   char peek() {
-    return expression.charAt(index);
-  }
-
-  CharSequence expression() {
-    return expression;
+    return expression[index];
   }
 
   public int curentOffset() {
@@ -117,14 +113,14 @@ public final class Tokenizer {
   }
 
   AuthorizationToken nextAuthorization(boolean includeQuotes) {
-    if (isQuoteSymbol(expression.charAt(index))) {
+    if (isQuoteSymbol(expression[index])) {
       int start = ++index;
 
       boolean hasEscapes = false;
-      while (index < expression.length() && !isQuoteSymbol(expression.charAt(index))) {
-        if (isBackslashSymbol(expression.charAt(index))) {
+      while (index < len && !isQuoteSymbol(expression[index])) {
+        if (isBackslashSymbol(expression[index])) {
           index++;
-          if (index == expression.length() || !isQuoteOrSlash(expression.charAt(index))) {
+          if (index == len || !isQuoteOrSlash(expression[index])) {
             error("Invalid escaping within quotes", index - 1);
           }
           hasEscapes = true;
@@ -132,7 +128,7 @@ public final class Tokenizer {
         index++;
       }
 
-      if (index == expression.length()) {
+      if (index == len) {
         error("Unclosed quote", start - 1);
       }
 
@@ -154,11 +150,11 @@ public final class Tokenizer {
 
       return authorizationToken;
 
-    } else if (isValidAuthChar(expression.charAt(index))) {
+    } else if (isValidAuthChar(expression[index])) {
       int start = index;
-      while (index < expression.length() && isValidAuthChar(expression.charAt(index))) {
+      do {
         index++;
-      }
+      } while (index < len && isValidAuthChar(expression[index]));
       authorizationToken.start = start;
       authorizationToken.len = index - start;
       authorizationToken.hasEscapes = false;

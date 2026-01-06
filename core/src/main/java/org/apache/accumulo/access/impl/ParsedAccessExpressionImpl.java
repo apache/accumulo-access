@@ -27,7 +27,6 @@ import static org.apache.accumulo.access.impl.ByteUtils.isAndOrOperator;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.accumulo.access.AuthorizationValidator;
 import org.apache.accumulo.access.InvalidAuthorizationException;
@@ -43,8 +42,6 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
 
   private final ExpressionType type;
   private final List<ParsedAccessExpression> children;
-
-  private final AtomicReference<String> stringExpression = new AtomicReference<>(null);
 
   public static final ParsedAccessExpression EMPTY = new ParsedAccessExpressionImpl();
 
@@ -68,31 +65,25 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
     this.children = List.copyOf(children);
   }
 
-  private ParsedAccessExpressionImpl(CharSequence expression, int offset, int length) {
+  private ParsedAccessExpressionImpl(String expression) {
     this.type = AUTHORIZATION;
-    this.expression = expression.toString();
-    this.offset = offset;
-    this.length = length;
+    this.expression = expression;
+    this.offset = 0;
+    this.length = expression.length();
     this.children = List.of();
   }
 
   ParsedAccessExpressionImpl() {
     this.type = ExpressionType.EMPTY;
+    this.expression = "";
     this.offset = 0;
     this.length = 0;
-    this.expression = "";
     this.children = List.of();
   }
 
   @Override
   public String getExpression() {
-    String strExp = stringExpression.get();
-    if (strExp != null) {
-      return strExp;
-    }
-    strExp = expression.substring(offset, length + offset);
-    stringExpression.compareAndSet(null, strExp);
-    return stringExpression.get();
+    return expression.substring(offset, length + offset);
   }
 
   @Override
@@ -116,8 +107,9 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
       return ParsedAccessExpressionImpl.EMPTY;
     }
 
-    Tokenizer tokenizer = new Tokenizer(expression);
-    var parsed = ParsedAccessExpressionImpl.parseExpression(tokenizer, authorizationValidator);
+    Tokenizer tokenizer = ParserEvaluator.getPerThreadTokenizer(expression);
+    var parsed =
+        ParsedAccessExpressionImpl.parseExpression(tokenizer, expression, authorizationValidator);
 
     if (tokenizer.hasNext()) {
       // not all input was read, so not a valid expression
@@ -128,11 +120,11 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
   }
 
   private static ParsedAccessExpressionImpl parseExpression(Tokenizer tokenizer,
-      AuthorizationValidator authorizationValidator) {
+      String wholeExpression, AuthorizationValidator authorizationValidator) {
 
     int beginOffset = tokenizer.curentOffset();
     ParsedAccessExpressionImpl node =
-        parseParenExpressionOrAuthorization(tokenizer, authorizationValidator);
+        parseParenExpressionOrAuthorization(tokenizer, wholeExpression, authorizationValidator);
 
     if (tokenizer.hasNext()) {
       var operator = tokenizer.peek();
@@ -141,8 +133,8 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
         nodes.add(node);
         do {
           tokenizer.advance();
-          ParsedAccessExpression next =
-              parseParenExpressionOrAuthorization(tokenizer, authorizationValidator);
+          ParsedAccessExpression next = parseParenExpressionOrAuthorization(tokenizer,
+              wholeExpression, authorizationValidator);
           nodes.add(next);
         } while (tokenizer.hasNext() && tokenizer.peek() == operator);
 
@@ -153,8 +145,8 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
 
         int endOffset = tokenizer.curentOffset();
 
-        node = new ParsedAccessExpressionImpl(operator, tokenizer.expression().toString(),
-            beginOffset, endOffset - beginOffset, nodes);
+        node = new ParsedAccessExpressionImpl(operator, wholeExpression, beginOffset,
+            endOffset - beginOffset, nodes);
       }
     }
 
@@ -162,7 +154,7 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
   }
 
   private static ParsedAccessExpressionImpl parseParenExpressionOrAuthorization(Tokenizer tokenizer,
-      AuthorizationValidator authorizationValidator) {
+      String wholeExpression, AuthorizationValidator authorizationValidator) {
     if (!tokenizer.hasNext()) {
       tokenizer
           .error("Expected a '(' character or an authorization token instead saw end of input");
@@ -170,27 +162,26 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
 
     if (tokenizer.peek() == ParserEvaluator.OPEN_PAREN) {
       tokenizer.advance();
-      var node = parseExpression(tokenizer, authorizationValidator);
+      var node = parseExpression(tokenizer, wholeExpression, authorizationValidator);
       tokenizer.next(ParserEvaluator.CLOSE_PAREN);
       return node;
     } else {
       var auth = tokenizer.nextAuthorization(true);
       CharSequence unquotedAuth;
       AuthorizationValidator.AuthorizationQuoting quoting;
-      if (ByteUtils.isQuoteSymbol(auth.data.charAt(auth.start))) {
-        unquotedAuth = AccessExpressionImpl
-            .unquote(auth.data.subSequence(auth.start, auth.start + auth.len).toString());
+      var wrapper = ParserEvaluator.lookupWrappers.get();
+      wrapper.set(auth.data, auth.start, auth.len);
+      if (ByteUtils.isQuoteSymbol(wrapper.charAt(0))) {
+        unquotedAuth = AccessExpressionImpl.unquote(wrapper);
         quoting = AuthorizationValidator.AuthorizationQuoting.QUOTED;
       } else {
-        var wrapper = ParserEvaluator.lookupWrappers.get();
-        wrapper.set(auth.data, auth.start, auth.len);
         unquotedAuth = wrapper;
         quoting = AuthorizationValidator.AuthorizationQuoting.UNQUOTED;
       }
       if (!authorizationValidator.test(unquotedAuth, quoting)) {
         throw new InvalidAuthorizationException(unquotedAuth.toString());
       }
-      return new ParsedAccessExpressionImpl(auth.data, auth.start, auth.len);
+      return new ParsedAccessExpressionImpl(new String(auth.data, auth.start, auth.len));
     }
   }
 }
