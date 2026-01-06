@@ -38,10 +38,15 @@ import java.util.function.BiPredicate;
  * reference needs to be kept for some side effect, then call {@code toString()} to allocate a copy.
  * Avoiding calls to {@code toString()} will result in faster parsing.
  * </p>
+ *
+ * @since 1.0.0
  */
 public interface AuthorizationValidator
     extends BiPredicate<CharSequence,AuthorizationValidator.AuthorizationQuoting> {
 
+  /**
+   * @since 1.0.0
+   */
   enum AuthorizationQuoting {
     /**
      * Denotes that an authorization seen in a valid access expression was quoted. This may mean the
@@ -88,8 +93,8 @@ public interface AuthorizationValidator
    */
   AuthorizationValidator DEFAULT = (auth, quoting) -> {
     if (quoting == AuthorizationQuoting.UNQUOTED) {
-      // If an authorization in a valid access expression and is unquoted then its already known to
-      // only contain a small set of ASCII chars and no further validation is needed.
+      // If an authorization is in a valid access expression and is unquoted then its already known
+      // to only contain a small set of ASCII chars and no further validation is needed.
       return true;
     }
 
