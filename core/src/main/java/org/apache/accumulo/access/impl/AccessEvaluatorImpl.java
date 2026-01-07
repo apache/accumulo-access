@@ -203,11 +203,12 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
     if (children.isEmpty()) {
       throw new IllegalArgumentException("Malformed OR expression, no children");
     }
-    boolean result = false;
     for (ParsedAccessExpression child : children) {
-      result |= canAccess(child);
+      if (canAccess(child)) {
+        return true;
+      }
     }
-    return result;
+    return false;
   }
 
   private boolean canAccessParsedAuthorization(String token) {
