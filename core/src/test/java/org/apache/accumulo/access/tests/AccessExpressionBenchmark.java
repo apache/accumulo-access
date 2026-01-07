@@ -31,6 +31,7 @@ import java.util.stream.Stream;
 import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.Authorizations;
+import org.apache.accumulo.access.ParsedAccessExpression;
 import org.apache.accumulo.core.security.ColumnVisibility;
 import org.apache.accumulo.core.security.VisibilityEvaluator;
 import org.apache.accumulo.core.security.VisibilityParseException;
@@ -163,7 +164,7 @@ public class AccessExpressionBenchmark {
   }
 
   /**
-   * Measures the time it takes to parse an expression stored in byte[] and produce a parse tree.
+   * Measures the time it takes to parse an expression stored in byte[] and validate it.
    */
   @Benchmark
   public void measureBytesValidation(BenchmarkState state, Blackhole blackhole) {
@@ -173,7 +174,7 @@ public class AccessExpressionBenchmark {
   }
 
   /**
-   * Measures the time it takes to parse an expression stored in a String and produce a parse tree.
+   * Measures the time it takes to parse an expression stored in a String and validate it.
    */
   @Benchmark
   public void measureStringValidation(BenchmarkState state, Blackhole blackhole) {
@@ -183,8 +184,18 @@ public class AccessExpressionBenchmark {
   }
 
   /**
-   * Measures the time it takes to parse and evaluate an expression. This has to create the parse
-   * tree an operate on it.
+   * Measures the time it takes to parse an expression stored in a String and produce a parse tree.
+   *
+   */
+  @Benchmark
+  public void measureCreateParseTree(BenchmarkState state, Blackhole blackhole) {
+    for (String accessExpression : state.getStringExpressions()) {
+      blackhole.consume(ParsedAccessExpression.parse(accessExpression));
+    }
+  }
+
+  /**
+   * Measures the time it takes to evaluate an expression.
    */
   @Benchmark
   public void measureParseAndEvaluation(BenchmarkState state, Blackhole blackhole) {
