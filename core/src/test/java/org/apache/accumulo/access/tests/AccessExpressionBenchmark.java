@@ -177,7 +177,7 @@ public class AccessExpressionBenchmark {
   }
 
   /**
-   * Measures the time it takes to parse an expression stored in byte[] and produce a parse tree.
+   * Measures the time it takes to parse an expression stored in byte[] and validate it.
    */
   @Benchmark
   public void measureBytesValidation(BenchmarkState state, Blackhole blackhole) {
@@ -187,12 +187,22 @@ public class AccessExpressionBenchmark {
   }
 
   /**
-   * Measures the time it takes to parse an expression stored in a String and produce a parse tree.
+   * Measures the time it takes to parse an expression stored in a String and validate it.
    */
   @Benchmark
   public void measureStringValidation(BenchmarkState state, Blackhole blackhole) {
     for (String accessExpression : state.getStringExpressions()) {
       AccessExpression.validate(accessExpression);
+    }
+  }
+
+  /**
+   * Measures the time it takes to parse an expression stored in a String and produce a parse tree.
+   */
+  @Benchmark
+  public void measureCreateParseTree(BenchmarkState state, Blackhole blackhole) {
+    for (String accessExpression : state.getStringExpressions()) {
+      blackhole.consume(ParsedAccessExpression.parse(accessExpression));
     }
   }
 
