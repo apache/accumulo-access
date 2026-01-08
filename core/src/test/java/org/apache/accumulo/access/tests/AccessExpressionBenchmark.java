@@ -172,7 +172,7 @@ public class AccessExpressionBenchmark {
   public void measureBytesValidation(BenchmarkState state, Blackhole blackhole) {
     var accumuloAccess = state.access;
     for (byte[] accessExpression : state.getBytesExpressions()) {
-      accumuloAccess.validate(new String(accessExpression, UTF_8));
+      accumuloAccess.validateExpression(new String(accessExpression, UTF_8));
     }
   }
 
@@ -183,7 +183,7 @@ public class AccessExpressionBenchmark {
   public void measureStringValidation(BenchmarkState state, Blackhole blackhole) {
     var accumuloAccess = state.access;
     for (String accessExpression : state.getStringExpressions()) {
-      accumuloAccess.validate(accessExpression);
+      accumuloAccess.validateExpression(accessExpression);
     }
   }
 

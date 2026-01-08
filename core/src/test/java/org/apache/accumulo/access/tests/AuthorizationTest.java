@@ -238,8 +238,8 @@ public class AuthorizationTest {
       // create the same expression with the invalid auth in different places
       var exp =
           '"' + a1 + '"' + "|(" + '"' + a2 + '"' + "&" + '"' + a3 + '"' + ")|" + '"' + a4 + '"';
-      var exception =
-          assertThrows(InvalidAuthorizationException.class, () -> accumuloAccess.validate(exp));
+      var exception = assertThrows(InvalidAuthorizationException.class,
+          () -> accumuloAccess.validateExpression(exp));
       assertTrue(exception.getMessage().contains(badAuth));
 
       exception = assertThrows(InvalidAuthorizationException.class,

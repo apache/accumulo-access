@@ -118,7 +118,7 @@ public class AccessEvaluatorTest {
         // exception
         if (tests.expectedResult == ExpectedResult.ACCESSIBLE
             || tests.expectedResult == ExpectedResult.INACCESSIBLE) {
-          accumuloAccess.validate(expression);
+          accumuloAccess.validateExpression(expression);
           assertEquals(expression, accumuloAccess.newExpression(expression).getExpression());
           // parsing an expression will strip unneeded outer parens
           assertTrue(
@@ -149,7 +149,7 @@ public class AccessEvaluatorTest {
             assertThrows(InvalidAccessExpressionException.class,
                 () -> evaluator.canAccess(expression), expression);
             assertThrows(InvalidAccessExpressionException.class,
-                () -> accumuloAccess.validate(expression), expression);
+                () -> accumuloAccess.validateExpression(expression), expression);
             assertThrows(InvalidAccessExpressionException.class,
                 () -> accumuloAccess.newExpression(expression), expression);
             assertThrows(InvalidAccessExpressionException.class,

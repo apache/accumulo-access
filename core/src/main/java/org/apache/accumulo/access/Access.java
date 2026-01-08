@@ -62,8 +62,8 @@ public interface Access {
    * access expressions as arguments in code, consider using this type instead of a String. The
    * advantage of passing this type over a String is that its known to be a valid expression. Also,
    * this type is much more informative than a String type. Conceptually this method calls
-   * {@link #validate(String)} and if that passes creates an immutable object that wraps the
-   * expression.
+   * {@link #validateExpression(String)} and if that passes creates an immutable object that wraps
+   * the expression.
    *
    * @throws InvalidAccessExpressionException if the given expression is not valid
    * @throws InvalidAuthorizationException when the expression contains an authorization that is not
@@ -74,10 +74,21 @@ public interface Access {
       throws InvalidAccessExpressionException, InvalidAuthorizationException;
 
   /**
+   * Quickly validates that an access expression is properly formed.
+   *
+   * @param expression a potential access expression that
+   * @throws InvalidAccessExpressionException if the given expression is not valid
+   * @throws InvalidAuthorizationException if the expression contains an invalid authorization
+   * @throws NullPointerException when the argument is null
+   */
+  void validateExpression(String expression)
+      throws InvalidAccessExpressionException, InvalidAuthorizationException;
+
+  /**
    * Validates an access expression and returns an immutable object with a parse tree. Creating the
    * parse tree is expensive relative to calling {@link #newExpression(String)} or
-   * {@link #validate(String)}, so only use this method when the parse tree is always needed. If the
-   * code may only use the parse tree sometimes, then it may be best to call
+   * {@link #validateExpression(String)}, so only use this method when the parse tree is always
+   * needed. If the code may only use the parse tree sometimes, then it may be best to call
    * {@link #newExpression(String)} to create the access expression and then call
    * {@link AccessExpression#parse()} when needed.
    *
@@ -143,17 +154,6 @@ public interface Access {
    * @throws NullPointerException when the argument is null
    */
   String unquote(String authorization) throws InvalidAuthorizationException;
-
-  /**
-   * Quickly validates that an access expression is properly formed.
-   *
-   * @param expression a potential access expression that
-   * @throws InvalidAccessExpressionException if the given expression is not valid
-   * @throws InvalidAuthorizationException if the expression contains an invalid authorization
-   * @throws NullPointerException when the argument is null
-   */
-  void validate(String expression)
-      throws InvalidAccessExpressionException, InvalidAuthorizationException;
 
   /**
    * Creates an AccessEvaluator from an Authorizations object

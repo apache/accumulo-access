@@ -112,7 +112,7 @@ public class Antlr4Tests {
             assertThrows(InvalidAccessExpressionException.class, () -> ACCESS.newExpression(cv));
             assertThrows(AssertionError.class, () -> testParse(cv));
           } else {
-            ACCESS.validate(cv);
+            ACCESS.validateExpression(cv);
             testParse(cv);
           }
         }

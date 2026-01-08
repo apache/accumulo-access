@@ -78,7 +78,7 @@ public class AccessExpressionTest {
 
   void checkError(String expression, String expected, int index) {
     var access = Access.builder().build();
-    checkError(() -> access.validate(expression), expected, index);
+    checkError(() -> access.validateExpression(expression), expected, index);
     checkError(() -> access.newExpression(expression), expected, index);
     checkError(() -> access.newParsedExpression(expression), expected, index);
   }
@@ -184,7 +184,7 @@ public class AccessExpressionTest {
   public void testEmpty() {
     var access = Access.builder().build();
     // do not expect empty expression to fail validation
-    access.validate("");
+    access.validateExpression("");
     assertEquals("", access.newExpression("").getExpression());
 
     var parsed = access.newParsedExpression("");
@@ -217,7 +217,7 @@ public class AccessExpressionTest {
   public void testNull() {
     var access = Access.builder().build();
     assertThrows(NullPointerException.class, () -> access.newParsedExpression(null));
-    assertThrows(NullPointerException.class, () -> access.validate(null));
+    assertThrows(NullPointerException.class, () -> access.validateExpression(null));
     assertThrows(NullPointerException.class, () -> access.newExpression(null));
     assertThrows(NullPointerException.class, () -> access.findAuthorizations(null, auth -> {}));
     assertThrows(NullPointerException.class, () -> access.findAuthorizations("A&B", null));

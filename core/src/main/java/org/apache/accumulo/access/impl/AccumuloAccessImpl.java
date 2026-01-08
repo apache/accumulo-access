@@ -53,7 +53,7 @@ public class AccumuloAccessImpl implements Access {
     if (expression.isEmpty()) {
       return AccessExpressionImpl.EMPTY;
     }
-    validate(expression);
+    validateExpression(expression);
     return new AccessExpressionImpl(expression);
   }
 
@@ -98,7 +98,7 @@ public class AccumuloAccessImpl implements Access {
   }
 
   @Override
-  public void validate(String expression) throws InvalidAccessExpressionException {
+  public void validateExpression(String expression) throws InvalidAccessExpressionException {
     ParserEvaluator.validate(expression, authValidator);
   }
 
