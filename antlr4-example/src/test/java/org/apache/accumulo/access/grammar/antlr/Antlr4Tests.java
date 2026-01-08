@@ -39,8 +39,7 @@ import org.antlr.v4.runtime.LexerNoViableAltException;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.apache.accumulo.access.AccessEvaluator;
-import org.apache.accumulo.access.AccessExpression;
-import org.apache.accumulo.access.AccumuloAccess;
+import org.apache.accumulo.access.Access;
 import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.antlr.TestDataLoader;
@@ -55,7 +54,7 @@ import org.junit.jupiter.api.Test;
 
 public class Antlr4Tests {
 
-  public static final AccumuloAccess ACCUMULO_ACCESS = AccumuloAccess.builder().build();
+  public static final Access ACCESS = Access.builder().build();
 
   private void testParse(String input) throws Exception {
     CodePointCharStream expression = CharStreams.fromString(input);
@@ -110,10 +109,10 @@ public class Antlr4Tests {
         ExpectedResult result = test.expectedResult;
         for (String cv : test.expressions) {
           if (result == ExpectedResult.ERROR) {
-            assertThrows(InvalidAccessExpressionException.class, () -> ACCUMULO_ACCESS.newExpression(cv));
+            assertThrows(InvalidAccessExpressionException.class, () -> ACCESS.newExpression(cv));
             assertThrows(AssertionError.class, () -> testParse(cv));
           } else {
-            ACCUMULO_ACCESS.validate(cv);
+            ACCESS.validate(cv);
             testParse(cv);
           }
         }
@@ -124,7 +123,7 @@ public class Antlr4Tests {
   @Test
   public void testSimpleEvaluation() throws Exception {
     String accessExpression = "(one&two)|(foo&bar)";
-    Authorizations auths = ACCUMULO_ACCESS.newAuthorizations(Set.of("four", "three", "one", "two"));
+    Authorizations auths = ACCESS.newAuthorizations(Set.of("four", "three", "one", "two"));
     AccessExpressionAntlrEvaluator eval = new AccessExpressionAntlrEvaluator(List.of(auths));
     assertTrue(eval.canAccess(accessExpression));
   }
@@ -132,7 +131,7 @@ public class Antlr4Tests {
   @Test
   public void testSimpleEvaluationFailure() throws Exception {
     String accessExpression = "(A&B&C)";
-    Authorizations auths = ACCUMULO_ACCESS.newAuthorizations(Set.of("A", "C"));
+    Authorizations auths = ACCESS.newAuthorizations(Set.of("A", "C"));
     AccessExpressionAntlrEvaluator eval = new AccessExpressionAntlrEvaluator(List.of(auths));
     assertFalse(eval.canAccess(accessExpression));
   }
@@ -145,8 +144,8 @@ public class Antlr4Tests {
     for (TestDataSet testSet : testData) {
 
       List<Authorizations> authSets = Stream.of(testSet.auths)
-          .map(a -> ACCUMULO_ACCESS.newAuthorizations(Set.of(a))).collect(Collectors.toList());
-      AccessEvaluator evaluator = ACCUMULO_ACCESS.newEvaluator(authSets);
+          .map(a -> ACCESS.newAuthorizations(Set.of(a))).collect(Collectors.toList());
+      AccessEvaluator evaluator = ACCESS.newEvaluator(authSets);
       AccessExpressionAntlrEvaluator antlr = new AccessExpressionAntlrEvaluator(authSets);
 
       for (TestExpressions test : testSet.tests) {

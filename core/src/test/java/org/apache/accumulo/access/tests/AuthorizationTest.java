@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.accumulo.access.AccumuloAccess;
+import org.apache.accumulo.access.Access;
 import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.InvalidAuthorizationException;
@@ -40,14 +40,14 @@ public class AuthorizationTest {
 
   @Test
   public void testEquality() {
-    var accumuloAccess = AccumuloAccess.builder().build();
-    Authorizations auths1 = accumuloAccess.newAuthorizations(Set.of("A", "B", "C"));
-    Authorizations auths2 = accumuloAccess.newAuthorizations(Set.of("A", "B", "C"));
+    var access = Access.builder().build();
+    Authorizations auths1 = access.newAuthorizations(Set.of("A", "B", "C"));
+    Authorizations auths2 = access.newAuthorizations(Set.of("A", "B", "C"));
 
     assertEquals(auths1, auths2);
     assertEquals(auths1.hashCode(), auths2.hashCode());
 
-    Authorizations auths3 = accumuloAccess.newAuthorizations(Set.of("D", "E", "F"));
+    Authorizations auths3 = access.newAuthorizations(Set.of("D", "E", "F"));
 
     assertNotEquals(auths1, auths3);
     assertNotEquals(auths1.hashCode(), auths3.hashCode());
@@ -55,13 +55,13 @@ public class AuthorizationTest {
 
   @Test
   public void testEmpty() {
-    var accumuloAccess = AccumuloAccess.builder().build();
+    var access = Access.builder().build();
     // check if new object is allocated
-    assertSame(accumuloAccess.newAuthorizations(), accumuloAccess.newAuthorizations());
+    assertSame(access.newAuthorizations(), access.newAuthorizations());
     // check if optimization is working
-    assertSame(accumuloAccess.newAuthorizations(), accumuloAccess.newAuthorizations(Set.of()));
-    assertEquals(Set.of(), accumuloAccess.newAuthorizations().asSet());
-    assertSame(Set.of(), accumuloAccess.newAuthorizations().asSet());
+    assertSame(access.newAuthorizations(), access.newAuthorizations(Set.of()));
+    assertEquals(Set.of(), access.newAuthorizations().asSet());
+    assertSame(Set.of(), access.newAuthorizations().asSet());
   }
 
   @Test
@@ -69,7 +69,7 @@ public class AuthorizationTest {
 
     // create an instance of accumulo access that expects all auths to start with a lower case
     // letter followed by one or more lower case letters or digits.
-    var accumuloAccess = AccumuloAccess.builder().authorizationValidator((auth, quoting) -> {
+    var accumuloAccess = Access.builder().authorizationValidator((auth, quoting) -> {
       if (auth.length() < 2) {
         return false;
       }
@@ -101,8 +101,8 @@ public class AuthorizationTest {
     assertFalse(Character.isISOControl(c));
     var badAuth = new String(new char[] {'a', c});
 
-    var accumuloAccess = AccumuloAccess.builder().build();
-    runTest("ac", "a9", "dc", badAuth, accumuloAccess);
+    var access = Access.builder().build();
+    runTest("ac", "a9", "dc", badAuth, access);
   }
 
   @Test
@@ -111,9 +111,9 @@ public class AuthorizationTest {
     assertTrue(Character.isDefined(c));
     assertTrue(Character.isISOControl(c));
 
-    var accumuloAccess = AccumuloAccess.builder().build();
+    var access = Access.builder().build();
     var badAuth = new String(new char[] {'a', c});
-    runTest("ac", "a9", "dc", badAuth, accumuloAccess);
+    runTest("ac", "a9", "dc", badAuth, access);
   }
 
   @Test
@@ -121,9 +121,9 @@ public class AuthorizationTest {
     char c = '\uFFFD';
     assertEquals(c + "", UTF_8.newDecoder().replacement());
 
-    var accumuloAccess = AccumuloAccess.builder().build();
+    var access = Access.builder().build();
     var badAuth = new String(new char[] {'a', c});
-    runTest("ac", "a9", "dc", badAuth, accumuloAccess);
+    runTest("ac", "a9", "dc", badAuth, access);
   }
 
   @Test
@@ -142,7 +142,7 @@ public class AuthorizationTest {
   public void testUnescaped() {
     // This test ensures that auth passed to the authorization validator are unescaped, even if they
     // are escaped in the expression
-    var accumuloAccess = AccumuloAccess.builder().authorizationValidator((auth, quoting) -> {
+    var accumuloAccess = Access.builder().authorizationValidator((auth, quoting) -> {
       for (int i = 0; i < auth.length(); i++) {
         assertNotEquals('\\', auth.charAt(i));
       }
@@ -194,32 +194,32 @@ public class AuthorizationTest {
     var auth1 = "a" + doubleChar;
     var auth2 = "abc";
 
-    var accumuloAccess = AccumuloAccess.builder().build();
+    var access = Access.builder().build();
 
-    var exp1 = accumuloAccess.quote(auth1) + "&" + auth2;
-    var exp2 = accumuloAccess.quote(auth1) + "|" + auth2;
+    var exp1 = access.quote(auth1) + "&" + auth2;
+    var exp2 = access.quote(auth1) + "|" + auth2;
 
     assertEquals('"' + auth1 + '"' + "&" + auth2, exp1);
     assertEquals('"' + auth1 + '"' + "|" + auth2, exp2);
 
-    var auths1 = accumuloAccess.newAuthorizations(Set.of(auth1, auth2));
-    var evaluator1 = accumuloAccess.newEvaluator(auths1);
+    var auths1 = access.newAuthorizations(Set.of(auth1, auth2));
+    var evaluator1 = access.newEvaluator(auths1);
     assertTrue(evaluator1.canAccess(exp1));
     assertTrue(evaluator1.canAccess(exp2));
 
-    var auths2 = accumuloAccess.newAuthorizations(Set.of(auth1));
-    var evaluator2 = accumuloAccess.newEvaluator(auths2);
+    var auths2 = access.newAuthorizations(Set.of(auth1));
+    var evaluator2 = access.newEvaluator(auths2);
     assertFalse(evaluator2.canAccess(exp1));
     assertTrue(evaluator2.canAccess(exp2));
 
-    var auths3 = accumuloAccess.newAuthorizations(Set.of(auth2));
-    var evaluator3 = accumuloAccess.newEvaluator(auths3);
+    var auths3 = access.newAuthorizations(Set.of(auth2));
+    var evaluator3 = access.newEvaluator(auths3);
     assertFalse(evaluator3.canAccess(exp1));
     assertTrue(evaluator3.canAccess(exp2));
   }
 
   private static void runTest(String goodAuth1, String goodAuth2, String goodAuth3, String badAuth,
-      AccumuloAccess accumuloAccess) {
+      Access accumuloAccess) {
     List<String> auths = List.of(goodAuth1, goodAuth2, badAuth, goodAuth3);
 
     var auths1 = accumuloAccess.newAuthorizations(Set.of(goodAuth1, goodAuth2));

@@ -24,7 +24,7 @@ import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.A
 import java.util.Map;
 import java.util.TreeSet;
 
-import org.apache.accumulo.access.AccumuloAccess;
+import org.apache.accumulo.access.Access;
 import org.apache.accumulo.access.ParsedAccessExpression;
 import org.apache.accumulo.access.ParsedAccessExpression.ExpressionType;
 
@@ -34,7 +34,7 @@ import org.apache.accumulo.access.ParsedAccessExpression.ExpressionType;
  */
 public class ParseExamples {
 
-  public static final AccumuloAccess ACCUMULO_ACCESS = AccumuloAccess.builder().build();
+  public static final Access ACCESS = Access.builder().build();
 
   private ParseExamples() {}
 
@@ -47,10 +47,10 @@ public class ParseExamples {
       // If the term is quoted in the expression, the quotes will be preserved. Calling unquote()
       // will only unescape and unquote if the string is quoted, otherwise it returns the string as
       // is.
-      String auth = ACCUMULO_ACCESS.unquote(parsed.getExpression());
+      String auth = ACCESS.unquote(parsed.getExpression());
       // Must quote any authorization that needs it. Calling quote() will only quote and escape if
       // needed, otherwise it returns the string as is.
-      expressionBuilder.append(ACCUMULO_ACCESS.quote(replacements.getOrDefault(auth, auth)));
+      expressionBuilder.append(ACCESS.quote(replacements.getOrDefault(auth, auth)));
     } else {
       String operator = parsed.getType() == AND ? "&" : "|";
       String sep = "";
@@ -103,8 +103,7 @@ public class ParseExamples {
       if (cmp == 0) {
         if (type == AUTHORIZATION) {
           // sort based on the unquoted and unescaped form of the authorization
-          cmp =
-              ACCUMULO_ACCESS.unquote(expression).compareTo(ACCUMULO_ACCESS.unquote(o.expression));
+          cmp = ACCESS.unquote(expression).compareTo(ACCESS.unquote(o.expression));
         } else {
           cmp = expression.compareTo(o.expression);
         }
@@ -171,8 +170,8 @@ public class ParseExamples {
     if (parsed.getType() == AUTHORIZATION) {
       // If the authorization is quoted and it does not need to be quoted then the following two
       // lines will remove the unnecessary quoting.
-      String unquoted = ACCUMULO_ACCESS.unquote(parsed.getExpression());
-      String quoted = ACCUMULO_ACCESS.quote(unquoted);
+      String unquoted = ACCESS.unquote(parsed.getExpression());
+      String quoted = ACCESS.quote(unquoted);
       return new NormalizedExpression(quoted, parsed.getType());
     } else {
       // The tree set does the work of sorting and deduplicating sub expressions.
@@ -218,7 +217,7 @@ public class ParseExamples {
 
   public static void main(String[] args) {
 
-    var parsed = ACCUMULO_ACCESS.newParsedExpression("((RED&GREEN)|(PINK&BLUE))");
+    var parsed = ACCESS.newParsedExpression("((RED&GREEN)|(PINK&BLUE))");
 
     System.out.printf("Operating on %s%n", parsed);
 

@@ -24,16 +24,16 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import org.apache.accumulo.access.Access;
 import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AccessExpression;
-import org.apache.accumulo.access.AccumuloAccess;
 import org.apache.accumulo.access.AuthorizationValidator;
 import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.InvalidAuthorizationException;
 import org.apache.accumulo.access.ParsedAccessExpression;
 
-public class AccumuloAccessImpl implements AccumuloAccess {
+public class AccumuloAccessImpl implements Access {
 
   private final AuthorizationValidator authValidator;
 

@@ -29,17 +29,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 
-import org.apache.accumulo.access.AccumuloAccess;
+import org.apache.accumulo.access.Access;
 import org.apache.accumulo.access.ParsedAccessExpression;
 import org.junit.jupiter.api.Test;
 
 public class ParsedAccessExpressionTest {
   @Test
   public void testParsing() {
-    var accumuloAccess = AccumuloAccess.builder().build();
+    var access = Access.builder().build();
     String expression = "(BLUE&(RED|PINK|YELLOW))|((YELLOW|\"GREEN/GREY\")&(RED|BLUE))|BLACK";
-    for (var parsed : List.of(accumuloAccess.newParsedExpression(expression),
-        accumuloAccess.newExpression(expression).parse())) {
+    for (var parsed : List.of(access.newParsedExpression(expression),
+        access.newExpression(expression).parse())) {
       // verify root node
       verify("(BLUE&(RED|PINK|YELLOW))|((YELLOW|\"GREEN/GREY\")&(RED|BLUE))|BLACK", OR, 3, parsed);
 
@@ -67,15 +67,15 @@ public class ParsedAccessExpressionTest {
 
   @Test
   public void testEmpty() {
-    var accumuloAccess = AccumuloAccess.builder().build();
-    var parsed = accumuloAccess.newParsedExpression("");
+    var access = Access.builder().build();
+    var parsed = access.newParsedExpression("");
     verify("", EMPTY, 0, parsed);
   }
 
   @Test
   public void testParseTwice() {
-    var accumuloAccess = AccumuloAccess.builder().build();
-    for (var expression : List.of(accumuloAccess.newExpression("A&B"))) {
+    var access = Access.builder().build();
+    for (var expression : List.of(access.newExpression("A&B"))) {
       var parsed = expression.parse();
       assertNotSame(expression, parsed);
       assertEquals(expression.getExpression(), parsed.getExpression());

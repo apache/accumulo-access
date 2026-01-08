@@ -28,8 +28,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.accumulo.access.Access;
 import org.apache.accumulo.access.AccessEvaluator;
-import org.apache.accumulo.access.AccumuloAccess;
 import org.apache.accumulo.core.security.ColumnVisibility;
 import org.apache.accumulo.core.security.VisibilityEvaluator;
 import org.apache.accumulo.core.security.VisibilityParseException;
@@ -78,7 +78,7 @@ public class AccessExpressionBenchmark {
   @State(Scope.Benchmark)
   public static class BenchmarkState {
 
-    private AccumuloAccess accumuloAccess;
+    private Access access;
 
     private ArrayList<byte[]> allTestExpressions;
 
@@ -90,7 +90,7 @@ public class AccessExpressionBenchmark {
 
     @Setup
     public void loadData() throws IOException {
-      accumuloAccess = AccumuloAccess.builder().build();
+      access = Access.builder().build();
       List<AccessEvaluatorTest.TestDataSet> testData = AccessEvaluatorTest.readTestData();
       allTestExpressions = new ArrayList<>();
       allTestExpressionsStr = new ArrayList<>();
@@ -121,12 +121,12 @@ public class AccessExpressionBenchmark {
         et.expressions = new ArrayList<>();
 
         if (testDataSet.auths.length == 1) {
-          et.evaluator = accumuloAccess
-              .newEvaluator(accumuloAccess.newAuthorizations(Set.of(testDataSet.auths[0])));
+          et.evaluator =
+              access.newEvaluator(access.newAuthorizations(Set.of(testDataSet.auths[0])));
         } else {
-          var authSets = Stream.of(testDataSet.auths)
-              .map(a -> accumuloAccess.newAuthorizations(Set.of(a))).collect(Collectors.toList());
-          et.evaluator = accumuloAccess.newEvaluator(authSets);
+          var authSets = Stream.of(testDataSet.auths).map(a -> access.newAuthorizations(Set.of(a)))
+              .collect(Collectors.toList());
+          et.evaluator = access.newEvaluator(authSets);
         }
 
         for (var tests : testDataSet.tests) {
@@ -170,7 +170,7 @@ public class AccessExpressionBenchmark {
    */
   @Benchmark
   public void measureBytesValidation(BenchmarkState state, Blackhole blackhole) {
-    var accumuloAccess = state.accumuloAccess;
+    var accumuloAccess = state.access;
     for (byte[] accessExpression : state.getBytesExpressions()) {
       accumuloAccess.validate(new String(accessExpression, UTF_8));
     }
@@ -181,7 +181,7 @@ public class AccessExpressionBenchmark {
    */
   @Benchmark
   public void measureStringValidation(BenchmarkState state, Blackhole blackhole) {
-    var accumuloAccess = state.accumuloAccess;
+    var accumuloAccess = state.access;
     for (String accessExpression : state.getStringExpressions()) {
       accumuloAccess.validate(accessExpression);
     }
@@ -193,7 +193,7 @@ public class AccessExpressionBenchmark {
    */
   @Benchmark
   public void measureCreateParseTree(BenchmarkState state, Blackhole blackhole) {
-    var accumuloAccess = state.accumuloAccess;
+    var accumuloAccess = state.access;
     for (String accessExpression : state.getStringExpressions()) {
       blackhole.consume(accumuloAccess.newParsedExpression(accessExpression));
     }

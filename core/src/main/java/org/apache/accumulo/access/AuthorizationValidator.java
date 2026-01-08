@@ -27,9 +27,9 @@ import java.util.function.BiPredicate;
  *
  * <p>
  * When an authorization is quoted and/or escaped in access expression that is undone before is
- * passed to this predicate. Conceptually it is like {@link AccumuloAccess#unquote(String)} is
- * called prior to being passed to this predicate. If the authorization was quoted that information
- * is passed along is it may be useful for optimizations.
+ * passed to this predicate. Conceptually it is like {@link Access#unquote(String)} is called prior
+ * to being passed to this predicate. If the authorization was quoted that information is passed
+ * along is it may be useful for optimizations.
  *
  * <p>
  * A CharSequence is passed to this predicate for efficiency. It allows having a view into the

@@ -36,8 +36,8 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apache.accumulo.access.Access;
 import org.apache.accumulo.access.AccessExpression;
-import org.apache.accumulo.access.AccumuloAccess;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.ParsedAccessExpression;
 import org.junit.jupiter.api.Disabled;
@@ -48,7 +48,7 @@ public class AccessExpressionTest {
 
   @Test
   public void testGetAuthorizations() {
-    var accumuloAccess = AccumuloAccess.builder().build();
+    var access = Access.builder().build();
     // Test data pairs where the first entry of each pair is an expression to normalize and second
     // is the expected authorization in the expression
     var testData = new ArrayList<List<String>>();
@@ -68,7 +68,7 @@ public class AccessExpressionTest {
       var expression = testCase.get(0);
       var expected = testCase.get(1);
       HashSet<String> found = new HashSet<>();
-      accumuloAccess.findAuthorizations(expression, found::add);
+      access.findAuthorizations(expression, found::add);
       var actual = found.stream().sorted().collect(Collectors.joining(","));
       assertEquals(expected, actual);
       found.clear();
@@ -77,10 +77,10 @@ public class AccessExpressionTest {
   }
 
   void checkError(String expression, String expected, int index) {
-    var accumuloAccess = AccumuloAccess.builder().build();
-    checkError(() -> accumuloAccess.validate(expression), expected, index);
-    checkError(() -> accumuloAccess.newExpression(expression), expected, index);
-    checkError(() -> accumuloAccess.newParsedExpression(expression), expected, index);
+    var access = Access.builder().build();
+    checkError(() -> access.validate(expression), expected, index);
+    checkError(() -> access.newExpression(expression), expected, index);
+    checkError(() -> access.newParsedExpression(expression), expected, index);
   }
 
   void checkError(Executable executable, String expected, int index) {
@@ -126,11 +126,11 @@ public class AccessExpressionTest {
 
   @Test
   public void testEqualsHashcode() {
-    var accumuloAccess = AccumuloAccess.builder().build();
-    var ae1 = accumuloAccess.newExpression("A&B");
-    var ae2 = accumuloAccess.newExpression("A&C");
-    var ae3 = accumuloAccess.newExpression("A&B");
-    var ae4 = accumuloAccess.newParsedExpression("A&B");
+    var access = Access.builder().build();
+    var ae1 = access.newExpression("A&B");
+    var ae2 = access.newExpression("A&C");
+    var ae3 = access.newExpression("A&B");
+    var ae4 = access.newParsedExpression("A&B");
 
     assertEquals(ae1, ae3);
     assertEquals(ae1, ae4);
@@ -182,12 +182,12 @@ public class AccessExpressionTest {
 
   @Test
   public void testEmpty() {
-    var accumuloAccess = AccumuloAccess.builder().build();
+    var access = Access.builder().build();
     // do not expect empty expression to fail validation
-    accumuloAccess.validate("");
-    assertEquals("", accumuloAccess.newExpression("").getExpression());
+    access.validate("");
+    assertEquals("", access.newExpression("").getExpression());
 
-    var parsed = accumuloAccess.newParsedExpression("");
+    var parsed = access.newParsedExpression("");
     assertEquals("", parsed.getExpression());
     assertTrue(parsed.getChildren().isEmpty());
     assertEquals(ParsedAccessExpression.ExpressionType.EMPTY, parsed.getType());
@@ -195,9 +195,9 @@ public class AccessExpressionTest {
 
   @Test
   public void testImmutable() {
-    var accumuloAccess = AccumuloAccess.builder().build();
+    var access = Access.builder().build();
     var exp = "A&B&(C|D)";
-    var exp2 = accumuloAccess.newParsedExpression(exp);
+    var exp2 = access.newParsedExpression(exp);
 
     assertEquals("A&B&(C|D)", exp2.getExpression());
 
@@ -215,14 +215,13 @@ public class AccessExpressionTest {
 
   @Test
   public void testNull() {
-    var accumuloAccess = AccumuloAccess.builder().build();
-    assertThrows(NullPointerException.class, () -> accumuloAccess.newParsedExpression(null));
-    assertThrows(NullPointerException.class, () -> accumuloAccess.validate(null));
-    assertThrows(NullPointerException.class, () -> accumuloAccess.newExpression(null));
-    assertThrows(NullPointerException.class,
-        () -> accumuloAccess.findAuthorizations(null, auth -> {}));
-    assertThrows(NullPointerException.class, () -> accumuloAccess.findAuthorizations("A&B", null));
-    assertThrows(NullPointerException.class, () -> accumuloAccess.quote(null));
-    assertThrows(NullPointerException.class, () -> accumuloAccess.unquote(null));
+    var access = Access.builder().build();
+    assertThrows(NullPointerException.class, () -> access.newParsedExpression(null));
+    assertThrows(NullPointerException.class, () -> access.validate(null));
+    assertThrows(NullPointerException.class, () -> access.newExpression(null));
+    assertThrows(NullPointerException.class, () -> access.findAuthorizations(null, auth -> {}));
+    assertThrows(NullPointerException.class, () -> access.findAuthorizations("A&B", null));
+    assertThrows(NullPointerException.class, () -> access.quote(null));
+    assertThrows(NullPointerException.class, () -> access.unquote(null));
   }
 }

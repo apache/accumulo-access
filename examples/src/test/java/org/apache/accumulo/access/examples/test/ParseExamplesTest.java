@@ -18,7 +18,7 @@
  */
 package org.apache.accumulo.access.examples.test;
 
-import static org.apache.accumulo.access.examples.ParseExamples.ACCUMULO_ACCESS;
+import static org.apache.accumulo.access.examples.ParseExamples.ACCESS;
 import static org.apache.accumulo.access.examples.ParseExamples.replaceAuthorizations;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -89,8 +89,7 @@ public class ParseExamplesTest {
       var expression = testCase.get(0);
       var expected = testCase.get(1);
 
-      var actual =
-          ParseExamples.normalize(ACCUMULO_ACCESS.newParsedExpression(expression)).expression;
+      var actual = ParseExamples.normalize(ACCESS.newParsedExpression(expression)).expression;
       assertEquals(expected, actual);
     }
   }
@@ -98,13 +97,13 @@ public class ParseExamplesTest {
   @Test
   public void testReplace() {
     // Test replacement code w/ quoting and escaping.
-    var parsed = ACCUMULO_ACCESS.newParsedExpression("((RED&\"ESC\\\\\")|(PINK&BLUE))");
+    var parsed = ACCESS.newParsedExpression("((RED&\"ESC\\\\\")|(PINK&BLUE))");
     StringBuilder expressionBuilder = new StringBuilder();
     replaceAuthorizations(parsed, expressionBuilder, Map.of("ESC\\", "NEEDS+QUOTE"));
     assertEquals("(RED&\"NEEDS+QUOTE\")|(PINK&BLUE)", expressionBuilder.toString());
 
     // Test replacing multiple
-    parsed = ACCUMULO_ACCESS.newParsedExpression("((RED&(GREEN|YELLOW))|(PINK&BLUE))");
+    parsed = ACCESS.newParsedExpression("((RED&(GREEN|YELLOW))|(PINK&BLUE))");
     expressionBuilder = new StringBuilder();
     replaceAuthorizations(parsed, expressionBuilder, Map.of("RED", "ROUGE", "GREEN", "AQUA"));
     assertEquals("(ROUGE&(AQUA|YELLOW))|(PINK&BLUE)", expressionBuilder.toString());

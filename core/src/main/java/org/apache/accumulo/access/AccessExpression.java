@@ -106,10 +106,10 @@ public sealed abstract class AccessExpression implements Serializable
 
   /**
    * Parses the access expression if it was never parsed before. If this access expression was
-   * created using {@link AccumuloAccess#newParsedExpression(String)} then it will have a parse from
+   * created using {@link Access#newParsedExpression(String)} then it will have a parse from
    * inception and this method will return itself. If the access expression was created using
-   * {@link AccumuloAccess#newExpression(String)} then this method will create a parse tree the
-   * first time its called and remember it, returning the remembered parse tree on subsequent calls.
+   * {@link Access#newExpression(String)} then this method will create a parse tree the first time
+   * its called and remember it, returning the remembered parse tree on subsequent calls.
    */
   public abstract ParsedAccessExpression parse();
 

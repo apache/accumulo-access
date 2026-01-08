@@ -31,7 +31,7 @@ import org.apache.accumulo.access.impl.BuilderImpl;
  * @see #builder()
  * @since 1.0
  */
-public interface AccumuloAccess {
+public interface Access {
 
   interface Builder {
     /**
@@ -45,7 +45,7 @@ public interface AccumuloAccess {
      */
     Builder authorizationValidator(AuthorizationValidator validator);
 
-    AccumuloAccess build();
+    Access build();
   }
 
   /**
@@ -112,10 +112,9 @@ public interface AccumuloAccess {
    *
    * <p>
    * What this method does could also be accomplished by creating a parse tree using
-   * {@link AccumuloAccess#newParsedExpression(String)} and then recursively walking the parse tree.
-   * The implementation of this method does not create a parse tree and is much faster. If a parse
-   * tree is already available, then it would likely be faster to use it rather than call this
-   * method.
+   * {@link Access#newParsedExpression(String)} and then recursively walking the parse tree. The
+   * implementation of this method does not create a parse tree and is much faster. If a parse tree
+   * is already available, then it would likely be faster to use it rather than call this method.
    * </p>
    *
    * @throws InvalidAccessExpressionException when the expression is not valid.

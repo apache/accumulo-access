@@ -19,7 +19,7 @@
 package org.apache.accumulo.access.grammar.antlr;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.accumulo.access.grammar.antlr.Antlr4Tests.ACCUMULO_ACCESS;
+import static org.apache.accumulo.access.grammar.antlr.Antlr4Tests.ACCESS;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -89,7 +89,7 @@ public class AccessExpressionAntlrBenchmark {
         et.expressions = new ArrayList<>();
 
         et.evaluator = new AccessExpressionAntlrEvaluator(Stream.of(testDataSet.auths)
-            .map(a -> ACCUMULO_ACCESS.newAuthorizations(Set.of(a))).collect(Collectors.toList()));
+            .map(a -> ACCESS.newAuthorizations(Set.of(a))).collect(Collectors.toList()));
 
         for (var tests : testDataSet.tests) {
           if (tests.expectedResult != TestDataLoader.ExpectedResult.ERROR) {
