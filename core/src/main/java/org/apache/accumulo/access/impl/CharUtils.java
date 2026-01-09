@@ -23,13 +23,13 @@ package org.apache.accumulo.access.impl;
  * methods for comparing them.
  */
 // TODO rename
-final class ByteUtils {
-  static final byte QUOTE = (byte) '"';
-  static final byte BACKSLASH = (byte) '\\';
-  static final byte AND_OPERATOR = (byte) '&';
-  static final byte OR_OPERATOR = (byte) '|';
+final class CharUtils {
+  static final char QUOTE = '"';
+  static final char BACKSLASH = '\\';
+  static final char AND_OPERATOR = '&';
+  static final char OR_OPERATOR = '|';
 
-  private ByteUtils() {
+  private CharUtils() {
     // private constructor to prevent instantiation
   }
 

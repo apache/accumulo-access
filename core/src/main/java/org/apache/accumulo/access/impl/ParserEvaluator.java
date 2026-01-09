@@ -18,7 +18,7 @@
  */
 package org.apache.accumulo.access.impl;
 
-import static org.apache.accumulo.access.impl.ByteUtils.isAndOrOperator;
+import static org.apache.accumulo.access.impl.CharUtils.isAndOrOperator;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -132,13 +132,13 @@ public final class ParserEvaluator {
 
     if (tokenizer.hasNext()) {
       var operator = tokenizer.peek();
-      if (operator == ByteUtils.AND_OPERATOR) {
+      if (operator == CharUtils.AND_OPERATOR) {
         result = parseAndExpression(result, tokenizer, authorizedPredicate, shortCircuitPredicate);
         if (tokenizer.hasNext() && isAndOrOperator(tokenizer.peek())) {
           // A case of mixed operators, lets give a clear error message
           tokenizer.error("Cannot mix '|' and '&'");
         }
-      } else if (operator == ByteUtils.OR_OPERATOR) {
+      } else if (operator == CharUtils.OR_OPERATOR) {
         result = parseOrExpression(result, tokenizer, authorizedPredicate, shortCircuitPredicate);
         if (tokenizer.hasNext() && isAndOrOperator(tokenizer.peek())) {
           // A case of mixed operators, lets give a clear error message
@@ -163,7 +163,7 @@ public final class ParserEvaluator {
       var nextResult = parseParenExpressionOrAuthorization(tokenizer, authorizedPredicate,
           shortCircuitPredicate);
       result &= nextResult;
-    } while (tokenizer.hasNext() && tokenizer.peek() == ByteUtils.AND_OPERATOR);
+    } while (tokenizer.hasNext() && tokenizer.peek() == CharUtils.AND_OPERATOR);
     return result;
   }
 
@@ -180,7 +180,7 @@ public final class ParserEvaluator {
       var nextResult = parseParenExpressionOrAuthorization(tokenizer, authorizedPredicate,
           shortCircuitPredicate);
       result |= nextResult;
-    } while (tokenizer.hasNext() && tokenizer.peek() == ByteUtils.OR_OPERATOR);
+    } while (tokenizer.hasNext() && tokenizer.peek() == CharUtils.OR_OPERATOR);
     return result;
   }
 

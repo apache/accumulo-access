@@ -21,9 +21,9 @@ package org.apache.accumulo.access.impl;
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.AND;
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.AUTHORIZATION;
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.OR;
-import static org.apache.accumulo.access.impl.ByteUtils.AND_OPERATOR;
-import static org.apache.accumulo.access.impl.ByteUtils.OR_OPERATOR;
-import static org.apache.accumulo.access.impl.ByteUtils.isAndOrOperator;
+import static org.apache.accumulo.access.impl.CharUtils.AND_OPERATOR;
+import static org.apache.accumulo.access.impl.CharUtils.OR_OPERATOR;
+import static org.apache.accumulo.access.impl.CharUtils.isAndOrOperator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -178,7 +178,7 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
       CharSequence unquotedAuth;
       AuthorizationValidator.AuthorizationCharacters quoting;
       var wrapper = ParserEvaluator.lookupWrappers.get();
-      if (ByteUtils.isQuoteSymbol(auth.data[auth.start])) {
+      if (CharUtils.isQuoteSymbol(auth.data[auth.start])) {
         wrapper.set(auth.data, auth.start + 1, auth.len - 2);
         if (auth.hasEscapes) {
           unquotedAuth = AccessEvaluatorImpl.unescape(wrapper);

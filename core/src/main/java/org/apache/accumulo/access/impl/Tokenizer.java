@@ -18,9 +18,9 @@
  */
 package org.apache.accumulo.access.impl;
 
-import static org.apache.accumulo.access.impl.ByteUtils.isBackslashSymbol;
-import static org.apache.accumulo.access.impl.ByteUtils.isQuoteOrSlash;
-import static org.apache.accumulo.access.impl.ByteUtils.isQuoteSymbol;
+import static org.apache.accumulo.access.impl.CharUtils.isBackslashSymbol;
+import static org.apache.accumulo.access.impl.CharUtils.isQuoteOrSlash;
+import static org.apache.accumulo.access.impl.CharUtils.isQuoteSymbol;
 
 import java.util.stream.IntStream;
 

@@ -18,10 +18,10 @@
  */
 package org.apache.accumulo.access.impl;
 
-import static org.apache.accumulo.access.impl.ByteUtils.BACKSLASH;
-import static org.apache.accumulo.access.impl.ByteUtils.QUOTE;
-import static org.apache.accumulo.access.impl.ByteUtils.isQuoteOrSlash;
-import static org.apache.accumulo.access.impl.ByteUtils.isQuoteSymbol;
+import static org.apache.accumulo.access.impl.CharUtils.BACKSLASH;
+import static org.apache.accumulo.access.impl.CharUtils.QUOTE;
+import static org.apache.accumulo.access.impl.CharUtils.isQuoteOrSlash;
+import static org.apache.accumulo.access.impl.CharUtils.isQuoteSymbol;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -36,7 +36,6 @@ import org.apache.accumulo.access.InvalidAccessExpressionException;
 public final class AccessEvaluatorImpl implements AccessEvaluator {
 
   private final Predicate<CharSequence> authorizedPredicate;
-  // TODO set
   private final AuthorizationValidator authorizationValidator;
 
   /**
