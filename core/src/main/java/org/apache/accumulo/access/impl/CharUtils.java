@@ -22,7 +22,6 @@ package org.apache.accumulo.access.impl;
  * This class exists to avoid repeat conversions from byte to char as well as to provide helper
  * methods for comparing them.
  */
-// TODO rename
 final class CharUtils {
   static final char QUOTE = '"';
   static final char BACKSLASH = '\\';
