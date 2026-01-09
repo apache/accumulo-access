@@ -27,26 +27,44 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.accumulo.access.Access;
+import org.apache.accumulo.access.AuthorizationValidator;
 import org.apache.accumulo.access.ParsedAccessExpression;
 import org.junit.jupiter.api.Test;
 
 public class ParsedAccessExpressionTest {
   @Test
   public void testParsing() {
-    var access = Access.builder().build();
-    String expression = "(BLUE&(RED|PINK|YELLOW))|((YELLOW|\"GREEN/GREY\")&(RED|BLUE))|BLACK";
-    for (var parsed : List.of(access.newParsedExpression(expression),
-        access.newExpression(expression).parse())) {
+    HashSet<String> seenAuths = new HashSet<>();
+    AuthorizationValidator authorizationValidator = (auth, authChars) -> {
+      seenAuths.add(auth.toString());
+      return AuthorizationValidator.DEFAULT.test(auth, authChars);
+    };
+    var access = Access.builder().authorizationValidator(authorizationValidator).build();
+    String expression =
+        "(BLUE&(RED|PINK|YELLOW))|((YELLOW|\"GREEN/GREY\")&(RED|BLUE))|\"BLACK\\\\RED\"";
+
+    var pae1 = access.newParsedExpression(expression);
+    // check that unescaped and unquoted auths are passed in to the auth validator
+    assertEquals(Set.of("BLUE", "RED", "PINK", "YELLOW", "GREEN/GREY", "BLACK\\RED"), seenAuths);
+    seenAuths.clear();
+    var pae2 = access.newExpression(expression).parse();
+    // check that unescaped and unquoted auths are passed in to the auth validator
+    assertEquals(Set.of("BLUE", "RED", "PINK", "YELLOW", "GREEN/GREY", "BLACK\\RED"), seenAuths);
+
+    for (var parsed : List.of(pae1, pae2)) {
       // verify root node
-      verify("(BLUE&(RED|PINK|YELLOW))|((YELLOW|\"GREEN/GREY\")&(RED|BLUE))|BLACK", OR, 3, parsed);
+      verify("(BLUE&(RED|PINK|YELLOW))|((YELLOW|\"GREEN/GREY\")&(RED|BLUE))|\"BLACK\\\\RED\"", OR,
+          3, parsed);
 
       // verify all nodes at level 1 in the tree
       verify("BLUE&(RED|PINK|YELLOW)", AND, 2, parsed, 0);
       verify("(YELLOW|\"GREEN/GREY\")&(RED|BLUE)", AND, 2, parsed, 1);
-      verify("BLACK", AUTHORIZATION, 0, parsed, 2);
+      verify("\"BLACK\\\\RED\"", AUTHORIZATION, 0, parsed, 2);
 
       // verify all nodes at level 2 in the tree
       verify("BLUE", AUTHORIZATION, 0, parsed, 0, 0);

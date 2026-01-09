@@ -83,7 +83,7 @@ public final class AccessExpressionImpl extends AccessExpression {
 
     if (term.charAt(0) == '"' && term.charAt(term.length() - 1) == '"') {
       term = term.subSequence(1, term.length() - 1);
-      return AccessEvaluatorImpl.unescape(term).toString();
+      return AccessEvaluatorImpl.unescape(term);
     } else {
       return term;
     }

@@ -27,6 +27,7 @@ import static org.apache.accumulo.access.impl.ByteUtils.isAndOrOperator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.accumulo.access.AuthorizationValidator;
 import org.apache.accumulo.access.InvalidAuthorizationException;
@@ -36,7 +37,8 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private final String expression;
+  private final String wholeExpression;
+  private final AtomicReference<String> expression = new AtomicReference<>(null);
   private final int offset;
   private final int length;
 
@@ -45,7 +47,7 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
 
   public static final ParsedAccessExpression EMPTY = new ParsedAccessExpressionImpl();
 
-  private ParsedAccessExpressionImpl(char operator, String expression, int offset, int length,
+  private ParsedAccessExpressionImpl(char operator, String wholeExpression, int offset, int length,
       List<ParsedAccessExpression> children) {
     if (children.isEmpty()) {
       throw new IllegalArgumentException("Must have children with an operator");
@@ -59,23 +61,23 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
       this.type = OR;
     }
 
-    this.expression = expression;
+    this.wholeExpression = wholeExpression;
     this.offset = offset;
     this.length = length;
     this.children = List.copyOf(children);
   }
 
-  private ParsedAccessExpressionImpl(String expression) {
+  private ParsedAccessExpressionImpl(String wholeExpression, int offset, int length) {
     this.type = AUTHORIZATION;
-    this.expression = expression;
-    this.offset = 0;
-    this.length = expression.length();
+    this.wholeExpression = wholeExpression;
+    this.offset = offset;
+    this.length = length;
     this.children = List.of();
   }
 
   ParsedAccessExpressionImpl() {
     this.type = ExpressionType.EMPTY;
-    this.expression = "";
+    this.wholeExpression = "";
     this.offset = 0;
     this.length = 0;
     this.children = List.of();
@@ -83,7 +85,13 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
 
   @Override
   public String getExpression() {
-    return expression.substring(offset, length + offset);
+    String strExp = expression.get();
+    if (strExp != null) {
+      return strExp;
+    }
+    strExp = wholeExpression.substring(offset, length + offset);
+    expression.compareAndSet(null, strExp);
+    return expression.get();
   }
 
   @Override
@@ -170,18 +178,23 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
       CharSequence unquotedAuth;
       AuthorizationValidator.AuthorizationCharacters quoting;
       var wrapper = ParserEvaluator.lookupWrappers.get();
-      wrapper.set(auth.data, auth.start, auth.len);
-      if (ByteUtils.isQuoteSymbol(wrapper.charAt(0))) {
-        unquotedAuth = AccessExpressionImpl.unquote(wrapper);
+      if (ByteUtils.isQuoteSymbol(auth.data[auth.start])) {
+        wrapper.set(auth.data, auth.start + 1, auth.len - 2);
+        if (auth.hasEscapes) {
+          unquotedAuth = AccessEvaluatorImpl.unescape(wrapper);
+        } else {
+          unquotedAuth = wrapper;
+        }
         quoting = AuthorizationValidator.AuthorizationCharacters.ANY;
       } else {
+        wrapper.set(auth.data, auth.start, auth.len);
         unquotedAuth = wrapper;
         quoting = AuthorizationValidator.AuthorizationCharacters.BASIC;
       }
       if (!authorizationValidator.test(unquotedAuth, quoting)) {
         throw new InvalidAuthorizationException(unquotedAuth.toString());
       }
-      return new ParsedAccessExpressionImpl(new String(auth.data, auth.start, auth.len));
+      return new ParsedAccessExpressionImpl(wholeExpression, auth.start, auth.len);
     }
   }
 }

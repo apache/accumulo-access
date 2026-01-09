@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,6 +35,7 @@ import java.util.stream.Stream;
 
 import org.apache.accumulo.access.Access;
 import org.apache.accumulo.access.AccessEvaluator;
+import org.apache.accumulo.access.AuthorizationValidator;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.impl.AccessEvaluatorImpl;
 import org.junit.jupiter.api.Test;
@@ -225,6 +227,41 @@ public class AccessEvaluatorTest {
 
     invalidEscapeSeqList
         .forEach(seq -> assertThrows(IllegalArgumentException.class, () -> unescape(seq), message));
+  }
+
+  @Test
+  public void testAuthValidation() {
+    // This test ensures that unquoted and unescaped auths are passed to the auth validator.
+    HashSet<String> seenAuths = new HashSet<>();
+    AuthorizationValidator authorizationValidator = (auth, authChars) -> {
+      seenAuths.add(auth.toString());
+      return AuthorizationValidator.DEFAULT.test(auth, authChars);
+    };
+    var access = Access.builder().authorizationValidator(authorizationValidator).build();
+    var qa1 = access.quote("A");
+    var qa2 = access.quote("B/C");
+    var qa3 = access.quote("D\\E");
+
+    assertEquals(Set.of("A", "B/C", "D\\E"), seenAuths);
+    seenAuths.clear();
+
+    assertEquals("A", access.unquote(qa1));
+    assertEquals("B/C", access.unquote(qa2));
+    assertEquals("D\\E", access.unquote(qa3));
+
+    assertEquals(Set.of("A", "B/C", "D\\E"), seenAuths);
+    seenAuths.clear();
+
+    var eval = access.newEvaluator(access.newAuthorizations(Set.of("A")));
+    assertFalse(eval.canAccess(qa1 + "&" + qa2 + "&" + qa3));
+    assertEquals(Set.of("A", "B/C", "D\\E"), seenAuths);
+    seenAuths.clear();
+
+    eval = access.newEvaluator(a -> a.equals("A"));
+    assertFalse(eval.canAccess(qa1 + "&" + qa2 + "&" + qa3));
+    assertEquals(Set.of("A", "B/C", "D\\E"), seenAuths);
+    seenAuths.clear();
+
   }
 
   // TODO need to copy all test from Accumulo

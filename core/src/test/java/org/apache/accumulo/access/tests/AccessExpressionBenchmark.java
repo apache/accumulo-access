@@ -255,10 +255,13 @@ public class AccessExpressionBenchmark {
 
     System.out.println("Number of Expressions: " + numExpressions);
 
-    Options opt = new OptionsBuilder().include(AccessExpressionBenchmark.class.getSimpleName())
-        .mode(Mode.Throughput).operationsPerInvocation(numExpressions)
-        .timeUnit(TimeUnit.MICROSECONDS).warmupTime(TimeValue.seconds(5)).warmupIterations(3)
-        .measurementIterations(4).forks(3).build();
+    var include = System.getenv().getOrDefault("ACCESS_BENCHMARK",
+        AccessExpressionBenchmark.class.getSimpleName());
+
+    Options opt = new OptionsBuilder().include(include).mode(Mode.Throughput)
+        .operationsPerInvocation(numExpressions).timeUnit(TimeUnit.MICROSECONDS)
+        .warmupTime(TimeValue.seconds(5)).warmupIterations(3).measurementIterations(4).forks(3)
+        .build();
     new Runner(opt).run();
   }
 }

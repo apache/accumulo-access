@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 
 import org.apache.accumulo.access.Access;
 import org.apache.accumulo.access.AccessExpression;
+import org.apache.accumulo.access.AuthorizationValidator;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.ParsedAccessExpression;
 import org.junit.jupiter.api.Disabled;
@@ -48,7 +49,12 @@ public class AccessExpressionTest {
 
   @Test
   public void testGetAuthorizations() {
-    var access = Access.builder().build();
+    HashSet<String> seenAuths = new HashSet<>();
+    AuthorizationValidator authorizationValidator = (auth, authChars) -> {
+      seenAuths.add(auth.toString());
+      return AuthorizationValidator.DEFAULT.test(auth, authChars);
+    };
+    var access = Access.builder().authorizationValidator(authorizationValidator).build();
     // Test data pairs where the first entry of each pair is an expression to normalize and second
     // is the expected authorization in the expression
     var testData = new ArrayList<List<String>>();
@@ -72,6 +78,9 @@ public class AccessExpressionTest {
       var actual = found.stream().sorted().collect(Collectors.joining(","));
       assertEquals(expected, actual);
       found.clear();
+      actual = seenAuths.stream().sorted().collect(Collectors.joining(","));
+      assertEquals(expected, actual);
+      seenAuths.clear();
     }
 
   }
