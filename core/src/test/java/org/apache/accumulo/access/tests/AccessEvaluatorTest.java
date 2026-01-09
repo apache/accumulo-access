@@ -167,15 +167,10 @@ public class AccessEvaluatorTest {
   @Test
   public void testEmptyAuthorizations() {
     var access = Access.builder().build();
-    // TODO what part of the code throwing the exception?
-    assertThrows(IllegalArgumentException.class,
-        () -> access.newEvaluator(access.newAuthorizations(Set.of(""))));
-    assertThrows(IllegalArgumentException.class,
-        () -> access.newEvaluator(access.newAuthorizations(Set.of("", "A"))));
-    assertThrows(IllegalArgumentException.class,
-        () -> access.newEvaluator(access.newAuthorizations(Set.of("A", ""))));
-    assertThrows(IllegalArgumentException.class,
-        () -> access.newEvaluator(access.newAuthorizations(Set.of(""))));
+    assertThrows(IllegalArgumentException.class, () -> access.newAuthorizations(Set.of("")));
+    assertThrows(IllegalArgumentException.class, () -> access.newAuthorizations(Set.of("", "A")));
+    assertThrows(IllegalArgumentException.class, () -> access.newAuthorizations(Set.of("A", "")));
+    assertThrows(IllegalArgumentException.class, () -> access.newAuthorizations(Set.of("")));
   }
 
   @Test
@@ -208,6 +203,8 @@ public class AccessEvaluatorTest {
     assertEquals("九", access.unquote(access.quote("九")));
     assertEquals("\"五十\"", access.quote("五十"));
     assertEquals("五十", access.unquote(access.quote("五十")));
+    assertThrows(IllegalArgumentException.class, () -> access.quote(""));
+    assertThrows(IllegalArgumentException.class, () -> access.unquote(""));
   }
 
   private static String unescape(String s) {

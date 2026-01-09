@@ -40,6 +40,9 @@ public class AccessImpl implements Access {
 
   private void validateAuthorization(CharSequence auth,
       AuthorizationValidator.AuthorizationCharacters quoting) {
+    if (auth.isEmpty()) {
+      throw new IllegalArgumentException("Empty string is not a valid authorization");
+    }
     if (!authValidator.test(auth, quoting)) {
       throw new InvalidAuthorizationException(auth.toString());
     }
