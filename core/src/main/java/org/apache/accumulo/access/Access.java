@@ -101,11 +101,6 @@ public interface Access {
       throws InvalidAccessExpressionException, InvalidAuthorizationException;
 
   /**
-   * @return a pre-allocated empty Authorizations object
-   */
-  Authorizations newAuthorizations();
-
-  /**
    * Creates an Authorizations object from the set of input authorization strings.
    *
    * @param authorizations set of authorization strings

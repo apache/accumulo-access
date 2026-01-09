@@ -63,11 +63,6 @@ public class AccumuloAccessImpl implements Access {
   }
 
   @Override
-  public Authorizations newAuthorizations() {
-    return AuthorizationsImpl.EMPTY;
-  }
-
-  @Override
   public Authorizations newAuthorizations(Set<String> authorizations) {
     if (authorizations.isEmpty()) {
       return AuthorizationsImpl.EMPTY;

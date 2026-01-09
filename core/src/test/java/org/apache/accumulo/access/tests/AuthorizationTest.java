@@ -57,11 +57,9 @@ public class AuthorizationTest {
   public void testEmpty() {
     var access = Access.builder().build();
     // check if new object is allocated
-    assertSame(access.newAuthorizations(), access.newAuthorizations());
-    // check if optimization is working
-    assertSame(access.newAuthorizations(), access.newAuthorizations(Set.of()));
-    assertEquals(Set.of(), access.newAuthorizations().asSet());
-    assertSame(Set.of(), access.newAuthorizations().asSet());
+    assertSame(access.newAuthorizations(Set.of()), access.newAuthorizations(Set.of()));
+    assertEquals(Set.of(), access.newAuthorizations(Set.of()).asSet());
+    assertSame(Set.of(), access.newAuthorizations(Set.of()).asSet());
   }
 
   @Test
