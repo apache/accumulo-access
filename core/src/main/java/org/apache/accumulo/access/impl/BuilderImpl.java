@@ -35,6 +35,6 @@ public class BuilderImpl implements Access.Builder {
 
   @Override
   public Access build() {
-    return new AccumuloAccessImpl(validator == null ? AuthorizationValidator.DEFAULT : validator);
+    return new AccessImpl(validator == null ? AuthorizationValidator.DEFAULT : validator);
   }
 }

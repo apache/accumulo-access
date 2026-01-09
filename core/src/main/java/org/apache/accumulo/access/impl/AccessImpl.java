@@ -33,7 +33,7 @@ import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.InvalidAuthorizationException;
 import org.apache.accumulo.access.ParsedAccessExpression;
 
-public class AccumuloAccessImpl implements Access {
+public class AccessImpl implements Access {
 
   private final AuthorizationValidator authValidator;
 
@@ -44,7 +44,7 @@ public class AccumuloAccessImpl implements Access {
     }
   }
 
-  public AccumuloAccessImpl(AuthorizationValidator authValidator) {
+  public AccessImpl(AuthorizationValidator authValidator) {
     this.authValidator = authValidator;
   }
 
