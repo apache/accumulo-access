@@ -62,7 +62,7 @@ public final class Tokenizer {
     public int start;
     public int len;
     public boolean hasEscapes;
-    public AuthorizationValidator.AuthorizationQuoting quoting;
+    public AuthorizationValidator.AuthorizationCharacters quoting;
 
   }
 
@@ -139,7 +139,7 @@ public final class Tokenizer {
       authorizationToken.start = start;
       authorizationToken.len = index - start;
       authorizationToken.hasEscapes = hasEscapes;
-      authorizationToken.quoting = AuthorizationValidator.AuthorizationQuoting.QUOTED;
+      authorizationToken.quoting = AuthorizationValidator.AuthorizationCharacters.ANY;
 
       if (includeQuotes) {
         authorizationToken.start--;
@@ -158,7 +158,7 @@ public final class Tokenizer {
       authorizationToken.start = start;
       authorizationToken.len = index - start;
       authorizationToken.hasEscapes = false;
-      authorizationToken.quoting = AuthorizationValidator.AuthorizationQuoting.UNQUOTED;
+      authorizationToken.quoting = AuthorizationValidator.AuthorizationCharacters.BASIC;
       return authorizationToken;
     } else {
       error("Expected a '(' character or an authorization token instead saw '" + peek() + "'");

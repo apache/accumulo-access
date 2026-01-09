@@ -18,6 +18,7 @@
  */
 package org.apache.accumulo.access;
 
+import java.nio.charset.CharsetDecoder;
 import java.util.function.BiPredicate;
 
 /**
@@ -29,7 +30,7 @@ import java.util.function.BiPredicate;
  * When an authorization is quoted and/or escaped in access expression that is undone before is
  * passed to this predicate. Conceptually it is like {@link Access#unquote(String)} is called prior
  * to being passed to this predicate. If the authorization was quoted that information is passed
- * along is it may be useful for optimizations.
+ * along as it may be useful for optimizations.
  *
  * <p>
  * A CharSequence is passed to this predicate for efficiency. It allows having a view into the
@@ -42,22 +43,22 @@ import java.util.function.BiPredicate;
  * @since 1.0.0
  */
 public interface AuthorizationValidator
-    extends BiPredicate<CharSequence,AuthorizationValidator.AuthorizationQuoting> {
+    extends BiPredicate<CharSequence,AuthorizationValidator.AuthorizationCharacters> {
 
   /**
    * @since 1.0.0
    */
-  enum AuthorizationQuoting {
+  enum AuthorizationCharacters {
     /**
-     * Denotes that an authorization seen in a valid access expression was quoted. This may mean the
-     * expression has extra characters not seen in an unquoted authorization.
+     * This authorization could potentially contain any java character.
      */
-    QUOTED,
+    ANY,
     /**
-     * Denotes that an authorization seen in a valid access expression was unquoted. This means the
-     * expression only contains the characters allowed in an unquoted authorization.
+     * Authorization only contains the characters
+     *
+     * <pre>{@code [0-9a-zA-Z_-.:/] }</pre>
      */
-    UNQUOTED
+    BASIC
   }
 
   /**
@@ -66,17 +67,20 @@ public interface AuthorizationValidator
    *
    * <pre>
    *     {@code
-   *     AuthorizationValidator DEFAULT = (auth, quoting) -> {
-   *       if(quoting == AuthorizationQuoting.UNQUOTED) {
+   *     AuthorizationValidator DEFAULT = (auth, authChars) -> {
+   *       if (authChars == AuthorizationCharacters.BASIC) {
+   *         // The authorization is already known to only contain a small set of ASCII chars and no
+   *         // further validation is needed.
    *         return true;
    *       }
+   *
+   *       // Unsure what characters are present, so must validate them all.
    *       for (int i = 0; i < auth.length(); i++) {
    *         var c = auth.charAt(i);
-   *         if (!Character.isDefined(auth.charAt(i)) || Character.isISOControl(c) || c == '\uFFFD') {
+   *         if (!Character.isDefined(c) || Character.isISOControl(c) || c == '\uFFFD') {
    *           return false;
    *         }
    *       }
-   *       return true;
    *     }
    *     }
    * </pre>
@@ -89,18 +93,20 @@ public interface AuthorizationValidator
    *
    * @see Character#isDefined(char)
    * @see Character#isISOControl(char)
+   * @see CharsetDecoder#replacement()
    * @since 1.0.0
    */
-  AuthorizationValidator DEFAULT = (auth, quoting) -> {
-    if (quoting == AuthorizationQuoting.UNQUOTED) {
-      // If an authorization is in a valid access expression and is unquoted then its already known
-      // to only contain a small set of ASCII chars and no further validation is needed.
+  AuthorizationValidator DEFAULT = (auth, authChars) -> {
+    if (authChars == AuthorizationCharacters.BASIC) {
+      // The authorization is already known to only contain a small set of ASCII chars and no
+      // further validation is needed.
       return true;
     }
 
+    // Unsure what characters are present, so must validate them all.
     for (int i = 0; i < auth.length(); i++) {
       var c = auth.charAt(i);
-      if (!Character.isDefined(auth.charAt(i)) || Character.isISOControl(c) || c == '\uFFFD') {
+      if (!Character.isDefined(c) || Character.isISOControl(c) || c == '\uFFFD') {
         return false;
       }
     }

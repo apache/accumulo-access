@@ -168,15 +168,15 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
     } else {
       var auth = tokenizer.nextAuthorization(true);
       CharSequence unquotedAuth;
-      AuthorizationValidator.AuthorizationQuoting quoting;
+      AuthorizationValidator.AuthorizationCharacters quoting;
       var wrapper = ParserEvaluator.lookupWrappers.get();
       wrapper.set(auth.data, auth.start, auth.len);
       if (ByteUtils.isQuoteSymbol(wrapper.charAt(0))) {
         unquotedAuth = AccessExpressionImpl.unquote(wrapper);
-        quoting = AuthorizationValidator.AuthorizationQuoting.QUOTED;
+        quoting = AuthorizationValidator.AuthorizationCharacters.ANY;
       } else {
         unquotedAuth = wrapper;
-        quoting = AuthorizationValidator.AuthorizationQuoting.UNQUOTED;
+        quoting = AuthorizationValidator.AuthorizationCharacters.BASIC;
       }
       if (!authorizationValidator.test(unquotedAuth, quoting)) {
         throw new InvalidAuthorizationException(unquotedAuth.toString());

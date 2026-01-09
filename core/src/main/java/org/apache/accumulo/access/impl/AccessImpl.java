@@ -18,7 +18,7 @@
  */
 package org.apache.accumulo.access.impl;
 
-import static org.apache.accumulo.access.AuthorizationValidator.AuthorizationQuoting.QUOTED;
+import static org.apache.accumulo.access.AuthorizationValidator.AuthorizationCharacters.ANY;
 
 import java.util.Collection;
 import java.util.Set;
@@ -38,7 +38,7 @@ public class AccessImpl implements Access {
   private final AuthorizationValidator authValidator;
 
   private void validateAuthorization(CharSequence auth,
-      AuthorizationValidator.AuthorizationQuoting quoting) {
+      AuthorizationValidator.AuthorizationCharacters quoting) {
     if (!authValidator.test(auth, quoting)) {
       throw new InvalidAuthorizationException(auth.toString());
     }
@@ -67,8 +67,7 @@ public class AccessImpl implements Access {
     if (authorizations.isEmpty()) {
       return AuthorizationsImpl.EMPTY;
     } else {
-      // not sure if the auth needs quoting or not, so assume it does
-      authorizations.forEach(auth -> validateAuthorization(auth, QUOTED));
+      authorizations.forEach(auth -> validateAuthorization(auth, ANY));
       return new AuthorizationsImpl(authorizations);
     }
   }
@@ -81,14 +80,14 @@ public class AccessImpl implements Access {
 
   @Override
   public String quote(String authorization) {
-    validateAuthorization(authorization, QUOTED);
+    validateAuthorization(authorization, ANY);
     return AccessExpressionImpl.quote(authorization).toString();
   }
 
   @Override
   public String unquote(String authorization) {
     var unquoted = AccessExpressionImpl.unquote(authorization);
-    validateAuthorization(unquoted, QUOTED);
+    validateAuthorization(unquoted, ANY);
     return unquoted.toString();
   }
 
