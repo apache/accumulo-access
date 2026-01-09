@@ -21,6 +21,7 @@ package org.apache.accumulo.access.impl;
 import static org.apache.accumulo.access.AuthorizationValidator.AuthorizationCharacters.ANY;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -45,7 +46,7 @@ public class AccessImpl implements Access {
   }
 
   public AccessImpl(AuthorizationValidator authValidator) {
-    this.authValidator = authValidator;
+    this.authValidator = Objects.requireNonNull(authValidator);
   }
 
   @Override

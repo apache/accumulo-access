@@ -230,6 +230,12 @@ public class AccessEvaluatorTest {
   }
 
   @Test
+  public void testNullAuthValidator() {
+    assertThrows(NullPointerException.class,
+        () -> Access.builder().authorizationValidator(null).build());
+  }
+
+  @Test
   public void testAuthValidation() {
     // This test ensures that unquoted and unescaped auths are passed to the auth validator.
     HashSet<String> seenAuths = new HashSet<>();

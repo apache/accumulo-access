@@ -32,7 +32,6 @@ import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.AuthorizationValidator;
 import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
-import org.apache.accumulo.access.InvalidAuthorizationException;
 
 public final class AccessEvaluatorImpl implements AccessEvaluator {
 
@@ -162,21 +161,13 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
 
   boolean evaluate(String accessExpression) throws InvalidAccessExpressionException {
     var charsWrapper = ParserEvaluator.lookupWrappers.get();
-    Predicate<Tokenizer.AuthorizationToken> atp = authToken -> {
-      var authorization = ParserEvaluator.unescape(authToken, charsWrapper);
-      if (!authorizationValidator.test(authorization, authToken.quoting)) {
-        throw new InvalidAuthorizationException(authorization.toString());
-      }
-      return authorizedPredicate.test(authorization);
-    };
+    Predicate<Tokenizer.AuthorizationToken> atp = authToken -> authorizedPredicate
+        .test(ParserEvaluator.validateAuth(authorizationValidator, authToken, charsWrapper));
 
     // This is used once the expression is known to always be true or false. For this case only need
     // to validate authorizations, do not need to look them up in a set.
     Predicate<Tokenizer.AuthorizationToken> shortCircuit = authToken -> {
-      var authorization = ParserEvaluator.unescape(authToken, charsWrapper);
-      if (!authorizationValidator.test(authorization, authToken.quoting)) {
-        throw new InvalidAuthorizationException(authorization.toString());
-      }
+      ParserEvaluator.validateAuth(authorizationValidator, authToken, charsWrapper);
       return true;
     };
 

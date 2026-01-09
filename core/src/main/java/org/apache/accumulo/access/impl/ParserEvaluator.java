@@ -58,6 +58,21 @@ public final class ParserEvaluator {
     return tokenizer;
   }
 
+  static CharSequence validateAuth(AuthorizationValidator authValidator,
+      Tokenizer.AuthorizationToken authToken, CharsWrapper charsWrapper) {
+    charsWrapper.set(authToken.data, authToken.start, authToken.len);
+    CharSequence authorizations;
+    if (authToken.hasEscapes) {
+      authorizations = AccessEvaluatorImpl.unescape(charsWrapper);
+    } else {
+      authorizations = charsWrapper;
+    }
+    if (!authValidator.test(authorizations, authToken.quoting)) {
+      throw new InvalidAuthorizationException(authorizations.toString());
+    }
+    return authorizations;
+  }
+
   public static void validate(String expression, AuthorizationValidator authValidator)
       throws InvalidAccessExpressionException {
     if (expression.isEmpty()) {
@@ -66,10 +81,7 @@ public final class ParserEvaluator {
 
     var charsWrapper = ParserEvaluator.lookupWrappers.get();
     Predicate<Tokenizer.AuthorizationToken> vp = authToken -> {
-      var authorizations = unescape(authToken, charsWrapper);
-      if (!authValidator.test(authorizations, authToken.quoting)) {
-        throw new InvalidAuthorizationException(authorizations.toString());
-      }
+      validateAuth(authValidator, authToken, charsWrapper);
       return true;
     };
 
@@ -80,22 +92,10 @@ public final class ParserEvaluator {
       AuthorizationValidator authValidator) throws InvalidAccessExpressionException {
     var charsWrapper = ParserEvaluator.lookupWrappers.get();
     Predicate<Tokenizer.AuthorizationToken> atp = authToken -> {
-      var authorizations = unescape(authToken, charsWrapper);
-      if (!authValidator.test(authorizations, authToken.quoting)) {
-        throw new InvalidAuthorizationException(authorizations.toString());
-      }
-      authorizationConsumer.accept(authorizations.toString());
+      authorizationConsumer.accept(validateAuth(authValidator, authToken, charsWrapper).toString());
       return true;
     };
     ParserEvaluator.parseAccessExpression(expression, atp, atp);
-  }
-
-  static CharSequence unescape(Tokenizer.AuthorizationToken token, CharsWrapper wrapper) {
-    wrapper.set(token.data, token.start, token.len);
-    if (token.hasEscapes) {
-      return AccessEvaluatorImpl.unescape(wrapper);
-    }
-    return wrapper;
   }
 
   public static boolean parseAccessExpression(String expression,
