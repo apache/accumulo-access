@@ -16,19 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access;
+package org.apache.accumulo.access.impl;
 
-import java.io.Serializable;
-import java.util.Set;
+import java.util.Objects;
 
-/**
- * An immutable collection of authorization strings.
- *
- * <p>
- * Instances of this class are thread-safe.
- *
- * @since 1.0.0
- */
-public interface Authorizations extends Iterable<String>, Serializable {
-  Set<String> asSet();
+import org.apache.accumulo.access.Access;
+import org.apache.accumulo.access.AuthorizationValidator;
+
+public class BuilderImpl implements Access.Builder {
+
+  private AuthorizationValidator validator;
+
+  @Override
+  public Access.Builder authorizationValidator(AuthorizationValidator validator) {
+    this.validator = Objects.requireNonNull(validator);
+    return this;
+  }
+
+  @Override
+  public Access build() {
+    return new AccessImpl(validator == null ? AuthorizationValidator.DEFAULT : validator);
+  }
 }

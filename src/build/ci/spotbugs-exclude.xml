@@ -23,4 +23,9 @@
 <Match>
   <Class name="~.*[.]jmh_generated[.].*" />
 </Match>
+<Match>
+	<Class name="org.apache.accumulo.access.impl.CharsWrapper" />
+	<Method name="set" params="char[],int,int" returns="void" />
+	<Bug pattern="EI_EXPOSE_REP2" />
+</Match>
 </FindBugsFilter>

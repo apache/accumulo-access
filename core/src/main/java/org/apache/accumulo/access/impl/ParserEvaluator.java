@@ -18,44 +18,90 @@
  */
 package org.apache.accumulo.access.impl;
 
-import static org.apache.accumulo.access.impl.ByteUtils.isAndOrOperator;
+import static org.apache.accumulo.access.impl.CharUtils.isAndOrOperator;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import org.apache.accumulo.access.AuthorizationValidator;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
+import org.apache.accumulo.access.InvalidAuthorizationException;
 
 /**
  * Code for parsing and evaluating an access expression at the same time.
  */
 public final class ParserEvaluator {
 
-  static final byte OPEN_PAREN = (byte) '(';
-  static final byte CLOSE_PAREN = (byte) ')';
+  static final char OPEN_PAREN = '(';
+  static final char CLOSE_PAREN = ')';
 
-  private static final byte[] EMPTY = new byte[0];
+  static final ThreadLocal<CharsWrapper> lookupWrappers =
+      ThreadLocal.withInitial(() -> new CharsWrapper(new char[0]));
+  static final ThreadLocal<Tokenizer> tokenizers =
+      ThreadLocal.withInitial(() -> new Tokenizer(new char[0]));
+  static final ThreadLocal<char[]> expressionArrays = ThreadLocal.withInitial(() -> new char[128]);
 
-  static final ThreadLocal<BytesWrapper> lookupWrappers =
-      ThreadLocal.withInitial(() -> new BytesWrapper(EMPTY));
-  private static final ThreadLocal<Tokenizer> tokenizers =
-      ThreadLocal.withInitial(() -> new Tokenizer(EMPTY));
+  static Tokenizer getPerThreadTokenizer(String expression) {
+    var tokenizer = tokenizers.get();
+    var array = expressionArrays.get();
+    if (array.length < expression.length()) {
+      int newLen = array.length;
+      while (newLen < expression.length()) {
+        newLen = Math.multiplyExact(newLen, 2);
+      }
+      array = new char[newLen];
+      expressionArrays.set(array);
+    }
+    expression.getChars(0, expression.length(), array, 0);
+    tokenizer.reset(array, expression.length());
 
-  public static void findAuthorizations(byte[] expression, Consumer<String> authorizationConsumer)
+    return tokenizer;
+  }
+
+  static CharSequence validateAuth(AuthorizationValidator authValidator,
+      Tokenizer.AuthorizationToken authToken, CharsWrapper charsWrapper) {
+    charsWrapper.set(authToken.data, authToken.start, authToken.len);
+    CharSequence authorizations;
+    if (authToken.hasEscapes) {
+      authorizations = AccessEvaluatorImpl.unescape(charsWrapper);
+    } else {
+      authorizations = charsWrapper;
+    }
+    if (!authValidator.test(authorizations, authToken.quoting)) {
+      throw new InvalidAuthorizationException(authorizations.toString());
+    }
+    return authorizations;
+  }
+
+  public static void validate(String expression, AuthorizationValidator authValidator)
       throws InvalidAccessExpressionException {
-    var bytesWrapper = ParserEvaluator.lookupWrappers.get();
+    if (expression.isEmpty()) {
+      return;
+    }
+
+    var charsWrapper = ParserEvaluator.lookupWrappers.get();
+    Predicate<Tokenizer.AuthorizationToken> vp = authToken -> {
+      validateAuth(authValidator, authToken, charsWrapper);
+      return true;
+    };
+
+    ParserEvaluator.parseAccessExpression(expression, vp, vp);
+  }
+
+  public static void findAuthorizations(String expression, Consumer<String> authorizationConsumer,
+      AuthorizationValidator authValidator) throws InvalidAccessExpressionException {
+    var charsWrapper = ParserEvaluator.lookupWrappers.get();
     Predicate<Tokenizer.AuthorizationToken> atp = authToken -> {
-      bytesWrapper.set(authToken.data, authToken.start, authToken.len);
-      authorizationConsumer.accept(AccessEvaluatorImpl.unescape(bytesWrapper));
+      authorizationConsumer.accept(validateAuth(authValidator, authToken, charsWrapper).toString());
       return true;
     };
     ParserEvaluator.parseAccessExpression(expression, atp, atp);
   }
 
-  public static boolean parseAccessExpression(byte[] expression,
+  public static boolean parseAccessExpression(String expression,
       Predicate<Tokenizer.AuthorizationToken> authorizedPredicate,
       Predicate<Tokenizer.AuthorizationToken> shortCircuitPredicate) {
-    var tokenizer = tokenizers.get();
-    tokenizer.reset(expression);
+    var tokenizer = getPerThreadTokenizer(expression);
     return parseAccessExpression(tokenizer, authorizedPredicate, shortCircuitPredicate);
   }
 
@@ -71,7 +117,7 @@ public final class ParserEvaluator {
 
     if (tokenizer.hasNext()) {
       // not all input was read, so not a valid expression
-      tokenizer.error("Unexpected character '" + (char) tokenizer.peek() + "'");
+      tokenizer.error("Unexpected character '" + tokenizer.peek() + "'");
     }
 
     return node;
@@ -86,13 +132,13 @@ public final class ParserEvaluator {
 
     if (tokenizer.hasNext()) {
       var operator = tokenizer.peek();
-      if (operator == ByteUtils.AND_OPERATOR) {
+      if (operator == CharUtils.AND_OPERATOR) {
         result = parseAndExpression(result, tokenizer, authorizedPredicate, shortCircuitPredicate);
         if (tokenizer.hasNext() && isAndOrOperator(tokenizer.peek())) {
           // A case of mixed operators, lets give a clear error message
           tokenizer.error("Cannot mix '|' and '&'");
         }
-      } else if (operator == ByteUtils.OR_OPERATOR) {
+      } else if (operator == CharUtils.OR_OPERATOR) {
         result = parseOrExpression(result, tokenizer, authorizedPredicate, shortCircuitPredicate);
         if (tokenizer.hasNext() && isAndOrOperator(tokenizer.peek())) {
           // A case of mixed operators, lets give a clear error message
@@ -117,7 +163,7 @@ public final class ParserEvaluator {
       var nextResult = parseParenExpressionOrAuthorization(tokenizer, authorizedPredicate,
           shortCircuitPredicate);
       result &= nextResult;
-    } while (tokenizer.hasNext() && tokenizer.peek() == ByteUtils.AND_OPERATOR);
+    } while (tokenizer.hasNext() && tokenizer.peek() == CharUtils.AND_OPERATOR);
     return result;
   }
 
@@ -134,7 +180,7 @@ public final class ParserEvaluator {
       var nextResult = parseParenExpressionOrAuthorization(tokenizer, authorizedPredicate,
           shortCircuitPredicate);
       result |= nextResult;
-    } while (tokenizer.hasNext() && tokenizer.peek() == ByteUtils.OR_OPERATOR);
+    } while (tokenizer.hasNext() && tokenizer.peek() == CharUtils.OR_OPERATOR);
     return result;
   }
 

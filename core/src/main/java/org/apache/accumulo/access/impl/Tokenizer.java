@@ -18,13 +18,13 @@
  */
 package org.apache.accumulo.access.impl;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.accumulo.access.impl.ByteUtils.isBackslashSymbol;
-import static org.apache.accumulo.access.impl.ByteUtils.isQuoteOrSlash;
-import static org.apache.accumulo.access.impl.ByteUtils.isQuoteSymbol;
+import static org.apache.accumulo.access.impl.CharUtils.isBackslashSymbol;
+import static org.apache.accumulo.access.impl.CharUtils.isQuoteOrSlash;
+import static org.apache.accumulo.access.impl.CharUtils.isQuoteSymbol;
 
 import java.util.stream.IntStream;
 
+import org.apache.accumulo.access.AuthorizationValidator;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 
 /**
@@ -47,47 +47,51 @@ public final class Tokenizer {
     "_-:./".chars().forEach(c -> validAuthChars[c] = true);
   }
 
-  public static boolean isValidAuthChar(byte b) {
-    return validAuthChars[0xff & b];
+  public static boolean isValidAuthChar(char b) {
+    return validAuthChars[0xff & b] && b < 256;
   }
 
-  private byte[] expression;
+  private char[] expression;
+  private int len;
   private int index;
 
   private final AuthorizationToken authorizationToken = new AuthorizationToken();
 
   public static class AuthorizationToken {
-    public byte[] data;
+    public char[] data;
     public int start;
     public int len;
+    public boolean hasEscapes;
+    public AuthorizationValidator.AuthorizationCharacters quoting;
+
   }
 
-  Tokenizer(byte[] expression) {
-    this.expression = expression;
-    authorizationToken.data = expression;
+  Tokenizer(char[] expression) {
+    reset(expression, expression.length);
   }
 
-  void reset(byte[] expression) {
+  void reset(char[] expression, int len) {
     this.expression = expression;
-    authorizationToken.data = expression;
     this.index = 0;
+    this.len = len;
+    this.authorizationToken.data = expression;
   }
 
   boolean hasNext() {
-    return index < expression.length;
+    return index < len;
   }
 
   public void advance() {
     index++;
   }
 
-  public void next(byte expected) {
+  public void next(char expected) {
     if (!hasNext()) {
-      error("Expected '" + (char) expected + "' instead saw end of input");
+      error("Expected '" + expected + "' instead saw end of input");
     }
 
     if (expression[index] != expected) {
-      error("Expected '" + (char) expected + "' instead saw '" + (char) (expression[index]) + "'");
+      error("Expected '" + expected + "' instead saw '" + (expression[index]) + "'");
     }
     index++;
   }
@@ -97,15 +101,11 @@ public final class Tokenizer {
   }
 
   public void error(String msg, int idx) {
-    throw new InvalidAccessExpressionException(msg, new String(expression, UTF_8), idx);
+    throw new InvalidAccessExpressionException(msg, new String(expression, 0, len), idx);
   }
 
-  byte peek() {
+  char peek() {
     return expression[index];
-  }
-
-  byte[] expression() {
-    return expression;
   }
 
   public int curentOffset() {
@@ -116,17 +116,19 @@ public final class Tokenizer {
     if (isQuoteSymbol(expression[index])) {
       int start = ++index;
 
-      while (index < expression.length && !isQuoteSymbol(expression[index])) {
+      boolean hasEscapes = false;
+      while (index < len && !isQuoteSymbol(expression[index])) {
         if (isBackslashSymbol(expression[index])) {
           index++;
-          if (index == expression.length || !isQuoteOrSlash(expression[index])) {
+          if (index == len || !isQuoteOrSlash(expression[index])) {
             error("Invalid escaping within quotes", index - 1);
           }
+          hasEscapes = true;
         }
         index++;
       }
 
-      if (index == expression.length) {
+      if (index == len) {
         error("Unclosed quote", start - 1);
       }
 
@@ -136,6 +138,8 @@ public final class Tokenizer {
 
       authorizationToken.start = start;
       authorizationToken.len = index - start;
+      authorizationToken.hasEscapes = hasEscapes;
+      authorizationToken.quoting = AuthorizationValidator.AuthorizationCharacters.ANY;
 
       if (includeQuotes) {
         authorizationToken.start--;
@@ -148,15 +152,16 @@ public final class Tokenizer {
 
     } else if (isValidAuthChar(expression[index])) {
       int start = index;
-      while (index < expression.length && isValidAuthChar(expression[index])) {
+      do {
         index++;
-      }
+      } while (index < len && isValidAuthChar(expression[index]));
       authorizationToken.start = start;
       authorizationToken.len = index - start;
+      authorizationToken.hasEscapes = false;
+      authorizationToken.quoting = AuthorizationValidator.AuthorizationCharacters.BASIC;
       return authorizationToken;
     } else {
-      error(
-          "Expected a '(' character or an authorization token instead saw '" + (char) peek() + "'");
+      error("Expected a '(' character or an authorization token instead saw '" + peek() + "'");
       return null;
     }
   }

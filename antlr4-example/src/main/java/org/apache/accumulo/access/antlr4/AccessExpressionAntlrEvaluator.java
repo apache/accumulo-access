@@ -25,9 +25,8 @@ import java.util.Set;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.apache.accumulo.access.AccessExpression;
+import org.apache.accumulo.access.Access;
 import org.apache.accumulo.access.Authorizations;
-import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_tokenContext;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.And_expressionContext;
@@ -36,6 +35,8 @@ import org.apache.accumulo.access.grammars.AccessExpressionParser.Or_expressionC
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Or_operatorContext;
 
 public class AccessExpressionAntlrEvaluator {
+
+  public static final Access ACCESS = Access.builder().build();
 
   private class Entity {
 
@@ -60,21 +61,13 @@ public class AccessExpressionAntlrEvaluator {
       e.authorizations = new HashSet<>(entityAuths.size() * 2);
       a.asSet().stream().forEach(auth -> {
         e.authorizations.add(auth);
-        String quoted = AccessExpression.quote(auth);
+        String quoted = ACCESS.quote(auth);
         if (!quoted.startsWith("\"")) {
           quoted = '"' + quoted + '"';
         }
         e.authorizations.add(quoted);
       });
     }
-  }
-
-  public boolean canAccess(byte[] accessExpression) throws InvalidAccessExpressionException {
-    return canAccess(AccessExpression.of(accessExpression));
-  }
-
-  public boolean canAccess(AccessExpression accessExpression) {
-    return canAccess(accessExpression.getExpression());
   }
 
   public boolean canAccess(String accessExpression) {

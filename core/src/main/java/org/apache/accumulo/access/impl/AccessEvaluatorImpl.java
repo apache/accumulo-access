@@ -18,11 +18,10 @@
  */
 package org.apache.accumulo.access.impl;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.accumulo.access.impl.ByteUtils.BACKSLASH;
-import static org.apache.accumulo.access.impl.ByteUtils.QUOTE;
-import static org.apache.accumulo.access.impl.ByteUtils.isQuoteOrSlash;
-import static org.apache.accumulo.access.impl.ByteUtils.isQuoteSymbol;
+import static org.apache.accumulo.access.impl.CharUtils.BACKSLASH;
+import static org.apache.accumulo.access.impl.CharUtils.QUOTE;
+import static org.apache.accumulo.access.impl.CharUtils.isQuoteOrSlash;
+import static org.apache.accumulo.access.impl.CharUtils.isQuoteSymbol;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -30,42 +29,54 @@ import java.util.function.Predicate;
 
 import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AccessExpression;
+import org.apache.accumulo.access.AuthorizationValidator;
 import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 
 public final class AccessEvaluatorImpl implements AccessEvaluator {
 
-  private final Predicate<BytesWrapper> authorizedPredicate;
+  private final Predicate<CharSequence> authorizedPredicate;
+  private final AuthorizationValidator authorizationValidator;
 
   /**
    * Create an AccessEvaluatorImpl using an Authorizer object
    */
-  public AccessEvaluatorImpl(Authorizer authorizationChecker) {
-    this.authorizedPredicate = auth -> authorizationChecker.isAuthorized(unescape(auth));
+  public AccessEvaluatorImpl(Authorizer authorizationChecker,
+      AuthorizationValidator authorizationValidator) {
+    this.authorizedPredicate = auth -> authorizationChecker.isAuthorized(auth.toString());
+    this.authorizationValidator = authorizationValidator;
   }
 
   /**
    * Create an AccessEvaluatorImpl using a collection of authorizations
    */
-  public AccessEvaluatorImpl(Authorizations authorizations) {
+  public AccessEvaluatorImpl(Authorizations authorizations,
+      AuthorizationValidator authorizationValidator) {
     var authsSet = authorizations.asSet();
-    final Set<BytesWrapper> authBytes = new HashSet<>(authsSet.size());
+    final Set<CharsWrapper> wrappedAuths = new HashSet<>(authsSet.size());
     for (String authorization : authsSet) {
-      var auth = authorization.getBytes(UTF_8);
-      if (auth.length == 0) {
+      if (authorization.isEmpty()) {
         throw new IllegalArgumentException("Empty authorization");
       }
-      authBytes.add(new BytesWrapper(AccessEvaluatorImpl.escape(auth, false)));
+
+      wrappedAuths.add(new CharsWrapper(authorization.toCharArray()));
     }
 
-    authorizedPredicate = authBytes::contains;
+    this.authorizedPredicate = auth -> {
+      if (auth instanceof CharsWrapper) {
+        return wrappedAuths.contains(auth);
+      } else {
+        return wrappedAuths.contains(new CharsWrapper(auth.toString().toCharArray()));
+      }
+    };
+    this.authorizationValidator = authorizationValidator;
   }
 
-  public static String unescape(BytesWrapper auth) {
+  public static CharSequence unescape(CharSequence auth) {
     int escapeCharCount = 0;
     for (int i = 0; i < auth.length(); i++) {
-      byte b = auth.byteAt(i);
-      if (isQuoteOrSlash(b)) {
+      char c = auth.charAt(i);
+      if (isQuoteOrSlash(c)) {
         escapeCharCount++;
       }
     }
@@ -75,28 +86,28 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
         throw new IllegalArgumentException("Illegal escape sequence in auth : " + auth);
       }
 
-      byte[] unescapedCopy = new byte[auth.length() - escapeCharCount / 2];
+      char[] unescapedCopy = new char[auth.length() - escapeCharCount / 2];
       int pos = 0;
       for (int i = 0; i < auth.length(); i++) {
-        byte b = auth.byteAt(i);
-        if (b == BACKSLASH) {
+        char c = auth.charAt(i);
+        if (c == BACKSLASH) {
           i++;
-          b = auth.byteAt(i);
-          if (!isQuoteOrSlash(b)) {
+          c = auth.charAt(i);
+          if (!isQuoteOrSlash(c)) {
             throw new IllegalArgumentException("Illegal escape sequence in auth : " + auth);
           }
-        } else if (isQuoteSymbol(b)) {
+        } else if (isQuoteSymbol(c)) {
           // should only see quote after a slash
           throw new IllegalArgumentException(
               "Illegal character after slash in auth String : " + auth);
         }
 
-        unescapedCopy[pos++] = b;
+        unescapedCopy[pos++] = c;
       }
 
-      return new String(unescapedCopy, UTF_8);
+      return new String(unescapedCopy);
     } else {
-      return auth.toString();
+      return auth;
     }
   }
 
@@ -107,23 +118,24 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
    * @param shouldQuote true to wrap escaped authorization in quotes
    * @return escaped authorization string
    */
-  public static byte[] escape(byte[] auth, boolean shouldQuote) {
+  public static CharSequence escape(CharSequence auth, boolean shouldQuote) {
     int escapeCount = 0;
 
-    for (byte value : auth) {
-      if (isQuoteOrSlash(value)) {
+    for (int i = 0; i < auth.length(); i++) {
+      if (isQuoteOrSlash(auth.charAt(i))) {
         escapeCount++;
       }
     }
 
     if (escapeCount > 0 || shouldQuote) {
-      byte[] escapedAuth = new byte[auth.length + escapeCount + (shouldQuote ? 2 : 0)];
+      char[] escapedAuth = new char[auth.length() + escapeCount + (shouldQuote ? 2 : 0)];
       int index = shouldQuote ? 1 : 0;
-      for (byte b : auth) {
-        if (isQuoteOrSlash(b)) {
+      for (int i = 0; i < auth.length(); i++) {
+        char c = auth.charAt(i);
+        if (isQuoteOrSlash(c)) {
           escapedAuth[index++] = BACKSLASH;
         }
-        escapedAuth[index++] = b;
+        escapedAuth[index++] = c;
       }
 
       if (shouldQuote) {
@@ -131,7 +143,7 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
         escapedAuth[escapedAuth.length - 1] = QUOTE;
       }
 
-      auth = escapedAuth;
+      auth = new String(escapedAuth);
     }
     return auth;
   }
@@ -143,20 +155,21 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
 
   @Override
   public boolean canAccess(String expression) throws InvalidAccessExpressionException {
-    return evaluate(expression.getBytes(UTF_8));
-  }
-
-  @Override
-  public boolean canAccess(byte[] expression) throws InvalidAccessExpressionException {
     return evaluate(expression);
   }
 
-  boolean evaluate(byte[] accessExpression) throws InvalidAccessExpressionException {
-    var bytesWrapper = ParserEvaluator.lookupWrappers.get();
-    Predicate<Tokenizer.AuthorizationToken> atp = authToken -> {
-      bytesWrapper.set(authToken.data, authToken.start, authToken.len);
-      return authorizedPredicate.test(bytesWrapper);
+  boolean evaluate(String accessExpression) throws InvalidAccessExpressionException {
+    var charsWrapper = ParserEvaluator.lookupWrappers.get();
+    Predicate<Tokenizer.AuthorizationToken> atp = authToken -> authorizedPredicate
+        .test(ParserEvaluator.validateAuth(authorizationValidator, authToken, charsWrapper));
+
+    // This is used once the expression is known to always be true or false. For this case only need
+    // to validate authorizations, do not need to look them up in a set.
+    Predicate<Tokenizer.AuthorizationToken> shortCircuit = authToken -> {
+      ParserEvaluator.validateAuth(authorizationValidator, authToken, charsWrapper);
+      return true;
     };
-    return ParserEvaluator.parseAccessExpression(accessExpression, atp, authToken -> true);
+
+    return ParserEvaluator.parseAccessExpression(accessExpression, atp, shortCircuit);
   }
 }

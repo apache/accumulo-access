@@ -18,36 +18,36 @@
  */
 package org.apache.accumulo.access.impl;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.AND;
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.AUTHORIZATION;
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.OR;
-import static org.apache.accumulo.access.impl.ByteUtils.AND_OPERATOR;
-import static org.apache.accumulo.access.impl.ByteUtils.OR_OPERATOR;
-import static org.apache.accumulo.access.impl.ByteUtils.isAndOrOperator;
+import static org.apache.accumulo.access.impl.CharUtils.AND_OPERATOR;
+import static org.apache.accumulo.access.impl.CharUtils.OR_OPERATOR;
+import static org.apache.accumulo.access.impl.CharUtils.isAndOrOperator;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.accumulo.access.AuthorizationValidator;
+import org.apache.accumulo.access.InvalidAuthorizationException;
 import org.apache.accumulo.access.ParsedAccessExpression;
 
 public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private final byte[] expression;
+  private final String wholeExpression;
+  private final AtomicReference<String> expression = new AtomicReference<>(null);
   private final int offset;
   private final int length;
 
   private final ExpressionType type;
   private final List<ParsedAccessExpression> children;
 
-  private final AtomicReference<String> stringExpression = new AtomicReference<>(null);
-
   public static final ParsedAccessExpression EMPTY = new ParsedAccessExpressionImpl();
 
-  private ParsedAccessExpressionImpl(byte operator, byte[] expression, int offset, int length,
+  private ParsedAccessExpressionImpl(char operator, String wholeExpression, int offset, int length,
       List<ParsedAccessExpression> children) {
     if (children.isEmpty()) {
       throw new IllegalArgumentException("Must have children with an operator");
@@ -61,15 +61,15 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
       this.type = OR;
     }
 
-    this.expression = expression;
+    this.wholeExpression = wholeExpression;
     this.offset = offset;
     this.length = length;
     this.children = List.copyOf(children);
   }
 
-  private ParsedAccessExpressionImpl(byte[] expression, int offset, int length) {
+  private ParsedAccessExpressionImpl(String wholeExpression, int offset, int length) {
     this.type = AUTHORIZATION;
-    this.expression = expression;
+    this.wholeExpression = wholeExpression;
     this.offset = offset;
     this.length = length;
     this.children = List.of();
@@ -77,21 +77,21 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
 
   ParsedAccessExpressionImpl() {
     this.type = ExpressionType.EMPTY;
+    this.wholeExpression = "";
     this.offset = 0;
     this.length = 0;
-    this.expression = new byte[0];
     this.children = List.of();
   }
 
   @Override
   public String getExpression() {
-    String strExp = stringExpression.get();
+    String strExp = expression.get();
     if (strExp != null) {
       return strExp;
     }
-    strExp = new String(expression, offset, length, UTF_8);
-    stringExpression.compareAndSet(null, strExp);
-    return stringExpression.get();
+    strExp = wholeExpression.substring(offset, length + offset);
+    expression.compareAndSet(null, strExp);
+    return expression.get();
   }
 
   @Override
@@ -109,27 +109,30 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
     return children;
   }
 
-  public static ParsedAccessExpression parseExpression(byte[] expression) {
-    if (expression.length == 0) {
+  public static ParsedAccessExpression parseExpression(String expression,
+      AuthorizationValidator authorizationValidator) {
+    if (expression.isEmpty()) {
       return ParsedAccessExpressionImpl.EMPTY;
     }
 
-    Tokenizer tokenizer = new Tokenizer(expression);
-    var parsed = ParsedAccessExpressionImpl.parseExpression(tokenizer, false);
+    Tokenizer tokenizer = ParserEvaluator.getPerThreadTokenizer(expression);
+    var parsed =
+        ParsedAccessExpressionImpl.parseExpression(tokenizer, expression, authorizationValidator);
 
     if (tokenizer.hasNext()) {
       // not all input was read, so not a valid expression
-      tokenizer.error("Unexpected character '" + (char) tokenizer.peek() + "'");
+      tokenizer.error("Unexpected character '" + tokenizer.peek() + "'");
     }
 
     return parsed;
   }
 
   private static ParsedAccessExpressionImpl parseExpression(Tokenizer tokenizer,
-      boolean wrappedWithParens) {
+      String wholeExpression, AuthorizationValidator authorizationValidator) {
 
     int beginOffset = tokenizer.curentOffset();
-    ParsedAccessExpressionImpl node = parseParenExpressionOrAuthorization(tokenizer);
+    ParsedAccessExpressionImpl node =
+        parseParenExpressionOrAuthorization(tokenizer, wholeExpression, authorizationValidator);
 
     if (tokenizer.hasNext()) {
       var operator = tokenizer.peek();
@@ -138,7 +141,8 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
         nodes.add(node);
         do {
           tokenizer.advance();
-          ParsedAccessExpression next = parseParenExpressionOrAuthorization(tokenizer);
+          ParsedAccessExpression next = parseParenExpressionOrAuthorization(tokenizer,
+              wholeExpression, authorizationValidator);
           nodes.add(next);
         } while (tokenizer.hasNext() && tokenizer.peek() == operator);
 
@@ -149,7 +153,7 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
 
         int endOffset = tokenizer.curentOffset();
 
-        node = new ParsedAccessExpressionImpl(operator, tokenizer.expression(), beginOffset,
+        node = new ParsedAccessExpressionImpl(operator, wholeExpression, beginOffset,
             endOffset - beginOffset, nodes);
       }
     }
@@ -157,8 +161,8 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
     return node;
   }
 
-  private static ParsedAccessExpressionImpl
-      parseParenExpressionOrAuthorization(Tokenizer tokenizer) {
+  private static ParsedAccessExpressionImpl parseParenExpressionOrAuthorization(Tokenizer tokenizer,
+      String wholeExpression, AuthorizationValidator authorizationValidator) {
     if (!tokenizer.hasNext()) {
       tokenizer
           .error("Expected a '(' character or an authorization token instead saw end of input");
@@ -166,12 +170,31 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
 
     if (tokenizer.peek() == ParserEvaluator.OPEN_PAREN) {
       tokenizer.advance();
-      var node = parseExpression(tokenizer, true);
+      var node = parseExpression(tokenizer, wholeExpression, authorizationValidator);
       tokenizer.next(ParserEvaluator.CLOSE_PAREN);
       return node;
     } else {
       var auth = tokenizer.nextAuthorization(true);
-      return new ParsedAccessExpressionImpl(auth.data, auth.start, auth.len);
+      CharSequence unquotedAuth;
+      AuthorizationValidator.AuthorizationCharacters quoting;
+      var wrapper = ParserEvaluator.lookupWrappers.get();
+      if (CharUtils.isQuoteSymbol(auth.data[auth.start])) {
+        wrapper.set(auth.data, auth.start + 1, auth.len - 2);
+        if (auth.hasEscapes) {
+          unquotedAuth = AccessEvaluatorImpl.unescape(wrapper);
+        } else {
+          unquotedAuth = wrapper;
+        }
+        quoting = AuthorizationValidator.AuthorizationCharacters.ANY;
+      } else {
+        wrapper.set(auth.data, auth.start, auth.len);
+        unquotedAuth = wrapper;
+        quoting = AuthorizationValidator.AuthorizationCharacters.BASIC;
+      }
+      if (!authorizationValidator.test(unquotedAuth, quoting)) {
+        throw new InvalidAuthorizationException(unquotedAuth.toString());
+      }
+      return new ParsedAccessExpressionImpl(wholeExpression, auth.start, auth.len);
     }
   }
 }

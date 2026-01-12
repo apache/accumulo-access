@@ -18,8 +18,6 @@
  */
 package org.apache.accumulo.access;
 
-import java.util.Collection;
-
 import org.apache.accumulo.access.impl.AccessEvaluatorImpl;
 import org.apache.accumulo.access.impl.MultiAccessEvaluatorImpl;
 
@@ -66,94 +64,11 @@ public sealed interface AccessEvaluator permits AccessEvaluatorImpl, MultiAccess
   boolean canAccess(String accessExpression) throws InvalidAccessExpressionException;
 
   /**
-   * @param accessExpression for this parameter a valid access expression is expected.
-   * @return true if the expression is visible using the authorizations supplied at creation, false
-   *         otherwise
-   * @throws InvalidAccessExpressionException when the expression is not valid
-   */
-  boolean canAccess(byte[] accessExpression) throws InvalidAccessExpressionException;
-
-  /**
    * @param accessExpression previously validated access expression
    * @return true if the expression is visible using the authorizations supplied at creation, false
    *         otherwise
    */
   boolean canAccess(AccessExpression accessExpression);
-
-  /**
-   * Creates an AccessEvaluator from an Authorizations object
-   *
-   * @param authorizations auths to use in the AccessEvaluator
-   * @return AccessEvaluator object
-   */
-  static AccessEvaluator of(Authorizations authorizations) {
-    return new AccessEvaluatorImpl(authorizations);
-  }
-
-  /**
-   * Creates an AccessEvaluator from an Authorizer object
-   *
-   * @param authorizer authorizer to use in the AccessEvaluator
-   * @return AccessEvaluator object
-   */
-  static AccessEvaluator of(Authorizer authorizer) {
-    return new AccessEvaluatorImpl(authorizer);
-  }
-
-  /**
-   * Allows providing multiple sets of authorizations. Each expression will be evaluated
-   * independently against each set of authorizations and will only be deemed accessible if
-   * accessible for all. For example the following code would print false, true, and then false.
-   *
-   * <pre>
-   *     {@code
-   * Collection<Authorizations> authSets =
-   *     List.of(Authorizations.of("A", "B"), Authorizations.of("C", "D"));
-   * var evaluator = AccessEvaluator.of(authSets);
-   *
-   * System.out.println(evaluator.canAccess("A"));
-   * System.out.println(evaluator.canAccess("A|D"));
-   * System.out.println(evaluator.canAccess("A&D"));
-   *
-   * }
-   * </pre>
-   *
-   * <p>
-   * The following table shows how each expression in the example above will evaluate for each
-   * authorization set. In order to return true for {@code canAccess()} the expression must evaluate
-   * to true for each authorization set.
-   *
-   * <table>
-   * <caption>Evaluations</caption>
-   * <tr>
-   * <td></td>
-   * <td>[A,B]</td>
-   * <td>[C,D]</td>
-   * </tr>
-   * <tr>
-   * <td>A</td>
-   * <td>True</td>
-   * <td>False</td>
-   * </tr>
-   * <tr>
-   * <td>A|D</td>
-   * <td>True</td>
-   * <td>True</td>
-   * </tr>
-   * <tr>
-   * <td>A&amp;D</td>
-   * <td>False</td>
-   * <td>False</td>
-   * </tr>
-   *
-   * </table>
-   *
-   *
-   *
-   */
-  static AccessEvaluator of(Collection<Authorizations> authorizationSets) {
-    return MultiAccessEvaluatorImpl.of(authorizationSets);
-  }
 
   /**
    * An interface that is used to check if an authorization seen in an access expression is

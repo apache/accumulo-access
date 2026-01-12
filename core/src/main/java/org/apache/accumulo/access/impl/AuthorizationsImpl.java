@@ -16,19 +16,37 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access;
+package org.apache.accumulo.access.impl;
 
-import java.io.Serializable;
+import java.io.Serial;
+import java.util.Iterator;
 import java.util.Set;
 
-/**
- * An immutable collection of authorization strings.
- *
- * <p>
- * Instances of this class are thread-safe.
- *
- * @since 1.0.0
- */
-public interface Authorizations extends Iterable<String>, Serializable {
-  Set<String> asSet();
+import org.apache.accumulo.access.Authorizations;
+
+public record AuthorizationsImpl(Set<String> authorizations) implements Authorizations {
+
+  @Serial
+  private static final long serialVersionUID = 1L;
+
+  static final Authorizations EMPTY = new AuthorizationsImpl(Set.of());
+
+  public AuthorizationsImpl(Set<String> authorizations) {
+    this.authorizations = Set.copyOf(authorizations);
+  }
+
+  /**
+   * Returns the set of authorization strings in this Authorization object
+   *
+   * @return immutable set of authorization strings
+   */
+  @Override
+  public Set<String> asSet() {
+    return authorizations;
+  }
+
+  @Override
+  public Iterator<String> iterator() {
+    return authorizations.iterator();
+  }
 }

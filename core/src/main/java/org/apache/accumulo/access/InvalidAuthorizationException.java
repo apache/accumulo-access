@@ -18,17 +18,11 @@
  */
 package org.apache.accumulo.access;
 
-import java.io.Serializable;
-import java.util.Set;
-
 /**
- * An immutable collection of authorization strings.
- *
- * <p>
- * Instances of this class are thread-safe.
- *
  * @since 1.0.0
  */
-public interface Authorizations extends Iterable<String>, Serializable {
-  Set<String> asSet();
+public class InvalidAuthorizationException extends RuntimeException {
+  public InvalidAuthorizationException(String auth) {
+    super("authorization : '" + auth + "'");
+  }
 }

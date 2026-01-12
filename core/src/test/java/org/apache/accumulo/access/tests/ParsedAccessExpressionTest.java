@@ -18,7 +18,6 @@
  */
 package org.apache.accumulo.access.tests;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.AND;
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.AUTHORIZATION;
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.EMPTY;
@@ -28,26 +27,44 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import org.apache.accumulo.access.AccessExpression;
+import org.apache.accumulo.access.Access;
+import org.apache.accumulo.access.AuthorizationValidator;
 import org.apache.accumulo.access.ParsedAccessExpression;
 import org.junit.jupiter.api.Test;
 
 public class ParsedAccessExpressionTest {
   @Test
   public void testParsing() {
-    String expression = "(BLUE&(RED|PINK|YELLOW))|((YELLOW|\"GREEN/GREY\")&(RED|BLUE))|BLACK";
-    for (var parsed : List.of(AccessExpression.parse(expression),
-        AccessExpression.parse(expression.getBytes(UTF_8)), AccessExpression.of(expression).parse(),
-        AccessExpression.of(expression.getBytes(UTF_8)).parse())) {
+    HashSet<String> seenAuths = new HashSet<>();
+    AuthorizationValidator authorizationValidator = (auth, authChars) -> {
+      seenAuths.add(auth.toString());
+      return AuthorizationValidator.DEFAULT.test(auth, authChars);
+    };
+    var access = Access.builder().authorizationValidator(authorizationValidator).build();
+    String expression =
+        "(BLUE&(RED|PINK|YELLOW))|((YELLOW|\"GREEN/GREY\")&(RED|BLUE))|\"BLACK\\\\RED\"";
+
+    var pae1 = access.newParsedExpression(expression);
+    // check that unescaped and unquoted auths are passed in to the auth validator
+    assertEquals(Set.of("BLUE", "RED", "PINK", "YELLOW", "GREEN/GREY", "BLACK\\RED"), seenAuths);
+    seenAuths.clear();
+    var pae2 = access.newExpression(expression).parse();
+    // check that unescaped and unquoted auths are passed in to the auth validator
+    assertEquals(Set.of("BLUE", "RED", "PINK", "YELLOW", "GREEN/GREY", "BLACK\\RED"), seenAuths);
+
+    for (var parsed : List.of(pae1, pae2)) {
       // verify root node
-      verify("(BLUE&(RED|PINK|YELLOW))|((YELLOW|\"GREEN/GREY\")&(RED|BLUE))|BLACK", OR, 3, parsed);
+      verify("(BLUE&(RED|PINK|YELLOW))|((YELLOW|\"GREEN/GREY\")&(RED|BLUE))|\"BLACK\\\\RED\"", OR,
+          3, parsed);
 
       // verify all nodes at level 1 in the tree
       verify("BLUE&(RED|PINK|YELLOW)", AND, 2, parsed, 0);
       verify("(YELLOW|\"GREEN/GREY\")&(RED|BLUE)", AND, 2, parsed, 1);
-      verify("BLACK", AUTHORIZATION, 0, parsed, 2);
+      verify("\"BLACK\\\\RED\"", AUTHORIZATION, 0, parsed, 2);
 
       // verify all nodes at level 2 in the tree
       verify("BLUE", AUTHORIZATION, 0, parsed, 0, 0);
@@ -68,16 +85,15 @@ public class ParsedAccessExpressionTest {
 
   @Test
   public void testEmpty() {
-    var parsed = AccessExpression.parse("");
-    verify("", EMPTY, 0, parsed);
-    parsed = AccessExpression.parse(new byte[0]);
+    var access = Access.builder().build();
+    var parsed = access.newParsedExpression("");
     verify("", EMPTY, 0, parsed);
   }
 
   @Test
   public void testParseTwice() {
-    for (var expression : List.of(AccessExpression.of("A&B"),
-        AccessExpression.of("A&B".getBytes(UTF_8)))) {
+    var access = Access.builder().build();
+    for (var expression : List.of(access.newExpression("A&B"))) {
       var parsed = expression.parse();
       assertNotSame(expression, parsed);
       assertEquals(expression.getExpression(), parsed.getExpression());

@@ -19,6 +19,7 @@
 package org.apache.accumulo.access.grammar.antlr;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.accumulo.access.grammar.antlr.Antlr4Tests.ACCESS;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -29,7 +30,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.antlr.TestDataLoader;
 import org.apache.accumulo.access.antlr4.AccessExpressionAntlrEvaluator;
 import org.apache.accumulo.access.antlr4.AccessExpressionAntlrParser;
@@ -64,7 +64,7 @@ public class AccessExpressionAntlrBenchmark {
 
     List<Access_expressionContext> parsedExpressions;
 
-    List<byte[]> expressions;
+    List<String> expressions;
   }
 
   @State(Scope.Benchmark)
@@ -89,7 +89,7 @@ public class AccessExpressionAntlrBenchmark {
         et.expressions = new ArrayList<>();
 
         et.evaluator = new AccessExpressionAntlrEvaluator(Stream.of(testDataSet.auths)
-            .map(a -> Authorizations.of(Set.of(a))).collect(Collectors.toList()));
+            .map(a -> ACCESS.newAuthorizations(Set.of(a))).collect(Collectors.toList()));
 
         for (var tests : testDataSet.tests) {
           if (tests.expectedResult != TestDataLoader.ExpectedResult.ERROR) {
@@ -97,7 +97,7 @@ public class AccessExpressionAntlrBenchmark {
               allTestExpressionsStr.add(exp);
               byte[] byteExp = exp.getBytes(UTF_8);
               allTestExpressions.add(byteExp);
-              et.expressions.add(byteExp);
+              et.expressions.add(exp);
               et.parsedExpressions.add(AccessExpressionAntlrParser.parseAccessExpression(exp));
             }
           }
@@ -160,7 +160,7 @@ public class AccessExpressionAntlrBenchmark {
   @Benchmark
   public void measureEvaluationAndParsing(BenchmarkState state, Blackhole blackhole) {
     for (EvaluatorTests evaluatorTests : state.getEvaluatorTests()) {
-      for (byte[] expression : evaluatorTests.expressions) {
+      for (String expression : evaluatorTests.expressions) {
         blackhole.consume(evaluatorTests.evaluator.canAccess(expression));
       }
     }
