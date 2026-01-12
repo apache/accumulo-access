@@ -36,6 +36,7 @@ The following types constitute the public API of this library. All other types
 are package private and are not part of the public API.
 
   * [Access](core/src/main/java/org/apache/accumulo/access/Access.java).
+  * [AuthorizationValidator](core/src/main/java/org/apache/accumulo/access/AuthorizationValidator.java).
   * [InvalidAccessExpressionException](core/src/main/java/org/apache/accumulo/access/InvalidAccessExpressionException.java).
   * [AccessEvaluator](core/src/main/java/org/apache/accumulo/access/AccessEvaluator.java).
   * [AccessExpression](core/src/main/java/org/apache/accumulo/access/AccessExpression.java).
