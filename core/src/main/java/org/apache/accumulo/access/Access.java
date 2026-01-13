@@ -173,15 +173,14 @@ public interface Access {
    *
    * <pre>
    *     {@code
-   * AccumuloAccess accumuloAccess = ...;
+   * Access access = Access.builder().build();
    * Collection<Authorizations> authSets =
-   *     List.of(Authorizations.of("A", "B"), Authorizations.of("C", "D"));
-   * var evaluator = accumuloAccess.newEvaluator(authSets);
+   *     Stream.of(Set.of("A", "B"), Set.of("C", "D")).map(access::newAuthorizations).toList();
+   * var evaluator = access.newEvaluator(authSets);
    *
    * System.out.println(evaluator.canAccess("A"));
    * System.out.println(evaluator.canAccess("A|D"));
    * System.out.println(evaluator.canAccess("A&D"));
-   *
    * }
    * </pre>
    *
