@@ -20,6 +20,7 @@ package org.apache.accumulo.access.impl;
 
 import static org.apache.accumulo.access.impl.CharUtils.BACKSLASH;
 import static org.apache.accumulo.access.impl.CharUtils.QUOTE;
+import static org.apache.accumulo.access.impl.CharUtils.isBackslashSymbol;
 import static org.apache.accumulo.access.impl.CharUtils.isQuoteOrSlash;
 import static org.apache.accumulo.access.impl.CharUtils.isQuoteSymbol;
 
@@ -74,7 +75,8 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
 
   public static CharSequence unescape(CharSequence auth) {
     int escapeCharCount = 0;
-    for (int i = 0; i < auth.length(); i++) {
+    final int authLength = auth.length();
+    for (int i = 0; i < authLength; i++) {
       char c = auth.charAt(i);
       if (isQuoteOrSlash(c)) {
         escapeCharCount++;
@@ -86,11 +88,11 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
         throw new IllegalArgumentException("Illegal escape sequence in auth : " + auth);
       }
 
-      char[] unescapedCopy = new char[auth.length() - escapeCharCount / 2];
+      char[] unescapedCopy = new char[authLength - escapeCharCount / 2];
       int pos = 0;
-      for (int i = 0; i < auth.length(); i++) {
+      for (int i = 0; i < authLength; i++) {
         char c = auth.charAt(i);
-        if (c == BACKSLASH) {
+        if (isBackslashSymbol(c)) {
           i++;
           c = auth.charAt(i);
           if (!isQuoteOrSlash(c)) {
@@ -120,17 +122,17 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
    */
   public static CharSequence escape(CharSequence auth, boolean shouldQuote) {
     int escapeCount = 0;
-
-    for (int i = 0; i < auth.length(); i++) {
+    final int authLength = auth.length();
+    for (int i = 0; i < authLength; i++) {
       if (isQuoteOrSlash(auth.charAt(i))) {
         escapeCount++;
       }
     }
 
     if (escapeCount > 0 || shouldQuote) {
-      char[] escapedAuth = new char[auth.length() + escapeCount + (shouldQuote ? 2 : 0)];
+      char[] escapedAuth = new char[authLength + escapeCount + (shouldQuote ? 2 : 0)];
       int index = shouldQuote ? 1 : 0;
-      for (int i = 0; i < auth.length(); i++) {
+      for (int i = 0; i < authLength; i++) {
         char c = auth.charAt(i);
         if (isQuoteOrSlash(c)) {
           escapedAuth[index++] = BACKSLASH;

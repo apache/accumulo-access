@@ -104,7 +104,8 @@ public interface AuthorizationValidator
     }
 
     // Unsure what characters are present, so must validate them all.
-    for (int i = 0; i < auth.length(); i++) {
+    final int len = auth.length();
+    for (int i = 0; i < len; i++) {
       var c = auth.charAt(i);
       if (!Character.isDefined(c) || Character.isISOControl(c) || c == '\uFFFD') {
         return false;

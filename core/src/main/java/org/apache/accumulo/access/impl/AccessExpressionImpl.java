@@ -61,8 +61,8 @@ public final class AccessExpressionImpl extends AccessExpression {
     }
 
     boolean needsQuote = false;
-
-    for (int i = 0; i < term.length(); i++) {
+    final int len = term.length();
+    for (int i = 0; i < len; i++) {
       if (!Tokenizer.isValidAuthChar(term.charAt(i))) {
         needsQuote = true;
         break;
