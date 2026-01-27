@@ -21,14 +21,17 @@
 
 # Accumulo Access Library
 
-Java library that provides the same functionality, semantics, and syntax as the
+Java library implementing the access expression [DSL][3] which can be used to
+determine if data is visible to an entity with a set of authorizations. For
+a conceptual overview of what an access expression is, see the
+[specification](SPECIFICATION.md) document. See the [Getting Started
+section](#getting-started) for an example of how to use this java library.
+
+This library provides the same functionality, semantics, and syntax as the
 Apache Accumulo [ColumnVisibility][1] and [VisibilityEvaluator][2] classes.
 This functionality is provided in a standalone java library that has no
 dependencies (for example no Hadoop, Zookeeper, Thrift, etc dependencies).
 
-For a conceptual overview of what an access expression is, see the
-[specification](SPECIFICATION.md) document. See the [Getting Started
-section](#getting-started) for an example of how to use this java library.
 
 ## Public API
 
@@ -92,3 +95,4 @@ mvn clean verify -pl core -Pbenchmark
 
 [1]: https://github.com/apache/accumulo/blob/rel/2.1.4/core/src/main/java/org/apache/accumulo/core/security/ColumnVisibility.java
 [2]: https://github.com/apache/accumulo/blob/rel/2.1.4/core/src/main/java/org/apache/accumulo/core/security/VisibilityEvaluator.java
+[3]: https://en.wikipedia.org/wiki/Domain-specific_language
