@@ -38,14 +38,14 @@ dependencies (for example no Hadoop, Zookeeper, Thrift, etc dependencies).
 The following types constitute the public API of this library. All other types
 are package private and are not part of the public API.
 
-  * [Access](core/src/main/java/org/apache/accumulo/access/Access.java).
-  * [AuthorizationValidator](core/src/main/java/org/apache/accumulo/access/AuthorizationValidator.java).
-  * [InvalidAccessExpressionException](core/src/main/java/org/apache/accumulo/access/InvalidAccessExpressionException.java).
-  * [AccessEvaluator](core/src/main/java/org/apache/accumulo/access/AccessEvaluator.java).
-  * [AccessExpression](core/src/main/java/org/apache/accumulo/access/AccessExpression.java).
-  * [ParsedAccessExpression](core/src/main/java/org/apache/accumulo/access/ParsedAccessExpression.java).
-  * [ExpressionType](core/src/main/java/org/apache/accumulo/access/ParsedAccessExpression.java).
-  * [Authorizations](core/src/main/java/org/apache/accumulo/access/Authorizations.java).
+  * [Access](modules/core/src/main/java/org/apache/accumulo/access/Access.java).
+  * [AuthorizationValidator](modules/core/src/main/java/org/apache/accumulo/access/AuthorizationValidator.java).
+  * [InvalidAccessExpressionException](modules/core/src/main/java/org/apache/accumulo/access/InvalidAccessExpressionException.java).
+  * [AccessEvaluator](modules/core/src/main/java/org/apache/accumulo/access/AccessEvaluator.java).
+  * [AccessExpression](modules/core/src/main/java/org/apache/accumulo/access/AccessExpression.java).
+  * [ParsedAccessExpression](modules/core/src/main/java/org/apache/accumulo/access/ParsedAccessExpression.java).
+  * [ExpressionType](modules/core/src/main/java/org/apache/accumulo/access/ParsedAccessExpression.java).
+  * [Authorizations](modules/core/src/main/java/org/apache/accumulo/access/Authorizations.java).
 
 ## Getting Started
 
@@ -61,35 +61,35 @@ Add the library to your CLASSPATH. For Maven, use:
 </dependencies>
 ```
 
-## Running the [Examples](examples/src/main/java)
+## Running the [Examples](modules/examples/src/main/java)
 
-To run [AccessExample](examples/src/main/java/org/apache/accumulo/access/examples/AccessExample.java)
+To run [AccessExample](modules/examples/src/main/java/org/apache/accumulo/access/examples/AccessExample.java)
 
 ```
 mvn clean package
 
-java --module-path=core/target/accumulo-access-core-1.0.0-SNAPSHOT.jar:examples/target/accumulo-access-examples-1.0.0-SNAPSHOT.jar  --module=accumulo.access.examples/org.apache.accumulo.access.examples.AccessExample
-java --module-path=core/target/accumulo-access-core-1.0.0-SNAPSHOT.jar:examples/target/accumulo-access-examples-1.0.0-SNAPSHOT.jar  --module=accumulo.access.examples/org.apache.accumulo.access.examples.AccessExample RED BLUE
+java --module-path=modules/core/target/accumulo-access-core-1.0.0-SNAPSHOT.jar:modules/examples/target/accumulo-access-examples-1.0.0-SNAPSHOT.jar  --module=org.apache.accumulo.access.examples/org.apache.accumulo.access.examples.AccessExample
+java --module-path=modules/core/target/accumulo-access-core-1.0.0-SNAPSHOT.jar:modules/examples/target/accumulo-access-examples-1.0.0-SNAPSHOT.jar  --module=org.apache.accumulo.access.examples/org.apache.accumulo.access.examples.AccessExample RED BLUE
 ```
 
 Note that `data6` is always returned, because it has no access expression. And
 remember, authorizations are case-sensitive.
 
-To run [ParseExamples](examples/src/main/java/org/apache/accumulo/access/examples/ParseExamples.java)
+To run [ParseExamples](modules/examples/src/main/java/org/apache/accumulo/access/examples/ParseExamples.java)
 
 ```
 mvn clean package
-java --module-path=core/target/accumulo-access-core-1.0.0-SNAPSHOT.jar:examples/target/accumulo-access-examples-1.0.0-SNAPSHOT.jar --module=accumulo.access.examples/org.apache.accumulo.access.examples.ParseExamples
+java --module-path=modules/core/target/accumulo-access-core-1.0.0-SNAPSHOT.jar:modules/examples/target/accumulo-access-examples-1.0.0-SNAPSHOT.jar --module=org.apache.accumulo.access.examples/org.apache.accumulo.access.examples.ParseExamples
 ```
 
-For an ANTLRv4 example, see its [README](antlr4-example/README.md).
+For an ANTLRv4 example, see its [README](modules/antlr4-example/README.md).
 
 ## Running the Benchmark
 
-This project includes a JMH Benchmark. To run it:
+This project includes JMH Benchmarks. To run them:
 
 ```
-mvn clean verify -pl core -Pbenchmark
+mvn clean verify -Pbenchmark
 ```
 
 
