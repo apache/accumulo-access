@@ -82,7 +82,7 @@ public final class AccessExpressionImpl extends AccessExpression {
       final boolean firstIsQuote = term.charAt(0) == '"';
       final boolean lastIsQuote = term.charAt(len - 1) == '"';
       if (firstIsQuote || lastIsQuote) {
-        if (len == 1 || (firstIsQuote ^ lastIsQuote)) {
+        if (len == 1 || (firstIsQuote != lastIsQuote)) {
           throw new IllegalArgumentException("Unbalanced quotes : " + term);
         }
 
