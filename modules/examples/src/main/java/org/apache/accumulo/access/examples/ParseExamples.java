@@ -89,7 +89,7 @@ public class ParseExamples {
         case AUTHORIZATION -> 1;
         case OR -> 2;
         case AND -> 3;
-        default -> throw new IllegalArgumentException("Unexpected type " + type);
+        case EMPTY -> throw new IllegalArgumentException("Unexpected type " + type);
       };
     }
 

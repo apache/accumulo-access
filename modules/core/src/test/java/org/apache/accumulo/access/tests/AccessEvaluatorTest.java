@@ -156,7 +156,6 @@ public class AccessEvaluatorTest {
             assertThrows(InvalidAccessExpressionException.class,
                 () -> accumuloAccess.newParsedExpression(expression), expression);
           }
-          default -> throw new IllegalArgumentException();
         }
       }
     }

@@ -148,7 +148,9 @@ public class Antlr4Tests {
       AccessEvaluator evaluator = ACCESS.newEvaluator(authSets);
       AccessExpressionAntlrEvaluator antlr = new AccessExpressionAntlrEvaluator(authSets);
 
+      assertFalse(testSet.getTests().isEmpty());
       for (TestExpressions test : testSet.getTests()) {
+        assertFalse(test.getExpressions().length == 0);
         for (String expression : test.getExpressions()) {
           switch (test.getExpectedResult()) {
             case ACCESSIBLE -> {
@@ -165,9 +167,7 @@ public class Antlr4Tests {
               assertThrows(InvalidAccessExpressionException.class,
                   () -> antlr.canAccess(expression), expression);
             }
-            default -> throw new IllegalArgumentException();
           }
-          ;
         }
       }
     }
