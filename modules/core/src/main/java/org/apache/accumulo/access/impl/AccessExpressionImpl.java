@@ -79,8 +79,8 @@ public final class AccessExpressionImpl extends AccessExpression {
   public static CharSequence unquote(CharSequence term) {
     final int len = term.length();
     if (len >= 1) {
-      boolean firstIsQuote = term.charAt(0) == '"';
-      boolean lastIsQuote = term.charAt(len - 1) == '"';
+      final boolean firstIsQuote = term.charAt(0) == '"';
+      final boolean lastIsQuote = term.charAt(len - 1) == '"';
       if (firstIsQuote || lastIsQuote) {
         if (len == 1 || (firstIsQuote ^ lastIsQuote)) {
           throw new IllegalArgumentException("Unbalanced quotes : " + term);
