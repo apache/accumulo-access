@@ -204,7 +204,7 @@ public class AccessEvaluatorTest {
     assertEquals("五十", access.unquote(access.quote("五十")));
 
     assertThrows(IllegalArgumentException.class, () -> access.quote(""));
-    for (var illegalInput : List.of("", "\"\"", "\"", "AB\"", "\"AB")) {
+    for (var illegalInput : List.of("", "\"\"", "\"", "AB\"", "\"AB", "\"A", "B\"")) {
       assertThrows(IllegalArgumentException.class, () -> access.unquote(illegalInput),
           illegalInput);
       // test with an input that is not a string
