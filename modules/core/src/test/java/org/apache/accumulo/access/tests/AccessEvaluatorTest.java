@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -39,7 +40,6 @@ import org.apache.accumulo.access.AuthorizationValidator;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.impl.AccessEvaluatorImpl;
 import org.apache.accumulo.access.impl.AccessExpressionImpl;
-import org.apache.accumulo.access.impl.CharsWrapper;
 import org.junit.jupiter.api.Test;
 
 import com.google.gson.Gson;
@@ -208,7 +208,7 @@ public class AccessEvaluatorTest {
       assertThrows(IllegalArgumentException.class, () -> access.unquote(illegalInput),
           illegalInput);
       // test with an input that is not a string
-      CharSequence charSeq = new CharsWrapper(illegalInput.toCharArray());
+      CharSequence charSeq = CharBuffer.wrap(illegalInput);
       assertThrows(IllegalArgumentException.class, () -> AccessExpressionImpl.unquote(charSeq),
           illegalInput);
     }
