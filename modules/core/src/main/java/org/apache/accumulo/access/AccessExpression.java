@@ -53,7 +53,8 @@ public sealed abstract class AccessExpression implements Serializable
 
   @Override
   public boolean equals(Object o) {
-    return o instanceof AccessExpression a && Objects.equals(getExpression(), a.getExpression());
+    return this == o
+        || (o instanceof AccessExpression a && Objects.equals(getExpression(), a.getExpression()));
   }
 
   @Override
