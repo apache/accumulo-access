@@ -99,8 +99,7 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
           }
         } else if (isQuoteSymbol(c)) {
           // should only see quote after a slash
-          throw new IllegalArgumentException(
-              "Illegal character after slash in auth String : " + auth);
+          throw new IllegalArgumentException("Unescaped quote in auth : " + auth);
         }
 
         unescapedCopy[pos++] = c;

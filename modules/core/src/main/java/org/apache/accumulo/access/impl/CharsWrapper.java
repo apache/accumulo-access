@@ -21,7 +21,7 @@ package org.apache.accumulo.access.impl;
 import java.util.Arrays;
 import java.util.Objects;
 
-public final class CharsWrapper implements CharSequence {
+final class CharsWrapper implements CharSequence {
   private char[] wrapped;
   private int offset;
   private int len;

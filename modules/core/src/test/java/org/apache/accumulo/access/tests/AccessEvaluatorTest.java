@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -38,6 +39,7 @@ import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AuthorizationValidator;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.impl.AccessEvaluatorImpl;
+import org.apache.accumulo.access.impl.AccessExpressionImpl;
 import org.junit.jupiter.api.Test;
 
 import com.google.gson.Gson;
@@ -200,8 +202,31 @@ public class AccessEvaluatorTest {
     assertEquals("九", access.unquote(access.quote("九")));
     assertEquals("\"五十\"", access.quote("五十"));
     assertEquals("五十", access.unquote(access.quote("五十")));
-    assertThrows(IllegalArgumentException.class, () -> access.quote(""));
-    assertThrows(IllegalArgumentException.class, () -> access.unquote(""));
+
+    var e = assertThrows(IllegalArgumentException.class, () -> access.quote(""));
+    assertTrue(e.getMessage().contains("Empty string"));
+
+    testUnquoteError(access, "\"\"\"\"", "Unescaped quote");
+
+    for (var illegalInput : List.of("", "\"\"")) {
+      testUnquoteError(access, illegalInput, "Empty string");
+    }
+
+    for (var illegalInput : List.of("\"", "AB\"", "\"AB", "\"A", "B\"")) {
+      testUnquoteError(access, illegalInput, "Unbalanced quotes");
+    }
+  }
+
+  private static void testUnquoteError(Access access, String illegalInput,
+      String expectedErrorMsg) {
+    var e = assertThrows(IllegalArgumentException.class, () -> access.unquote(illegalInput),
+        illegalInput);
+    assertTrue(e.getMessage().contains(expectedErrorMsg));
+    // test with an input that is not a string
+    CharSequence charSeq = CharBuffer.wrap(illegalInput);
+    e = assertThrows(IllegalArgumentException.class, () -> AccessExpressionImpl.unquote(charSeq),
+        illegalInput);
+    assertTrue(e.getMessage().contains(expectedErrorMsg));
   }
 
   private static String unescape(String s) {
