@@ -63,32 +63,33 @@ Add the library to your CLASSPATH. For Maven, use:
 
 ## Running the [Examples](modules/examples/src/main/java)
 
-To run [AccessExample](modules/examples/src/main/java/org/apache/accumulo/access/examples/AccessExample.java)
+To run [AccessExample](modules/examples/src/main/java/org/apache/accumulo/access/examples/AccessExample.java),
+set the `version` variable to this project's version and execute:
 
-```
+```bash
 mvn clean package
-
-java --module-path=modules/core/target/accumulo-access-core-1.0.0-SNAPSHOT.jar:modules/examples/target/accumulo-access-examples-1.0.0-SNAPSHOT.jar  --module=org.apache.accumulo.access.examples/org.apache.accumulo.access.examples.AccessExample
-java --module-path=modules/core/target/accumulo-access-core-1.0.0-SNAPSHOT.jar:modules/examples/target/accumulo-access-examples-1.0.0-SNAPSHOT.jar  --module=org.apache.accumulo.access.examples/org.apache.accumulo.access.examples.AccessExample RED BLUE
+java --module-path=modules/core/target/accumulo-access-core-$version.jar:modules/examples/target/accumulo-access-examples-$version.jar  --module=org.apache.accumulo.access.examples/org.apache.accumulo.access.examples.AccessExample
+java --module-path=modules/core/target/accumulo-access-core-$version.jar:modules/examples/target/accumulo-access-examples-$version.jar  --module=org.apache.accumulo.access.examples/org.apache.accumulo.access.examples.AccessExample RED BLUE
 ```
 
 Note that `data6` is always returned, because it has no access expression. And
 remember, authorizations are case-sensitive.
 
-To run [ParseExamples](modules/examples/src/main/java/org/apache/accumulo/access/examples/ParseExamples.java)
+To run [ParseExamples](modules/examples/src/main/java/org/apache/accumulo/access/examples/ParseExamples.java),
+set the `version` variable to this project's version and execute:
 
-```
+```bash
 mvn clean package
-java --module-path=modules/core/target/accumulo-access-core-1.0.0-SNAPSHOT.jar:modules/examples/target/accumulo-access-examples-1.0.0-SNAPSHOT.jar --module=org.apache.accumulo.access.examples/org.apache.accumulo.access.examples.ParseExamples
+java --module-path=modules/core/target/accumulo-access-core-$version.jar:modules/examples/target/accumulo-access-examples-$version.jar --module=org.apache.accumulo.access.examples/org.apache.accumulo.access.examples.ParseExamples
 ```
 
 For an ANTLRv4 example, see its [README](modules/antlr4-example/README.md).
 
 ## Running the Benchmark
 
-This project includes JMH Benchmarks. To run them:
+This project includes JMH Benchmarks. To run them, execute:
 
-```
+```bash
 mvn clean verify -Pbenchmark
 ```
 
