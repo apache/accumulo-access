@@ -33,7 +33,7 @@ function findallnonascii() {
   fi
   find . -type f \
     -not -path '*/\.git/*' \
-    -not -regex '.*[.]\(png\|jar\|\|jceks\)$' \
+    -not -regex '.*[.]\(png\|jar\|jceks\)$' \
     -exec grep "$opts" "[^[:ascii:]$ALLOWED]" {} +
 }
 
