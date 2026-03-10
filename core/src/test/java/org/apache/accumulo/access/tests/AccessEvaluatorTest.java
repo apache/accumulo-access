@@ -38,6 +38,8 @@ import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AuthorizationValidator;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.impl.AccessEvaluatorImpl;
+import org.apache.accumulo.access.impl.AccessExpressionImpl;
+import org.apache.accumulo.access.impl.CharsWrapper;
 import org.junit.jupiter.api.Test;
 
 import com.google.gson.Gson;
@@ -203,8 +205,14 @@ public class AccessEvaluatorTest {
     assertEquals("九", access.unquote(access.quote("九")));
     assertEquals("\"五十\"", access.quote("五十"));
     assertEquals("五十", access.unquote(access.quote("五十")));
+
     assertThrows(IllegalArgumentException.class, () -> access.quote(""));
-    assertThrows(IllegalArgumentException.class, () -> access.unquote(""));
+    for(var illegalInput : List.of("", "\"\"", "\"", "AB\"", "\"AB")) {
+      assertThrows(IllegalArgumentException.class, () -> access.unquote(illegalInput), illegalInput);
+      // test with an input that is not a string
+      CharsWrapper charSeq = new CharsWrapper(illegalInput.toCharArray());
+      assertThrows(IllegalArgumentException.class, () -> AccessExpressionImpl.unquote(charSeq), illegalInput);
+    }
   }
 
   private static String unescape(String s) {

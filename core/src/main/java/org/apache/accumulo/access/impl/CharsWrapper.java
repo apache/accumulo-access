@@ -26,7 +26,7 @@ public final class CharsWrapper implements CharSequence {
   private int offset;
   private int len;
 
-  CharsWrapper(char[] wrapped) {
+  public CharsWrapper(char[] wrapped) {
     this.wrapped = wrapped;
     this.offset = 0;
     this.len = this.wrapped.length;
