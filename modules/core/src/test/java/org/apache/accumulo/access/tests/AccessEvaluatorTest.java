@@ -204,11 +204,13 @@ public class AccessEvaluatorTest {
     assertEquals("五十", access.unquote(access.quote("五十")));
 
     assertThrows(IllegalArgumentException.class, () -> access.quote(""));
-    for(var illegalInput : List.of("", "\"\"", "\"", "AB\"", "\"AB")) {
-      assertThrows(IllegalArgumentException.class, () -> access.unquote(illegalInput), illegalInput);
+    for (var illegalInput : List.of("", "\"\"", "\"", "AB\"", "\"AB")) {
+      assertThrows(IllegalArgumentException.class, () -> access.unquote(illegalInput),
+          illegalInput);
       // test with an input that is not a string
-      CharsWrapper charSeq = new CharsWrapper(illegalInput.toCharArray());
-      assertThrows(IllegalArgumentException.class, () -> AccessExpressionImpl.unquote(charSeq), illegalInput);
+      CharSequence charSeq = new CharsWrapper(illegalInput.toCharArray());
+      assertThrows(IllegalArgumentException.class, () -> AccessExpressionImpl.unquote(charSeq),
+          illegalInput);
     }
   }
 
