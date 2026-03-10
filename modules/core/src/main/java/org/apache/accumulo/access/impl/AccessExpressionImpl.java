@@ -77,8 +77,9 @@ public final class AccessExpressionImpl extends AccessExpression {
   }
 
   public static CharSequence unquote(CharSequence term) {
-    if (term.length() >= 2 && term.charAt(0) == '"' && term.charAt(term.length() - 1) == '"') {
-      term = AccessEvaluatorImpl.unescape(term.subSequence(1, term.length() - 1));
+    int len = term.length();
+    if (len >= 2 && term.charAt(0) == '"' && term.charAt(len - 1) == '"') {
+      term = len == 2 ? "" : AccessEvaluatorImpl.unescape(term.subSequence(1, term.length() - 1));
     }
     if (term.isEmpty()) {
       throw new IllegalArgumentException("Empty strings are not legal authorizations.");
