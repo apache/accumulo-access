@@ -31,7 +31,7 @@ public final class AccessExpressionImpl extends AccessExpression {
   private final String expression;
   private final AtomicReference<ParsedAccessExpression> parseTreeRef = new AtomicReference<>();
 
-  public AccessExpressionImpl(String expression) {
+  AccessExpressionImpl(String expression) {
     this.expression = expression;
   }
 

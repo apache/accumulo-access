@@ -41,7 +41,7 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
   /**
    * Create an AccessEvaluatorImpl using an Authorizer object
    */
-  public AccessEvaluatorImpl(Predicate<String> authorizationChecker,
+  AccessEvaluatorImpl(Predicate<String> authorizationChecker,
       AuthorizationValidator authorizationValidator) {
     this.authorizedPredicate = auth -> authorizationChecker.test(auth.toString());
     this.authorizationValidator = authorizationValidator;
@@ -50,7 +50,7 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
   /**
    * Create an AccessEvaluatorImpl using a collection of authorizations
    */
-  public AccessEvaluatorImpl(Authorizations authorizations,
+  AccessEvaluatorImpl(Authorizations authorizations,
       AuthorizationValidator authorizationValidator) {
     var authsSet = authorizations.asSet();
     final Set<CharsWrapper> wrappedAuths = new HashSet<>(authsSet.size());
