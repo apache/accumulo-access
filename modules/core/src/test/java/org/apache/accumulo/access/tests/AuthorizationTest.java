@@ -59,7 +59,8 @@ public class AuthorizationTest {
     // check if new object is allocated
     assertSame(access.newAuthorizations(Set.of()), access.newAuthorizations(Set.of()));
     assertEquals(Set.of(), access.newAuthorizations(Set.of()).asSet());
-    assertSame(Set.of(), access.newAuthorizations(Set.of()).asSet());
+    assertSame(access.newAuthorizations(Set.of()).asSet(),
+        access.newAuthorizations(Set.of()).asSet());
   }
 
   @Test

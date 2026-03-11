@@ -30,14 +30,12 @@ public class AuthorizationsImpl implements Authorizations {
   @Serial
   private static final long serialVersionUID = 1L;
 
-  private static final HashSet<String> EMPTY_SET = new HashSet<>();
-
   static final Authorizations EMPTY = new AuthorizationsImpl(Set.of());
 
   private final HashSet<String> authorizations; // type must be serializable
 
   AuthorizationsImpl(Set<String> authorizations) {
-    this.authorizations = authorizations.isEmpty() ? EMPTY_SET : new HashSet<>(authorizations);
+    this.authorizations = new HashSet<>(authorizations);
   }
 
   @Override
@@ -64,11 +62,7 @@ public class AuthorizationsImpl implements Authorizations {
    * @return immutable set of authorization strings
    */
   @Override
-  @SuppressWarnings("ReferenceEquality")
   public Set<String> asSet() {
-    if (this.authorizations == EMPTY_SET) {
-      return Set.of();
-    }
     return Set.copyOf(authorizations);
   }
 
