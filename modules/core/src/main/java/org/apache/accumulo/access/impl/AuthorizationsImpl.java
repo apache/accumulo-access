@@ -18,8 +18,6 @@
  */
 package org.apache.accumulo.access.impl;
 
-import java.io.Serial;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -27,15 +25,12 @@ import org.apache.accumulo.access.Authorizations;
 
 public class AuthorizationsImpl implements Authorizations {
 
-  @Serial
-  private static final long serialVersionUID = 1L;
-
   static final Authorizations EMPTY = new AuthorizationsImpl(Set.of());
 
-  private final HashSet<String> authorizations; // type must be serializable
+  private final Set<String> authorizations;
 
   AuthorizationsImpl(Set<String> authorizations) {
-    this.authorizations = new HashSet<>(authorizations);
+    this.authorizations = Set.copyOf(authorizations);
   }
 
   @Override
@@ -63,7 +58,7 @@ public class AuthorizationsImpl implements Authorizations {
    */
   @Override
   public Set<String> asSet() {
-    return Set.copyOf(authorizations);
+    return authorizations;
   }
 
   @Override
