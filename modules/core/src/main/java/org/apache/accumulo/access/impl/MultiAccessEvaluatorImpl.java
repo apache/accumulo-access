@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.accumulo.access.AccessEvaluator;
-import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.AuthorizationValidator;
 import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
@@ -50,8 +49,4 @@ public final class MultiAccessEvaluatorImpl implements AccessEvaluator {
     return true;
   }
 
-  @Override
-  public boolean canAccess(AccessExpression accessExpression) {
-    return canAccess(accessExpression.getExpression());
-  }
 }

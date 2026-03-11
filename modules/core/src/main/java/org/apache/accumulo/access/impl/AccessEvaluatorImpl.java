@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import org.apache.accumulo.access.AccessEvaluator;
-import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.AuthorizationValidator;
 import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
@@ -42,9 +41,9 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
   /**
    * Create an AccessEvaluatorImpl using an Authorizer object
    */
-  public AccessEvaluatorImpl(Authorizer authorizationChecker,
+  public AccessEvaluatorImpl(Predicate<String> authorizationChecker,
       AuthorizationValidator authorizationValidator) {
-    this.authorizedPredicate = auth -> authorizationChecker.isAuthorized(auth.toString());
+    this.authorizedPredicate = auth -> authorizationChecker.test(auth.toString());
     this.authorizationValidator = authorizationValidator;
   }
 
@@ -63,12 +62,9 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
       wrappedAuths.add(new CharsWrapper(authorization.toCharArray()));
     }
 
-    this.authorizedPredicate = auth -> {
-      if (auth instanceof CharsWrapper wrapped) {
-        return wrappedAuths.contains(wrapped);
-      }
-      return wrappedAuths.contains(new CharsWrapper(auth.toString().toCharArray()));
-    };
+    this.authorizedPredicate =
+        auth -> auth instanceof CharsWrapper wrapped ? wrappedAuths.contains(wrapped)
+            : wrappedAuths.contains(new CharsWrapper(auth.toString().toCharArray()));
     this.authorizationValidator = authorizationValidator;
   }
 
@@ -146,11 +142,6 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
       auth = new String(escapedAuth);
     }
     return auth;
-  }
-
-  @Override
-  public boolean canAccess(AccessExpression expression) {
-    return canAccess(expression.getExpression());
   }
 
   @Override
