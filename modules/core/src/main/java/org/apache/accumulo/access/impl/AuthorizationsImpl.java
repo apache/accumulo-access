@@ -19,20 +19,44 @@
 package org.apache.accumulo.access.impl;
 
 import java.io.Serial;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.accumulo.access.Authorizations;
 
-public record AuthorizationsImpl(Set<String> authorizations) implements Authorizations {
+public class AuthorizationsImpl implements Authorizations {
 
   @Serial
   private static final long serialVersionUID = 1L;
 
+  private static final HashSet<String> EMPTY_SET = new HashSet<>();
+
   static final Authorizations EMPTY = new AuthorizationsImpl(Set.of());
 
-  public AuthorizationsImpl(Set<String> authorizations) {
-    this.authorizations = Set.copyOf(authorizations);
+  private final HashSet<String> authorizations; // type must be serializable
+
+  AuthorizationsImpl(Set<String> authorizations) {
+    this.authorizations = authorizations.isEmpty() ? EMPTY_SET : new HashSet<>(authorizations);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o instanceof AuthorizationsImpl) {
+      var oa = (AuthorizationsImpl) o;
+      return authorizations.equals(oa.authorizations);
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return authorizations.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return authorizations.toString();
   }
 
   /**
@@ -42,7 +66,10 @@ public record AuthorizationsImpl(Set<String> authorizations) implements Authoriz
    */
   @Override
   public Set<String> asSet() {
-    return authorizations;
+    if (this.authorizations == EMPTY_SET) {
+      return Set.of();
+    }
+    return Set.copyOf(authorizations);
   }
 
   @Override
