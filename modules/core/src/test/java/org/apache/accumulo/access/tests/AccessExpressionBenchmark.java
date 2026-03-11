@@ -39,9 +39,10 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.infra.Blackhole;
+import org.openjdk.jmh.profile.JavaFlightRecorderProfiler;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.Options;
+import org.openjdk.jmh.runner.options.ChainedOptionsBuilder;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
 
@@ -258,10 +259,17 @@ public class AccessExpressionBenchmark {
     var include = System.getenv().getOrDefault("ACCESS_BENCHMARK",
         AccessExpressionBenchmark.class.getSimpleName());
 
-    Options opt = new OptionsBuilder().include(include).mode(Mode.Throughput)
+    var jfr = Boolean.parseBoolean(System.getenv().getOrDefault("ENABLE_JFR", "false"));
+
+    ChainedOptionsBuilder builder = new OptionsBuilder().include(include).mode(Mode.Throughput)
         .operationsPerInvocation(numExpressions).timeUnit(TimeUnit.MICROSECONDS)
-        .warmupTime(TimeValue.seconds(5)).warmupIterations(3).measurementIterations(4).forks(3)
-        .build();
-    new Runner(opt).run();
+        .warmupTime(TimeValue.seconds(5)).warmupIterations(3).measurementIterations(4).forks(3);
+
+    if (jfr) {
+      builder.addProfiler(JavaFlightRecorderProfiler.class,
+          "dir=" + System.getProperty("java.io.tmpdir"));
+    }
+
+    new Runner(builder.build()).run();
   }
 }

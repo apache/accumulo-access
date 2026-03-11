@@ -28,6 +28,10 @@
     <relativePath>../../pom.xml</relativePath>
   </parent>
   <artifactId>accumulo-access-core</artifactId>
+  <properties>
+    <benchmark.jfr>false</benchmark.jfr>
+    <benchmark.methods>.*</benchmark.methods>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>com.github.spotbugs</groupId>
@@ -114,6 +118,10 @@
                     <classpath />
                     <argument>org.apache.accumulo.access.tests.AccessExpressionBenchmark</argument>
                   </arguments>
+                  <environmentVariables>
+                    <ENABLE_JFR>${benchmark.jfr}</ENABLE_JFR>
+                    <ACCESS_BENCHMARK>${benchmark.methods}</ACCESS_BENCHMARK>
+                  </environmentVariables>
                 </configuration>
               </execution>
             </executions>
