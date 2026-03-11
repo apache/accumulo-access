@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.apache.accumulo.access.Access;
 import org.apache.accumulo.access.AccessEvaluator;
@@ -106,7 +107,7 @@ public class AccessImpl implements Access {
   }
 
   @Override
-  public AccessEvaluator newEvaluator(AccessEvaluator.Authorizer authorizer) {
+  public AccessEvaluator newEvaluator(Predicate<String> authorizer) {
     return new AccessEvaluatorImpl(authorizer, authValidator);
   }
 

@@ -72,15 +72,8 @@ public sealed interface AccessEvaluator permits AccessEvaluatorImpl, MultiAccess
    * @return true if the expression is visible using the authorizations supplied at creation, false
    *         otherwise
    */
-  boolean canAccess(AccessExpression accessExpression);
-
-  /**
-   * An interface that is used to check if an authorization seen in an access expression is
-   * authorized.
-   *
-   * @since 1.0.0
-   */
-  interface Authorizer {
-    boolean isAuthorized(String auth);
+  default boolean canAccess(AccessExpression accessExpression) {
+    return canAccess(accessExpression.getExpression());
   }
+
 }

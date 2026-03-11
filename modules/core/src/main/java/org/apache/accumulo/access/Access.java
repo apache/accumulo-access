@@ -21,6 +21,7 @@ package org.apache.accumulo.access;
 import java.util.Collection;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.apache.accumulo.access.impl.BuilderImpl;
 
@@ -160,10 +161,11 @@ public interface Access {
   /**
    * Creates an AccessEvaluator from an Authorizer
    *
-   * @param authorizer authorizer to use in the AccessEvaluator
+   * @param authorizer used to determine whether the provided authorization seen during the
+   *        evaluation of an access expression is authorized
    * @return AccessEvaluator object
    */
-  AccessEvaluator newEvaluator(AccessEvaluator.Authorizer authorizer);
+  AccessEvaluator newEvaluator(Predicate<String> authorizer);
 
   /**
    * Creates an AccessEvaluator from multiple sets of authorizations. Each expression will be
