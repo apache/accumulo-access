@@ -18,21 +18,37 @@
  */
 package org.apache.accumulo.access.impl;
 
-import java.io.Serial;
 import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.accumulo.access.Authorizations;
 
-public record AuthorizationsImpl(Set<String> authorizations) implements Authorizations {
-
-  @Serial
-  private static final long serialVersionUID = 1L;
+public class AuthorizationsImpl implements Authorizations {
 
   static final Authorizations EMPTY = new AuthorizationsImpl(Set.of());
 
-  public AuthorizationsImpl(Set<String> authorizations) {
+  private final Set<String> authorizations;
+
+  AuthorizationsImpl(Set<String> authorizations) {
     this.authorizations = Set.copyOf(authorizations);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o instanceof AuthorizationsImpl oa) {
+      return authorizations.equals(oa.authorizations);
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return authorizations.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return authorizations.toString();
   }
 
   /**
