@@ -18,6 +18,7 @@
  */
 package org.apache.accumulo.access;
 
+import java.io.Externalizable;
 import java.util.Set;
 
 /**
@@ -28,6 +29,6 @@ import java.util.Set;
  *
  * @since 1.0.0
  */
-public interface Authorizations extends Iterable<String> {
+public interface Authorizations extends Iterable<String>, Externalizable {
   Set<String> asSet();
 }
