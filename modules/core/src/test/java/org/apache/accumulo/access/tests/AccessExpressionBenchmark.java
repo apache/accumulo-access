@@ -45,6 +45,8 @@ import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -63,6 +65,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  */
 @SuppressFBWarnings(value = {"NP_UNWRITTEN_FIELD"}, justification = "Field is written by Gson")
 public class AccessExpressionBenchmark {
+
+  private static final Logger LOG = LoggerFactory.getLogger(AccessExpressionBenchmark.class);
 
   public static class VisibilityEvaluatorTests {
     List<VisibilityEvaluator> evaluator;
@@ -253,22 +257,18 @@ public class AccessExpressionBenchmark {
     state.loadData();
 
     int numExpressions = state.getBytesExpressions().size();
+    LOG.info("Number of Expressions: {}", numExpressions);
 
-    System.out.println("Number of Expressions: " + numExpressions);
+    var jfr = Boolean.parseBoolean(System.getenv().getOrDefault("ACCESS_BENCHMARK_JFR", "false"));
+    var jfrDir = System.getenv().getOrDefault("ACCESS_BENCHMARK_JFR_DIR",
+        System.getProperty("java.io.tmpdir"));
+    LOG.info("Java Flight Recorder: {}", jfr ? "enabled (outputDir=" + jfrDir + ")" : "disabled");
 
     var include = System.getenv().getOrDefault("ACCESS_BENCHMARK", "true");
     if (include.equals("true")) {
       include = "";
     }
-
-    var jfr = Boolean.parseBoolean(System.getenv().getOrDefault("ACCESS_BENCHMARK_JFR", "false"));
-
-    var jfrDir = System.getenv().getOrDefault("ACCESS_BENCHMARK_JFR_DIR",
-        System.getProperty("java.io.tmpdir"));
-
-    System.out.printf("Benchmark include pattern: %s%n", include);
-    System.out.printf("Java Flight Recorder: %s%n",
-        jfr ? "enabled (outputDir=" + jfrDir + ")" : "disabled");
+    LOG.info("Benchmark include pattern: {}", include);
 
     var builder = new OptionsBuilder().include(include).mode(Mode.Throughput)
         .operationsPerInvocation(numExpressions).timeUnit(TimeUnit.MICROSECONDS)
@@ -281,7 +281,7 @@ public class AccessExpressionBenchmark {
     try {
       new Runner(builder.build()).run();
     } catch (NoBenchmarksException e) {
-      e.printStackTrace();
+      LOG.warn("No matching benchmarks");
     }
   }
 }

@@ -44,6 +44,8 @@ import org.openjdk.jmh.runner.NoBenchmarksException;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Benchmarks Access Expressions using JMH. To run, use the following commands.
@@ -56,6 +58,8 @@ import org.openjdk.jmh.runner.options.TimeValue;
  * </code>
  */
 public class AccessExpressionAntlrBenchmark {
+
+  private static final Logger LOG = LoggerFactory.getLogger(AccessExpressionAntlrBenchmark.class);
 
   public static class EvaluatorTests {
     AccessExpressionAntlrEvaluator evaluator;
@@ -170,15 +174,13 @@ public class AccessExpressionAntlrBenchmark {
     state.loadData();
 
     int numExpressions = state.getBytesExpressions().size();
-
-    System.out.println("Number of Expressions: " + numExpressions);
+    LOG.info("Number of Expressions: {}", numExpressions);
 
     var include = System.getenv().getOrDefault("ACCESS_BENCHMARK", "true");
     if (include.equals("true")) {
       include = "";
     }
-
-    System.out.printf("Benchmark include pattern: %s%n", include);
+    LOG.info("Benchmark include pattern: {}", include);
 
     var opt = new OptionsBuilder().include(include).mode(Mode.Throughput)
         .operationsPerInvocation(numExpressions).timeUnit(TimeUnit.MICROSECONDS)
@@ -188,7 +190,7 @@ public class AccessExpressionAntlrBenchmark {
     try {
       new Runner(opt).run();
     } catch (NoBenchmarksException e) {
-      e.printStackTrace();
+      LOG.warn("No matching benchmarks");
     }
   }
 
