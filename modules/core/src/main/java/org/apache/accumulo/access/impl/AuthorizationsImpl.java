@@ -18,6 +18,10 @@
  */
 package org.apache.accumulo.access.impl;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -25,9 +29,13 @@ import org.apache.accumulo.access.Authorizations;
 
 public class AuthorizationsImpl implements Authorizations {
 
+  private static final long serialVersionUID = 1L;
+
   static final Authorizations EMPTY = new AuthorizationsImpl(Set.of());
 
-  private final Set<String> authorizations;
+  private transient Set<String> authorizations;
+
+  public AuthorizationsImpl() {}
 
   AuthorizationsImpl(Set<String> authorizations) {
     this.authorizations = Set.copyOf(authorizations);
@@ -62,5 +70,27 @@ public class AuthorizationsImpl implements Authorizations {
   @Override
   public Iterator<String> iterator() {
     return authorizations.iterator();
+  }
+
+  @Override
+  public void writeExternal(ObjectOutput out) throws IOException {
+    out.write(authorizations.size());
+    for (String a : authorizations) {
+      out.writeUTF(a);
+    }
+  }
+
+  @Override
+  public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+    int size = in.readInt();
+    if (size == 0) {
+      this.authorizations = Set.of();
+    } else {
+      Set<String> s = new HashSet<>(size);
+      for (int i = 0; i < size; i++) {
+        s.add(in.readUTF());
+      }
+      this.authorizations = Set.copyOf(s);
+    }
   }
 }
