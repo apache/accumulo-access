@@ -85,12 +85,15 @@ java --module-path=modules/core/target/accumulo-access-core-$version.jar:modules
 
 For an ANTLRv4 example, see its [README](modules/antlr4-example/README.md).
 
-## Running the Benchmark
+## Running the Benchmarks
 
-This project includes JMH Benchmarks. To run them, execute:
+This project includes JMH Benchmarks. To run them, execute the benchmark profile:
 
 ```bash
-mvn clean verify -Pbenchmark
+mvn clean verify -Dbenchmark # run all benchmarks; alternatively, use `-Pbenchmark`
+mvn clean verify -Dbenchmark=AccessExpressionAntlrBenchmark # run only the Antlr benchmarks
+mvn clean verify -Dbenchmark='AccessExpressionBenchmark[.]measure.*Evaluation' # run specific tests matching the pattern
+mvn clean verify -Dbenchmark -Dbenchmark.jfr # enable Java Flight Recorder for AccessExpressionBenchmark; use -Dbenchmark.jfr.outputDir=/path/to/outputLocation
 ```
 
 

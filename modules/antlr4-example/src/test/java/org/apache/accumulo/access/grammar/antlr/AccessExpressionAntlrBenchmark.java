@@ -40,8 +40,8 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.infra.Blackhole;
+import org.openjdk.jmh.runner.NoBenchmarksException;
 import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
 
@@ -173,12 +173,23 @@ public class AccessExpressionAntlrBenchmark {
 
     System.out.println("Number of Expressions: " + numExpressions);
 
-    Options opt = new OptionsBuilder().include(AccessExpressionAntlrBenchmark.class.getSimpleName())
-        .mode(Mode.Throughput).operationsPerInvocation(numExpressions)
-        .timeUnit(TimeUnit.MICROSECONDS).warmupTime(TimeValue.seconds(5)).warmupIterations(3)
-        .measurementIterations(4).forks(3).build();
+    var include = System.getenv().getOrDefault("ACCESS_BENCHMARK", "true");
+    if (include.equals("true")) {
+      include = "";
+    }
 
-    new Runner(opt).run();
+    System.out.printf("Benchmark include pattern: %s%n", include);
+
+    var opt = new OptionsBuilder().include(include).mode(Mode.Throughput)
+        .operationsPerInvocation(numExpressions).timeUnit(TimeUnit.MICROSECONDS)
+        .warmupTime(TimeValue.seconds(5)).warmupIterations(3).measurementIterations(4).forks(3)
+        .build();
+
+    try {
+      new Runner(opt).run();
+    } catch (NoBenchmarksException e) {
+      e.printStackTrace();
+    }
   }
 
 }

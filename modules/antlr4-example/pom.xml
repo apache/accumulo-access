@@ -129,6 +129,9 @@
                     <classpath />
                     <argument>org.apache.accumulo.access.grammar.antlr.AccessExpressionAntlrBenchmark</argument>
                   </arguments>
+                  <environmentVariables>
+                    <ACCESS_BENCHMARK>${benchmark}</ACCESS_BENCHMARK>
+                  </environmentVariables>
                 </configuration>
               </execution>
             </executions>

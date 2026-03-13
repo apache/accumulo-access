@@ -40,9 +40,9 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.profile.JavaFlightRecorderProfiler;
+import org.openjdk.jmh.runner.NoBenchmarksException;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.ChainedOptionsBuilder;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
 
@@ -256,20 +256,32 @@ public class AccessExpressionBenchmark {
 
     System.out.println("Number of Expressions: " + numExpressions);
 
-    var include = System.getenv().getOrDefault("ACCESS_BENCHMARK",
-        AccessExpressionBenchmark.class.getSimpleName());
+    var include = System.getenv().getOrDefault("ACCESS_BENCHMARK", "true");
+    if (include.equals("true")) {
+      include = "";
+    }
 
-    var jfr = Boolean.parseBoolean(System.getenv().getOrDefault("ENABLE_JFR", "false"));
+    var jfr = Boolean.parseBoolean(System.getenv().getOrDefault("ACCESS_BENCHMARK_JFR", "false"));
 
-    ChainedOptionsBuilder builder = new OptionsBuilder().include(include).mode(Mode.Throughput)
+    var jfrDir = System.getenv().getOrDefault("ACCESS_BENCHMARK_JFR_DIR",
+        System.getProperty("java.io.tmpdir"));
+
+    System.out.printf("Benchmark include pattern: %s%n", include);
+    System.out.printf("Java Flight Recorder: %s%n",
+        jfr ? "enabled (outputDir=" + jfrDir + ")" : "disabled");
+
+    var builder = new OptionsBuilder().include(include).mode(Mode.Throughput)
         .operationsPerInvocation(numExpressions).timeUnit(TimeUnit.MICROSECONDS)
         .warmupTime(TimeValue.seconds(5)).warmupIterations(3).measurementIterations(4).forks(3);
 
     if (jfr) {
-      builder.addProfiler(JavaFlightRecorderProfiler.class,
-          "dir=" + System.getProperty("java.io.tmpdir"));
+      builder.addProfiler(JavaFlightRecorderProfiler.class, "dir=" + jfrDir);
     }
 
-    new Runner(builder.build()).run();
+    try {
+      new Runner(builder.build()).run();
+    } catch (NoBenchmarksException e) {
+      e.printStackTrace();
+    }
   }
 }
