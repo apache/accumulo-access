@@ -25,7 +25,9 @@ import static org.apache.accumulo.access.impl.CharUtils.isQuoteOrSlash;
 import static org.apache.accumulo.access.impl.CharUtils.isQuoteSymbol;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 import org.apache.accumulo.access.AccessEvaluator;
@@ -43,7 +45,27 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
    */
   AccessEvaluatorImpl(Predicate<String> authorizationChecker,
       AuthorizationValidator authorizationValidator) {
-    this.authorizedPredicate = auth -> authorizationChecker.test(auth.toString());
+
+    // This map helps avoid allocating string objects on each call to this predicate
+    Map<CharsWrapper,Boolean> checkCache = new ConcurrentHashMap<>();
+    this.authorizedPredicate = auth -> {
+      if (auth instanceof CharsWrapper wrapped) {
+        // Try to avoid allocating a string object and copying the byte array.
+        Boolean cachedResult = checkCache.get(wrapped);
+        if (cachedResult == null) {
+          // Not in cache, so have to allocate and copy
+          String authStr = wrapped.toString();
+          cachedResult = authorizationChecker.test(authStr);
+          // Lets put it in the cache for the next time. Must allocate a new CharsWrapper as these
+          // are mutable, so can not put the one passed to this lambda in the map.
+          checkCache.put(new CharsWrapper(authStr.toCharArray()), cachedResult);
+        }
+        return cachedResult;
+      } else {
+        return authorizationChecker.test(auth.toString());
+      }
+    };
+
     this.authorizationValidator = authorizationValidator;
   }
 
