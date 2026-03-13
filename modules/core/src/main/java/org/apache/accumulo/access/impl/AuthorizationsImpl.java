@@ -35,10 +35,8 @@ public class AuthorizationsImpl implements Authorizations {
 
   @Override
   public boolean equals(Object o) {
-    if (o instanceof AuthorizationsImpl oa) {
-      return authorizations.equals(oa.authorizations);
-    }
-    return false;
+    return this == o
+        || (o instanceof AuthorizationsImpl oa && authorizations.equals(oa.authorizations));
   }
 
   @Override
