@@ -50,7 +50,7 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
     Map<CharsWrapper,Boolean> checkCache = new ConcurrentHashMap<>();
     this.authorizedPredicate = auth -> {
       if (auth instanceof CharsWrapper wrapped) {
-        // Try to avoid allocating a string object and copying the byte array.
+        // Try to avoid allocating a string object and copying the char array.
         Boolean cachedResult = checkCache.get(wrapped);
         if (cachedResult == null) {
           // Not in cache, so have to allocate and copy
