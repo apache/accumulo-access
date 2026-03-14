@@ -26,7 +26,6 @@ import java.util.Set;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.accumulo.access.Access;
-import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_tokenContext;
 import org.apache.accumulo.access.grammars.AccessExpressionParser.And_operatorContext;
@@ -50,15 +49,14 @@ public class AccessExpressionAntlrEvaluator {
 
   private final List<Entity> entities;
 
-  public AccessExpressionAntlrEvaluator(List<Authorizations> authSets) {
+  public AccessExpressionAntlrEvaluator(List<Set<String>> authSets) {
     entities = new ArrayList<>(authSets.size());
 
-    for (Authorizations a : authSets) {
-      Set<String> entityAuths = a.asSet();
+    for (Set<String> entityAuths : authSets) {
       Entity e = new Entity();
       entities.add(e);
       e.authorizations = new HashSet<>(entityAuths.size() * 2);
-      a.asSet().stream().forEach(auth -> {
+      entityAuths.stream().forEach(auth -> {
         e.authorizations.add(auth);
         String quoted = ACCESS.quote(auth);
         if (!quoted.startsWith("\"")) {

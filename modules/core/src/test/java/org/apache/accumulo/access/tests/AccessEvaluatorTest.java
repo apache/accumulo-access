@@ -91,15 +91,14 @@ public class AccessEvaluatorTest {
       AccessEvaluator evaluator;
       assertTrue(testSet.auths.length >= 1);
       if (testSet.auths.length == 1) {
-        evaluator = access.newEvaluator(access.newAuthorizations(Set.of(testSet.auths[0])));
+        evaluator = access.newEvaluator(Set.of(testSet.auths[0]));
         runTestCases(access, testSet, evaluator);
 
         Set<String> auths = Stream.of(testSet.auths[0]).collect(Collectors.toSet());
         evaluator = access.newEvaluator(auths::contains);
         runTestCases(access, testSet, evaluator);
       } else {
-        var authSets = Stream.of(testSet.auths).map(a -> access.newAuthorizations(Set.of(a)))
-            .collect(Collectors.toList());
+        var authSets = Stream.of(testSet.auths).map(a -> Set.of(a)).collect(Collectors.toList());
         evaluator = access.newEvaluator(authSets);
         runTestCases(access, testSet, evaluator);
       }
@@ -166,10 +165,10 @@ public class AccessEvaluatorTest {
   @Test
   public void testEmptyAuthorizations() {
     var access = Access.builder().build();
-    assertThrows(IllegalArgumentException.class, () -> access.newAuthorizations(Set.of("")));
-    assertThrows(IllegalArgumentException.class, () -> access.newAuthorizations(Set.of("", "A")));
-    assertThrows(IllegalArgumentException.class, () -> access.newAuthorizations(Set.of("A", "")));
-    assertThrows(IllegalArgumentException.class, () -> access.newAuthorizations(Set.of("")));
+    assertThrows(IllegalArgumentException.class, () -> access.newEvaluator(Set.of("")));
+    assertThrows(IllegalArgumentException.class, () -> access.newEvaluator(Set.of("", "A")));
+    assertThrows(IllegalArgumentException.class, () -> access.newEvaluator(Set.of("A", "")));
+    assertThrows(IllegalArgumentException.class, () -> access.newEvaluator(Set.of("")));
   }
 
   @Test
@@ -277,7 +276,7 @@ public class AccessEvaluatorTest {
     assertEquals(Set.of("A", "B/C", "D\\E"), seenAuths);
     seenAuths.clear();
 
-    var eval = access.newEvaluator(access.newAuthorizations(Set.of("A")));
+    var eval = access.newEvaluator(Set.of("A"));
     assertFalse(eval.canAccess(qa1 + "&" + qa2 + "&" + qa3));
     assertEquals(Set.of("A", "B/C", "D\\E"), seenAuths);
     seenAuths.clear();
