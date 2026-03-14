@@ -56,8 +56,7 @@ public class AccessExample {
     var access = Access.builder().authorizationValidator(AuthorizationValidator.DEFAULT).build();
 
     // Create an access evaluator using the provided authorizations
-    AccessEvaluator evaluator =
-        access.newEvaluator(access.newAuthorizations(Set.of(authorizations)));
+    AccessEvaluator evaluator = access.newEvaluator(Set.of(authorizations));
 
     // Print each record whose access expression permits viewing using the provided authorizations
     getData().forEach((record, accessExpression) -> {

@@ -102,16 +102,6 @@ public interface Access {
       throws InvalidAccessExpressionException, InvalidAuthorizationException;
 
   /**
-   * Creates an Authorizations object from the set of input authorization strings.
-   *
-   * @param authorizations set of authorization strings
-   * @throws InvalidAuthorizationException when the expression contains an authorization that is not
-   *         valid
-   * @return Authorizations object
-   */
-  Authorizations newAuthorizations(Set<String> authorizations) throws InvalidAuthorizationException;
-
-  /**
    * Validates an access expression and finds all authorizations in it passing them to the
    * authorizationConsumer. For example, for the expression {@code (A&B)|(A&C)|(A&D)}, this method
    * would pass {@code A,B,A,C,A,D} to the consumer one at a time. The function will conceptually
@@ -156,7 +146,7 @@ public interface Access {
    * @param authorizations auths to use in the AccessEvaluator
    * @return AccessEvaluator object
    */
-  AccessEvaluator newEvaluator(Authorizations authorizations);
+  AccessEvaluator newEvaluator(Set<String> authorizations);
 
   /**
    * Creates an AccessEvaluator from an Authorizer
@@ -215,5 +205,5 @@ public interface Access {
    *
    * </table>
    */
-  AccessEvaluator newEvaluator(Collection<Authorizations> authorizationSets);
+  AccessEvaluator newEvaluator(Collection<Set<String>> authorizationSets);
 }

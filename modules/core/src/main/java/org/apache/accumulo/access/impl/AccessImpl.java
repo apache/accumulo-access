@@ -20,6 +20,7 @@ package org.apache.accumulo.access.impl;
 
 import static org.apache.accumulo.access.AuthorizationValidator.AuthorizationCharacters.ANY;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
@@ -30,7 +31,6 @@ import org.apache.accumulo.access.Access;
 import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.AuthorizationValidator;
-import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.InvalidAuthorizationException;
 import org.apache.accumulo.access.ParsedAccessExpression;
@@ -38,6 +38,12 @@ import org.apache.accumulo.access.ParsedAccessExpression;
 public class AccessImpl implements Access {
 
   private final AuthorizationValidator authValidator;
+
+  private Set<String> validateAuthSet(Set<String> auths) {
+    var validated = Set.copyOf(auths);
+    validated.forEach(auth -> validateAuthorization(auth, ANY));
+    return validated;
+  }
 
   private void validateAuthorization(CharSequence auth,
       AuthorizationValidator.AuthorizationCharacters quoting) {
@@ -68,16 +74,6 @@ public class AccessImpl implements Access {
   }
 
   @Override
-  public Authorizations newAuthorizations(Set<String> authorizations) {
-    if (authorizations.isEmpty()) {
-      return AuthorizationsImpl.EMPTY;
-    } else {
-      authorizations.forEach(auth -> validateAuthorization(auth, ANY));
-      return new AuthorizationsImpl(authorizations);
-    }
-  }
-
-  @Override
   public void findAuthorizations(String expression, Consumer<String> authorizationConsumer)
       throws InvalidAccessExpressionException {
     ParserEvaluator.findAuthorizations(expression, authorizationConsumer, authValidator);
@@ -102,8 +98,8 @@ public class AccessImpl implements Access {
   }
 
   @Override
-  public AccessEvaluator newEvaluator(Authorizations authorizations) {
-    return new AccessEvaluatorImpl(authorizations, authValidator);
+  public AccessEvaluator newEvaluator(Set<String> authorizations) {
+    return new AccessEvaluatorImpl(validateAuthSet(authorizations), authValidator);
   }
 
   @Override
@@ -112,7 +108,9 @@ public class AccessImpl implements Access {
   }
 
   @Override
-  public AccessEvaluator newEvaluator(Collection<Authorizations> authorizationSets) {
-    return new MultiAccessEvaluatorImpl(authorizationSets, authValidator);
+  public AccessEvaluator newEvaluator(Collection<Set<String>> authorizationSets) {
+    var evaluators = new ArrayList<AccessEvaluator>(authorizationSets.size());
+    authorizationSets.forEach(set -> evaluators.add(newEvaluator(set)));
+    return new MultiAccessEvaluatorImpl(evaluators);
   }
 }
