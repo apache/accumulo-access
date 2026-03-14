@@ -28,10 +28,6 @@
     <relativePath>../../pom.xml</relativePath>
   </parent>
   <artifactId>accumulo-access-core</artifactId>
-  <properties>
-    <benchmark.jfr>false</benchmark.jfr>
-    <benchmark.methods>.*</benchmark.methods>
-  </properties>
   <dependencies>
     <dependency>
       <groupId>com.github.spotbugs</groupId>
@@ -56,6 +52,11 @@
     <dependency>
       <groupId>org.openjdk.jmh</groupId>
       <artifactId>jmh-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -92,6 +93,9 @@
           <name>benchmark</name>
         </property>
       </activation>
+      <properties>
+        <benchmark.jfr.outputDir>${project.build.directory}</benchmark.jfr.outputDir>
+      </properties>
       <dependencies>
         <dependency>
           <groupId>org.slf4j</groupId>
@@ -119,8 +123,9 @@
                     <argument>org.apache.accumulo.access.tests.AccessExpressionBenchmark</argument>
                   </arguments>
                   <environmentVariables>
-                    <ENABLE_JFR>${benchmark.jfr}</ENABLE_JFR>
-                    <ACCESS_BENCHMARK>${benchmark.methods}</ACCESS_BENCHMARK>
+                    <ACCESS_BENCHMARK>${benchmark}</ACCESS_BENCHMARK>
+                    <ACCESS_BENCHMARK_JFR>${benchmark.jfr}</ACCESS_BENCHMARK_JFR>
+                    <ACCESS_BENCHMARK_JFR_DIR>${benchmark.jfr.outputDir}</ACCESS_BENCHMARK_JFR_DIR>
                   </environmentVariables>
                 </configuration>
               </execution>

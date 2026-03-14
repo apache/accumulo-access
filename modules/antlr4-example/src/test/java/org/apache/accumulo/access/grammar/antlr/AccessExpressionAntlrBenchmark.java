@@ -40,10 +40,12 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.infra.Blackhole;
+import org.openjdk.jmh.runner.NoBenchmarksException;
 import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Benchmarks Access Expressions using JMH. To run, use the following commands.
@@ -56,6 +58,8 @@ import org.openjdk.jmh.runner.options.TimeValue;
  * </code>
  */
 public class AccessExpressionAntlrBenchmark {
+
+  private static final Logger LOG = LoggerFactory.getLogger(AccessExpressionAntlrBenchmark.class);
 
   public static class EvaluatorTests {
     AccessExpressionAntlrEvaluator evaluator;
@@ -170,15 +174,24 @@ public class AccessExpressionAntlrBenchmark {
     state.loadData();
 
     int numExpressions = state.getBytesExpressions().size();
+    LOG.info("Number of Expressions: {}", numExpressions);
 
-    System.out.println("Number of Expressions: " + numExpressions);
+    var include = System.getenv().getOrDefault("ACCESS_BENCHMARK", "true");
+    if (include.equals("true")) {
+      include = "";
+    }
+    LOG.info("Benchmark include pattern: {}", include);
 
-    Options opt = new OptionsBuilder().include(AccessExpressionAntlrBenchmark.class.getSimpleName())
-        .mode(Mode.Throughput).operationsPerInvocation(numExpressions)
-        .timeUnit(TimeUnit.MICROSECONDS).warmupTime(TimeValue.seconds(5)).warmupIterations(3)
-        .measurementIterations(4).forks(3).build();
+    var opt = new OptionsBuilder().include(include).mode(Mode.Throughput)
+        .operationsPerInvocation(numExpressions).timeUnit(TimeUnit.MICROSECONDS)
+        .warmupTime(TimeValue.seconds(5)).warmupIterations(3).measurementIterations(4).forks(3)
+        .build();
 
-    new Runner(opt).run();
+    try {
+      new Runner(opt).run();
+    } catch (NoBenchmarksException e) {
+      LOG.warn("No matching benchmarks");
+    }
   }
 
 }

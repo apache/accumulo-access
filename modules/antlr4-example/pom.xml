@@ -52,6 +52,11 @@
       <artifactId>jmh-core</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <pluginManagement>
@@ -129,6 +134,9 @@
                     <classpath />
                     <argument>org.apache.accumulo.access.grammar.antlr.AccessExpressionAntlrBenchmark</argument>
                   </arguments>
+                  <environmentVariables>
+                    <ACCESS_BENCHMARK>${benchmark}</ACCESS_BENCHMARK>
+                  </environmentVariables>
                 </configuration>
               </execution>
             </executions>

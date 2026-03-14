@@ -40,11 +40,13 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.profile.JavaFlightRecorderProfiler;
+import org.openjdk.jmh.runner.NoBenchmarksException;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.ChainedOptionsBuilder;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -63,6 +65,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  */
 @SuppressFBWarnings(value = {"NP_UNWRITTEN_FIELD"}, justification = "Field is written by Gson")
 public class AccessExpressionBenchmark {
+
+  private static final Logger LOG = LoggerFactory.getLogger(AccessExpressionBenchmark.class);
 
   public static class VisibilityEvaluatorTests {
     List<VisibilityEvaluator> evaluator;
@@ -253,23 +257,31 @@ public class AccessExpressionBenchmark {
     state.loadData();
 
     int numExpressions = state.getBytesExpressions().size();
+    LOG.info("Number of Expressions: {}", numExpressions);
 
-    System.out.println("Number of Expressions: " + numExpressions);
+    var jfr = Boolean.parseBoolean(System.getenv().getOrDefault("ACCESS_BENCHMARK_JFR", "false"));
+    var jfrDir = System.getenv().getOrDefault("ACCESS_BENCHMARK_JFR_DIR",
+        System.getProperty("java.io.tmpdir"));
+    LOG.info("Java Flight Recorder: {}", jfr ? "enabled (outputDir=" + jfrDir + ")" : "disabled");
 
-    var include = System.getenv().getOrDefault("ACCESS_BENCHMARK",
-        AccessExpressionBenchmark.class.getSimpleName());
+    var include = System.getenv().getOrDefault("ACCESS_BENCHMARK", "true");
+    if (include.equals("true")) {
+      include = "";
+    }
+    LOG.info("Benchmark include pattern: {}", include);
 
-    var jfr = Boolean.parseBoolean(System.getenv().getOrDefault("ENABLE_JFR", "false"));
-
-    ChainedOptionsBuilder builder = new OptionsBuilder().include(include).mode(Mode.Throughput)
+    var builder = new OptionsBuilder().include(include).mode(Mode.Throughput)
         .operationsPerInvocation(numExpressions).timeUnit(TimeUnit.MICROSECONDS)
         .warmupTime(TimeValue.seconds(5)).warmupIterations(3).measurementIterations(4).forks(3);
 
     if (jfr) {
-      builder.addProfiler(JavaFlightRecorderProfiler.class,
-          "dir=" + System.getProperty("java.io.tmpdir"));
+      builder.addProfiler(JavaFlightRecorderProfiler.class, "dir=" + jfrDir);
     }
 
-    new Runner(builder.build()).run();
+    try {
+      new Runner(builder.build()).run();
+    } catch (NoBenchmarksException e) {
+      LOG.warn("No matching benchmarks");
+    }
   }
 }
