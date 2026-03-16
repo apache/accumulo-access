@@ -26,6 +26,7 @@ import static org.apache.accumulo.access.impl.CharUtils.isQuoteSymbol;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import org.apache.accumulo.access.AccessEvaluator;
@@ -49,15 +50,12 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
   /**
    * Create an AccessEvaluatorImpl using a collection of authorizations
    */
-  AccessEvaluatorImpl(Set<String> authorizations, AuthorizationValidator authorizationValidator) {
-    final Set<CharsWrapper> wrappedAuths = new HashSet<>(authorizations.size());
-    for (String authorization : authorizations) {
-      if (authorization.isEmpty()) {
-        throw new IllegalArgumentException("Empty authorization");
-      }
+  AccessEvaluatorImpl(Set<String> authorizations, Consumer<String> authArgumentValidator,
+      AuthorizationValidator authorizationValidator) {
 
-      wrappedAuths.add(new CharsWrapper(authorization.toCharArray()));
-    }
+    final Set<CharsWrapper> wrappedAuths = new HashSet<>(authorizations.size());
+    authorizations.forEach(authArgumentValidator
+        .andThen(auth -> wrappedAuths.add(new CharsWrapper(auth.toCharArray()))));
 
     this.authorizedPredicate =
         auth -> auth instanceof CharsWrapper wrapped ? wrappedAuths.contains(wrapped)

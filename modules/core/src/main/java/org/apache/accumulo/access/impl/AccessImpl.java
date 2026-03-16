@@ -39,18 +39,11 @@ public class AccessImpl implements Access {
 
   private final AuthorizationValidator authValidator;
 
-  private Set<String> validateAuthSet(Set<String> auths) {
-    var validated = Set.copyOf(auths);
-    validated.forEach(auth -> validateAuthorization(auth, ANY));
-    return validated;
-  }
-
-  private void validateAuthorization(CharSequence auth,
-      AuthorizationValidator.AuthorizationCharacters quoting) {
+  private void validateAuthArgument(CharSequence auth) {
     if (auth.isEmpty()) {
       throw new IllegalArgumentException("Empty string is not a valid authorization");
     }
-    if (!authValidator.test(auth, quoting)) {
+    if (!authValidator.test(auth, ANY)) {
       throw new InvalidAuthorizationException(auth.toString());
     }
   }
@@ -81,14 +74,14 @@ public class AccessImpl implements Access {
 
   @Override
   public String quote(String authorization) {
-    validateAuthorization(authorization, ANY);
+    validateAuthArgument(authorization);
     return AccessExpressionImpl.quote(authorization).toString();
   }
 
   @Override
   public String unquote(String authorization) {
     var unquoted = AccessExpressionImpl.unquote(authorization);
-    validateAuthorization(unquoted, ANY);
+    validateAuthArgument(unquoted);
     return unquoted.toString();
   }
 
@@ -99,7 +92,7 @@ public class AccessImpl implements Access {
 
   @Override
   public AccessEvaluator newEvaluator(Set<String> authorizations) {
-    return new AccessEvaluatorImpl(validateAuthSet(authorizations), authValidator);
+    return new AccessEvaluatorImpl(authorizations, this::validateAuthArgument, authValidator);
   }
 
   @Override
