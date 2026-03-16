@@ -20,8 +20,6 @@ package org.apache.accumulo.access;
 
 import java.util.List;
 
-import org.apache.accumulo.access.impl.ParsedAccessExpressionImpl;
-
 /**
  * Instances of this class are immutable and wrap a verified access expression and a parse tree for
  * the access expression. To create an instance of this class call
@@ -30,8 +28,7 @@ import org.apache.accumulo.access.impl.ParsedAccessExpressionImpl;
  *
  * @since 1.0.0
  */
-public sealed abstract class ParsedAccessExpression extends AccessExpression
-    permits ParsedAccessExpressionImpl {
+public abstract class ParsedAccessExpression extends AccessExpression {
 
   private static final long serialVersionUID = 1L;
 

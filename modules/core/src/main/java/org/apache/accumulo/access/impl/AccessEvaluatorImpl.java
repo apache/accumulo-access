@@ -63,7 +63,7 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
     }
 
     this.authorizedPredicate =
-        auth -> auth instanceof CharsWrapper wrapped ? wrappedAuths.contains(wrapped)
+        auth -> auth instanceof CharsWrapper ? wrappedAuths.contains((CharsWrapper) auth)
             : wrappedAuths.contains(new CharsWrapper(auth.toString().toCharArray()));
     this.authorizationValidator = authorizationValidator;
   }

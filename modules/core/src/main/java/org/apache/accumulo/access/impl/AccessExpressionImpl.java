@@ -56,7 +56,7 @@ public final class AccessExpressionImpl extends AccessExpression {
   }
 
   public static CharSequence quote(CharSequence term) {
-    if (term.isEmpty()) {
+    if (term.length() == 0) {
       throw new IllegalArgumentException("Empty strings are not legal authorizations.");
     }
 
@@ -89,7 +89,7 @@ public final class AccessExpressionImpl extends AccessExpression {
         term = len == 2 ? "" : AccessEvaluatorImpl.unescape(term.subSequence(1, len - 1));
       }
     }
-    if (term.isEmpty()) {
+    if (term.length() == 0) {
       throw new IllegalArgumentException("Empty strings are not legal authorizations.");
     }
     return term;

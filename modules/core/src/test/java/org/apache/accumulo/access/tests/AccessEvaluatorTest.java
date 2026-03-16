@@ -130,7 +130,7 @@ public class AccessEvaluatorTest {
         }
 
         switch (tests.expectedResult) {
-          case ACCESSIBLE -> {
+          case ACCESSIBLE:
             assertTrue(evaluator.canAccess(expression), expression);
             assertTrue(evaluator.canAccess(accumuloAccess.newExpression(expression)), expression);
             assertTrue(evaluator.canAccess(accumuloAccess.newParsedExpression(expression)),
@@ -138,8 +138,8 @@ public class AccessEvaluatorTest {
             assertTrue(
                 evaluator.canAccess(accumuloAccess.newParsedExpression(expression).getExpression()),
                 expression);
-          }
-          case INACCESSIBLE -> {
+            break;
+          case INACCESSIBLE:
             assertFalse(evaluator.canAccess(expression), expression);
             assertFalse(evaluator.canAccess(accumuloAccess.newExpression(expression)), expression);
             assertFalse(evaluator.canAccess(accumuloAccess.newParsedExpression(expression)),
@@ -147,8 +147,8 @@ public class AccessEvaluatorTest {
             assertFalse(
                 evaluator.canAccess(accumuloAccess.newParsedExpression(expression).getExpression()),
                 expression);
-          }
-          case ERROR -> {
+            break;
+          case ERROR:
             assertThrows(InvalidAccessExpressionException.class,
                 () -> evaluator.canAccess(expression), expression);
             assertThrows(InvalidAccessExpressionException.class,
@@ -157,7 +157,7 @@ public class AccessEvaluatorTest {
                 () -> accumuloAccess.newExpression(expression), expression);
             assertThrows(InvalidAccessExpressionException.class,
                 () -> accumuloAccess.newParsedExpression(expression), expression);
-          }
+            break;
         }
       }
     }
