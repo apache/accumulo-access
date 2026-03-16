@@ -78,7 +78,7 @@ final class CharsWrapper implements CharSequence {
     return new String(wrapped, offset, len);
   }
 
-  public void set(char[] data, int start, int len) {
+  void set(char[] data, int start, int len) {
     this.wrapped = data;
     this.offset = start;
     this.len = len;
