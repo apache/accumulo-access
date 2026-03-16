@@ -18,25 +18,17 @@
  */
 package org.apache.accumulo.access.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.apache.accumulo.access.AccessEvaluator;
-import org.apache.accumulo.access.AuthorizationValidator;
-import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 
 public final class MultiAccessEvaluatorImpl implements AccessEvaluator {
 
   private final List<AccessEvaluator> evaluators;
 
-  MultiAccessEvaluatorImpl(Collection<Authorizations> authorizationSets,
-      AuthorizationValidator validator) {
-    evaluators = new ArrayList<>(authorizationSets.size());
-    for (Authorizations authorizations : authorizationSets) {
-      evaluators.add(new AccessEvaluatorImpl(authorizations, validator));
-    }
+  MultiAccessEvaluatorImpl(List<AccessEvaluator> evaluators) {
+    this.evaluators = evaluators;
   }
 
   @Override

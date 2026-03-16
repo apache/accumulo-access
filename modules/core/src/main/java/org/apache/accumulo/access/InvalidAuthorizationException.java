@@ -23,7 +23,7 @@ package org.apache.accumulo.access;
  *
  * @since 1.0.0
  */
-public class InvalidAuthorizationException extends RuntimeException {
+public class InvalidAuthorizationException extends IllegalArgumentException {
 
   private static final long serialVersionUID = 1L;
 

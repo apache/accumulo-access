@@ -22,7 +22,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -30,38 +29,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.accumulo.access.Access;
-import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.InvalidAuthorizationException;
 import org.apache.accumulo.access.impl.Tokenizer;
 import org.junit.jupiter.api.Test;
 
 public class AuthorizationTest {
-
-  @Test
-  public void testEquality() {
-    var access = Access.builder().build();
-    Authorizations auths1 = access.newAuthorizations(Set.of("A", "B", "C"));
-    Authorizations auths2 = access.newAuthorizations(Set.of("A", "B", "C"));
-
-    assertEquals(auths1, auths2);
-    assertEquals(auths1.hashCode(), auths2.hashCode());
-
-    Authorizations auths3 = access.newAuthorizations(Set.of("D", "E", "F"));
-
-    assertNotEquals(auths1, auths3);
-    assertNotEquals(auths1.hashCode(), auths3.hashCode());
-  }
-
-  @Test
-  public void testEmpty() {
-    var access = Access.builder().build();
-    // check if new object is allocated
-    assertSame(access.newAuthorizations(Set.of()), access.newAuthorizations(Set.of()));
-    assertEquals(Set.of(), access.newAuthorizations(Set.of()).asSet());
-    assertSame(access.newAuthorizations(Set.of()).asSet(),
-        access.newAuthorizations(Set.of()).asSet());
-  }
 
   @Test
   public void testAuthorizationValidation() {
@@ -152,8 +125,8 @@ public class AuthorizationTest {
     assertEquals('"' + "ABC\\\"D" + '"', quoted);
     assertEquals("ABC\"D", accumuloAccess.unquote(quoted));
 
-    var auths1 = accumuloAccess.newAuthorizations(Set.of("ABC\"D", "DEF"));
-    var auths2 = accumuloAccess.newAuthorizations(Set.of("ABC\"D", "XYZ"));
+    var auths1 = Set.of("ABC\"D", "DEF");
+    var auths2 = Set.of("ABC\"D", "XYZ");
     var evaluator = accumuloAccess.newEvaluator(auths1);
 
     assertTrue(evaluator.canAccess(quoted + "|XYZ"));
@@ -201,17 +174,17 @@ public class AuthorizationTest {
     assertEquals('"' + auth1 + '"' + "&" + auth2, exp1);
     assertEquals('"' + auth1 + '"' + "|" + auth2, exp2);
 
-    var auths1 = access.newAuthorizations(Set.of(auth1, auth2));
+    var auths1 = Set.of(auth1, auth2);
     var evaluator1 = access.newEvaluator(auths1);
     assertTrue(evaluator1.canAccess(exp1));
     assertTrue(evaluator1.canAccess(exp2));
 
-    var auths2 = access.newAuthorizations(Set.of(auth1));
+    var auths2 = Set.of(auth1);
     var evaluator2 = access.newEvaluator(auths2);
     assertFalse(evaluator2.canAccess(exp1));
     assertTrue(evaluator2.canAccess(exp2));
 
-    var auths3 = access.newAuthorizations(Set.of(auth2));
+    var auths3 = Set.of(auth2);
     var evaluator3 = access.newEvaluator(auths3);
     assertFalse(evaluator3.canAccess(exp1));
     assertTrue(evaluator3.canAccess(exp2));
@@ -221,8 +194,8 @@ public class AuthorizationTest {
       Access accumuloAccess) {
     List<String> auths = List.of(goodAuth1, goodAuth2, badAuth, goodAuth3);
 
-    var auths1 = accumuloAccess.newAuthorizations(Set.of(goodAuth1, goodAuth2));
-    var auths2 = accumuloAccess.newAuthorizations(Set.of(goodAuth3, goodAuth2));
+    var auths1 = Set.of(goodAuth1, goodAuth2);
+    var auths2 = Set.of(goodAuth3, goodAuth2);
 
     var evaluator = accumuloAccess.newEvaluator(auths1);
     var multiEvaluator = accumuloAccess.newEvaluator(List.of(auths1, auths2));
@@ -265,7 +238,7 @@ public class AuthorizationTest {
       assertTrue(exception.getMessage().contains(badAuth));
 
       exception = assertThrows(InvalidAuthorizationException.class,
-          () -> accumuloAccess.newAuthorizations(Set.of(a1, a2, a3, a4)));
+          () -> accumuloAccess.newEvaluator(Set.of(a1, a2, a3, a4)));
       assertTrue(exception.getMessage().contains(badAuth));
 
       if (badAuth.chars().anyMatch(c -> !Tokenizer.isValidAuthChar((char) c))) {

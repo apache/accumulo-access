@@ -20,6 +20,7 @@ package org.apache.accumulo.access.impl;
 
 import static org.apache.accumulo.access.AuthorizationValidator.AuthorizationCharacters.ANY;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
@@ -30,7 +31,6 @@ import org.apache.accumulo.access.Access;
 import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AccessExpression;
 import org.apache.accumulo.access.AuthorizationValidator;
-import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.InvalidAuthorizationException;
 import org.apache.accumulo.access.ParsedAccessExpression;
@@ -39,12 +39,11 @@ public class AccessImpl implements Access {
 
   private final AuthorizationValidator authValidator;
 
-  private void validateAuthorization(CharSequence auth,
-      AuthorizationValidator.AuthorizationCharacters quoting) {
+  private void validateAuthArgument(CharSequence auth) {
     if (auth.isEmpty()) {
       throw new IllegalArgumentException("Empty string is not a valid authorization");
     }
-    if (!authValidator.test(auth, quoting)) {
+    if (!authValidator.test(auth, ANY)) {
       throw new InvalidAuthorizationException(auth.toString());
     }
   }
@@ -68,16 +67,6 @@ public class AccessImpl implements Access {
   }
 
   @Override
-  public Authorizations newAuthorizations(Set<String> authorizations) {
-    if (authorizations.isEmpty()) {
-      return AuthorizationsImpl.EMPTY;
-    } else {
-      authorizations.forEach(auth -> validateAuthorization(auth, ANY));
-      return new AuthorizationsImpl(authorizations);
-    }
-  }
-
-  @Override
   public void findAuthorizations(String expression, Consumer<String> authorizationConsumer)
       throws InvalidAccessExpressionException {
     ParserEvaluator.findAuthorizations(expression, authorizationConsumer, authValidator);
@@ -85,14 +74,14 @@ public class AccessImpl implements Access {
 
   @Override
   public String quote(String authorization) {
-    validateAuthorization(authorization, ANY);
+    validateAuthArgument(authorization);
     return AccessExpressionImpl.quote(authorization).toString();
   }
 
   @Override
   public String unquote(String authorization) {
     var unquoted = AccessExpressionImpl.unquote(authorization);
-    validateAuthorization(unquoted, ANY);
+    validateAuthArgument(unquoted);
     return unquoted.toString();
   }
 
@@ -102,8 +91,8 @@ public class AccessImpl implements Access {
   }
 
   @Override
-  public AccessEvaluator newEvaluator(Authorizations authorizations) {
-    return new AccessEvaluatorImpl(authorizations, authValidator);
+  public AccessEvaluator newEvaluator(Set<String> authorizations) {
+    return new AccessEvaluatorImpl(authorizations, this::validateAuthArgument, authValidator);
   }
 
   @Override
@@ -112,7 +101,9 @@ public class AccessImpl implements Access {
   }
 
   @Override
-  public AccessEvaluator newEvaluator(Collection<Authorizations> authorizationSets) {
-    return new MultiAccessEvaluatorImpl(authorizationSets, authValidator);
+  public AccessEvaluator newEvaluator(Collection<Set<String>> authorizationSets) {
+    var evaluators = new ArrayList<AccessEvaluator>(authorizationSets.size());
+    authorizationSets.forEach(set -> evaluators.add(newEvaluator(set)));
+    return new MultiAccessEvaluatorImpl(evaluators);
   }
 }

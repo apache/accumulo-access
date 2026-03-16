@@ -26,11 +26,11 @@ import static org.apache.accumulo.access.impl.CharUtils.isQuoteSymbol;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.AuthorizationValidator;
-import org.apache.accumulo.access.Authorizations;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 
 public final class AccessEvaluatorImpl implements AccessEvaluator {
@@ -50,17 +50,12 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
   /**
    * Create an AccessEvaluatorImpl using a collection of authorizations
    */
-  AccessEvaluatorImpl(Authorizations authorizations,
+  AccessEvaluatorImpl(Set<String> authorizations, Consumer<String> authArgumentValidator,
       AuthorizationValidator authorizationValidator) {
-    var authsSet = authorizations.asSet();
-    final Set<CharsWrapper> wrappedAuths = new HashSet<>(authsSet.size());
-    for (String authorization : authsSet) {
-      if (authorization.isEmpty()) {
-        throw new IllegalArgumentException("Empty authorization");
-      }
 
-      wrappedAuths.add(new CharsWrapper(authorization.toCharArray()));
-    }
+    final Set<CharsWrapper> wrappedAuths = new HashSet<>(authorizations.size());
+    authorizations.forEach(authArgumentValidator
+        .andThen(auth -> wrappedAuths.add(new CharsWrapper(auth.toCharArray()))));
 
     this.authorizedPredicate =
         auth -> auth instanceof CharsWrapper wrapped ? wrappedAuths.contains(wrapped)
