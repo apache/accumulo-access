@@ -62,6 +62,7 @@ jobs:
           - {name: 'unit-tests',    javaver: 21, args: 'verify -PskipQA -DskipTests=false'}
           - {name: 'qa-checks',     javaver: 21, args: 'verify javadoc:jar -DskipTests -Dspotbugs.timeout=3600000'}
           - {name: 'errorprone',    javaver: 21, args: 'verify -Perrorprone,skipQA'}
+          - {name: 'benchmarks',    javaver: 21, args: 'verify -DskipQA -Dbenchmark=none'}
           - {name: 'jdk25',         javaver: 25, args: 'verify javadoc:jar -DskipTests'}
       fail-fast: false
     runs-on: ubuntu-latest

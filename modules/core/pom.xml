@@ -120,7 +120,7 @@
                   <arguments>
                     <argument>-classpath</argument>
                     <classpath />
-                    <argument>org.apache.accumulo.access.tests.AccessExpressionBenchmark</argument>
+                    <argument>org.apache.accumulo.access.benchmark.AccessExpressionBenchmark</argument>
                   </arguments>
                   <environmentVariables>
                     <ACCESS_BENCHMARK>${benchmark}</ACCESS_BENCHMARK>

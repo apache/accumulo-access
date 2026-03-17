@@ -137,7 +137,7 @@
                   <arguments>
                     <argument>-classpath</argument>
                     <classpath />
-                    <argument>org.apache.accumulo.access.grammar.antlr.AccessExpressionAntlrBenchmark</argument>
+                    <argument>org.apache.accumulo.access.antlr4.benchmark.AccessExpressionAntlrBenchmark</argument>
                   </arguments>
                   <environmentVariables>
                     <ACCESS_BENCHMARK>${benchmark}</ACCESS_BENCHMARK>
