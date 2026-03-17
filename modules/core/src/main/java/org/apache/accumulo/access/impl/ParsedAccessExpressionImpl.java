@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.accumulo.access.AuthorizationValidator;
+import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.InvalidAuthorizationException;
 import org.apache.accumulo.access.ParsedAccessExpression;
 
@@ -51,11 +52,13 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
   private ParsedAccessExpressionImpl(char operator, String wholeExpression, int offset, int length,
       List<ParsedAccessExpression> children) {
     if (children.isEmpty()) {
-      throw new IllegalArgumentException("Must have children with an operator");
+      throw new InvalidAccessExpressionException("Must have children with an operator",
+          wholeExpression, offset);
     }
 
     if (operator != AND_OPERATOR && operator != OR_OPERATOR) {
-      throw new IllegalArgumentException("Unknown operator " + operator);
+      throw new InvalidAccessExpressionException("Unknown operator " + operator, wholeExpression,
+          offset);
     } else if (operator == AND_OPERATOR) {
       this.type = AND;
     } else {
@@ -182,7 +185,7 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
       if (CharUtils.isQuoteSymbol(auth.data[auth.start])) {
         wrapper.set(auth.data, auth.start + 1, auth.len - 2);
         if (auth.hasEscapes) {
-          unquotedAuth = AccessEvaluatorImpl.unescape(wrapper);
+          unquotedAuth = CharUtils.unescape(wrapper);
         } else {
           unquotedAuth = wrapper;
         }
@@ -193,7 +196,7 @@ public final class ParsedAccessExpressionImpl extends ParsedAccessExpression {
         quoting = AuthorizationValidator.AuthorizationCharacters.BASIC;
       }
       if (!authorizationValidator.test(unquotedAuth, quoting)) {
-        throw new InvalidAuthorizationException(unquotedAuth.toString());
+        throw InvalidAuthorizationException.invalidChars(unquotedAuth);
       }
       return new ParsedAccessExpressionImpl(wholeExpression, auth.start, auth.len);
     }

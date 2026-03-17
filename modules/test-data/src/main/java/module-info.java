@@ -16,9 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-module org.apache.accumulo.access.examples.antlr {
-  exports org.apache.accumulo.access.antlr4;
-  exports org.apache.accumulo.access.antlr4.grammars;
-  requires transitive org.apache.accumulo.access.core;
-  requires transitive org.antlr.antlr4.runtime;
+module org.apache.accumulo.access.testdata {
+  exports org.apache.accumulo.access.testdata;
+  requires com.google.gson;
 }

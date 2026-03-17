@@ -18,6 +18,8 @@
  */
 package org.apache.accumulo.access.impl;
 
+import org.apache.accumulo.access.InvalidAuthorizationException;
+
 /**
  * This class exists to avoid repeat conversions from byte to char as well as to provide helper
  * methods for comparing them.
@@ -55,4 +57,81 @@ final class CharUtils {
   static boolean isAndOrOperator(char b) {
     return isAndOperator(b) || isOrOperator(b);
   }
+
+  /**
+   * Properly escapes an authorization string. The string can be quoted if desired.
+   *
+   * @param auth authorization string, as UTF-8 encoded bytes
+   * @param shouldQuote true to wrap escaped authorization in quotes
+   * @return escaped authorization string
+   */
+  static String escape(String auth, boolean shouldQuote) {
+    int escapeCount = 0;
+    final int authLength = auth.length();
+    for (int i = 0; i < authLength; i++) {
+      if (isQuoteOrSlash(auth.charAt(i))) {
+        escapeCount++;
+      }
+    }
+
+    if (escapeCount > 0 || shouldQuote) {
+      char[] escapedAuth = new char[authLength + escapeCount + (shouldQuote ? 2 : 0)];
+      int index = shouldQuote ? 1 : 0;
+      for (int i = 0; i < authLength; i++) {
+        char c = auth.charAt(i);
+        if (isQuoteOrSlash(c)) {
+          escapedAuth[index++] = BACKSLASH;
+        }
+        escapedAuth[index++] = c;
+      }
+
+      if (shouldQuote) {
+        escapedAuth[0] = QUOTE;
+        escapedAuth[escapedAuth.length - 1] = QUOTE;
+      }
+
+      auth = new String(escapedAuth);
+    }
+    return auth;
+  }
+
+  static CharSequence unescape(CharSequence auth) {
+    int escapeCharCount = 0;
+    final int authLength = auth.length();
+    for (int i = 0; i < authLength; i++) {
+      char c = auth.charAt(i);
+      if (isQuoteOrSlash(c)) {
+        escapeCharCount++;
+      }
+    }
+
+    if (escapeCharCount > 0) {
+      if (escapeCharCount % 2 == 1) {
+        throw InvalidAuthorizationException.illegalEscape(auth);
+      }
+
+      char[] unescapedCopy = new char[authLength - escapeCharCount / 2];
+      int pos = 0;
+      for (int i = 0; i < authLength; i++) {
+        char c = auth.charAt(i);
+        if (isBackslashSymbol(c)) {
+          i++;
+          c = auth.charAt(i);
+          if (!isQuoteOrSlash(c)) {
+            throw InvalidAuthorizationException.illegalEscape(auth);
+          }
+        } else if (isQuoteSymbol(c)) {
+          // should only see quote after a slash
+          throw InvalidAuthorizationException.unescapedQuote(auth);
+        }
+
+        unescapedCopy[pos++] = c;
+      }
+
+      return new String(unescapedCopy);
+    } else {
+      return auth;
+    }
+  }
+
 }

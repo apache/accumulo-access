@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access.grammar.antlr;
+package org.apache.accumulo.access.antlr4;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -41,17 +41,16 @@ import org.antlr.v4.runtime.Recognizer;
 import org.apache.accumulo.access.Access;
 import org.apache.accumulo.access.AccessEvaluator;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
-import org.apache.accumulo.access.antlr.TestDataLoader;
-import org.apache.accumulo.access.antlr.TestDataLoader.ExpectedResult;
-import org.apache.accumulo.access.antlr.TestDataLoader.TestDataSet;
-import org.apache.accumulo.access.antlr.TestDataLoader.TestExpressions;
-import org.apache.accumulo.access.antlr4.AccessExpressionAntlrEvaluator;
-import org.apache.accumulo.access.grammars.AccessExpressionLexer;
-import org.apache.accumulo.access.grammars.AccessExpressionParser;
-import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
+import org.apache.accumulo.access.antlr4.grammars.AccessExpressionLexer;
+import org.apache.accumulo.access.antlr4.grammars.AccessExpressionParser;
+import org.apache.accumulo.access.antlr4.grammars.AccessExpressionParser.Access_expressionContext;
+import org.apache.accumulo.access.testdata.TestDataLoader;
+import org.apache.accumulo.access.testdata.TestDataLoader.ExpectedResult;
+import org.apache.accumulo.access.testdata.TestDataLoader.TestDataSet;
+import org.apache.accumulo.access.testdata.TestDataLoader.TestExpressions;
 import org.junit.jupiter.api.Test;
 
-public class Antlr4Tests {
+class Antlr4Tests {
 
   public static final Access ACCESS = Access.builder().build();
 

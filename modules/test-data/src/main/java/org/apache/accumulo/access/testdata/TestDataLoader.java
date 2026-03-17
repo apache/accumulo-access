@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access.antlr;
+package org.apache.accumulo.access.testdata;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -86,9 +86,10 @@ public class TestDataLoader {
     }
   }
 
-  public static List<TestDataSet> readTestData() throws IOException, URISyntaxException {
+  private TestDataLoader() {}
 
-    try (var input = TestDataLoader.class.getResourceAsStream("/testdata.json")) {
+  public static List<TestDataSet> readTestData() throws IOException, URISyntaxException {
+    try (var input = TestDataLoader.class.getResourceAsStream("testdata.json")) {
       if (input == null) {
         throw new IllegalStateException("could not find resource : testdata.json");
       }

@@ -38,13 +38,18 @@
       <artifactId>accumulo-access-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
+      <groupId>org.apache.accumulo</groupId>
+      <artifactId>accumulo-access-test-data</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -88,9 +93,9 @@
             <configuration>
               <arguments>
                 <arg>-package</arg>
-                <arg>org.apache.accumulo.access.grammars</arg>
+                <arg>org.apache.accumulo.access.antlr4.grammars</arg>
                 <arg>-o</arg>
-                <arg>${project.build.directory}/generated-sources/antlr4/org/apache/accumulo/access/grammars</arg>
+                <arg>${project.build.directory}/generated-sources/antlr4/org/apache/accumulo/access/antlr4/grammars</arg>
               </arguments>
               <listener>false</listener>
               <visitor>false</visitor>

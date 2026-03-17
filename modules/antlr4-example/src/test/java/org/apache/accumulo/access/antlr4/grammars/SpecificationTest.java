@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access.grammar;
+package org.apache.accumulo.access.antlr4.grammars;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -29,14 +29,12 @@ import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.antlr.v4.runtime.LexerNoViableAltException;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
-import org.apache.accumulo.access.grammars.AbnfLexer;
-import org.apache.accumulo.access.grammars.AbnfParser;
 import org.junit.jupiter.api.Test;
 
 // This test uses the ANTLR ABNF grammar to parse the
 // AccessExpression ANBF specification to validate that
 // it is proper ANBF.
-public class SpecificationTest {
+class SpecificationTest {
 
   @Test
   public void testAbnfSpecificationParses() throws Exception {

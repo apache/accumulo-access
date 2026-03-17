@@ -30,9 +30,9 @@ import org.antlr.v4.runtime.LexerNoViableAltException;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
-import org.apache.accumulo.access.grammars.AccessExpressionLexer;
-import org.apache.accumulo.access.grammars.AccessExpressionParser;
-import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
+import org.apache.accumulo.access.antlr4.grammars.AccessExpressionLexer;
+import org.apache.accumulo.access.antlr4.grammars.AccessExpressionParser;
+import org.apache.accumulo.access.antlr4.grammars.AccessExpressionParser.Access_expressionContext;
 
 public class AccessExpressionAntlrParser {
 
