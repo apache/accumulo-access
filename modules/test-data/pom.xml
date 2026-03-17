@@ -19,12 +19,22 @@
     under the License.
 
 -->
-<FindBugsFilter>
-  <Match>
-    <Or>
-      <!-- ignore generated stuff -->
-      <Class name="~.*[.]jmh_generated[.].*" />
-      <Class name="~org[.]apache[.]accumulo[.]access[.]antlr4[.]grammars[.].*" />
-    </Or>
-  </Match>
-</FindBugsFilter>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.accumulo</groupId>
+    <artifactId>accumulo-access</artifactId>
+    <version>1.0.0-beta2-SNAPSHOT</version>
+    <relativePath>../../pom.xml</relativePath>
+  </parent>
+  <artifactId>accumulo-access-test-data</artifactId>
+  <properties>
+    <maven.deploy.skip>releases</maven.deploy.skip>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+    </dependency>
+  </dependencies>
+</project>

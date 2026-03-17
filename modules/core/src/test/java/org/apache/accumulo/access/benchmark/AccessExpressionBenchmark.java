@@ -16,11 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access.tests;
+package org.apache.accumulo.access.benchmark;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -30,6 +29,9 @@ import java.util.stream.Stream;
 
 import org.apache.accumulo.access.Access;
 import org.apache.accumulo.access.AccessEvaluator;
+import org.apache.accumulo.access.testdata.TestDataLoader;
+import org.apache.accumulo.access.testdata.TestDataLoader.ExpectedResult;
+import org.apache.accumulo.access.testdata.TestDataLoader.TestDataSet;
 import org.apache.accumulo.core.security.ColumnVisibility;
 import org.apache.accumulo.core.security.VisibilityEvaluator;
 import org.apache.accumulo.core.security.VisibilityParseException;
@@ -42,13 +44,10 @@ import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.profile.JavaFlightRecorderProfiler;
 import org.openjdk.jmh.runner.NoBenchmarksException;
 import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Benchmarks Access Expressions using JMH. To run, use the following commands.
@@ -63,7 +62,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  *
  * </blockquote>
  */
-@SuppressFBWarnings(value = {"NP_UNWRITTEN_FIELD"}, justification = "Field is written by Gson")
 public class AccessExpressionBenchmark {
 
   private static final Logger LOG = LoggerFactory.getLogger(AccessExpressionBenchmark.class);
@@ -94,9 +92,9 @@ public class AccessExpressionBenchmark {
     private ArrayList<VisibilityEvaluatorTests> visibilityEvaluatorTests;
 
     @Setup
-    public void loadData() throws IOException {
+    public void loadData() throws Exception {
       access = Access.builder().build();
-      List<AccessEvaluatorTest.TestDataSet> testData = AccessEvaluatorTest.readTestData();
+      List<TestDataSet> testData = TestDataLoader.readTestData();
       allTestExpressions = new ArrayList<>();
       allTestExpressionsStr = new ArrayList<>();
       evaluatorTests = new ArrayList<>();
@@ -109,12 +107,12 @@ public class AccessExpressionBenchmark {
         vet.expressions = new ArrayList<>();
         vet.columnVisibilities = new ArrayList<>();
 
-        if (testDataSet.auths.length == 1) {
+        if (testDataSet.getAuths().length == 1) {
           vet.evaluator = List.of(new VisibilityEvaluator(
-              new org.apache.accumulo.core.security.Authorizations(testDataSet.auths[0])));
+              new org.apache.accumulo.core.security.Authorizations(testDataSet.getAuths()[0])));
         } else {
           List<VisibilityEvaluator> veList = new ArrayList<>();
-          for (String[] auths : testDataSet.auths) {
+          for (String[] auths : testDataSet.getAuths()) {
             veList.add(new VisibilityEvaluator(
                 new org.apache.accumulo.core.security.Authorizations(auths)));
           }
@@ -125,17 +123,17 @@ public class AccessExpressionBenchmark {
         EvaluatorTests et = new EvaluatorTests();
         et.expressions = new ArrayList<>();
 
-        if (testDataSet.auths.length == 1) {
-          et.evaluator = access.newEvaluator(Set.of(testDataSet.auths[0]));
+        if (testDataSet.getAuths().length == 1) {
+          et.evaluator = access.newEvaluator(Set.of(testDataSet.getAuths()[0]));
         } else {
           var authSets =
-              Stream.of(testDataSet.auths).map(a -> Set.of(a)).collect(Collectors.toList());
+              Stream.of(testDataSet.getAuths()).map(a -> Set.of(a)).collect(Collectors.toList());
           et.evaluator = access.newEvaluator(authSets);
         }
 
-        for (var tests : testDataSet.tests) {
-          if (tests.expectedResult != AccessEvaluatorTest.ExpectedResult.ERROR) {
-            for (var exp : tests.expressions) {
+        for (var tests : testDataSet.getTests()) {
+          if (tests.getExpectedResult() != ExpectedResult.ERROR) {
+            for (var exp : tests.getExpressions()) {
               allTestExpressionsStr.add(exp);
               byte[] byteExp = exp.getBytes(UTF_8);
               allTestExpressions.add(byteExp);
@@ -250,7 +248,7 @@ public class AccessExpressionBenchmark {
     }
   }
 
-  public static void main(String[] args) throws RunnerException, IOException {
+  public static void main(String[] args) throws Exception {
 
     var state = new BenchmarkState();
     state.loadData();

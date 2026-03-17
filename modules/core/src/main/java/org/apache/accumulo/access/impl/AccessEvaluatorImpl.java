@@ -18,12 +18,6 @@
  */
 package org.apache.accumulo.access.impl;
 
-import static org.apache.accumulo.access.impl.CharUtils.BACKSLASH;
-import static org.apache.accumulo.access.impl.CharUtils.QUOTE;
-import static org.apache.accumulo.access.impl.CharUtils.isBackslashSymbol;
-import static org.apache.accumulo.access.impl.CharUtils.isQuoteOrSlash;
-import static org.apache.accumulo.access.impl.CharUtils.isQuoteSymbol;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -61,82 +55,6 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
         auth -> auth instanceof CharsWrapper wrapped ? wrappedAuths.contains(wrapped)
             : wrappedAuths.contains(new CharsWrapper(auth.toString().toCharArray()));
     this.authorizationValidator = authorizationValidator;
-  }
-
-  public static CharSequence unescape(CharSequence auth) {
-    int escapeCharCount = 0;
-    final int authLength = auth.length();
-    for (int i = 0; i < authLength; i++) {
-      char c = auth.charAt(i);
-      if (isQuoteOrSlash(c)) {
-        escapeCharCount++;
-      }
-    }
-
-    if (escapeCharCount > 0) {
-      if (escapeCharCount % 2 == 1) {
-        throw new IllegalArgumentException("Illegal escape sequence in auth : " + auth);
-      }
-
-      char[] unescapedCopy = new char[authLength - escapeCharCount / 2];
-      int pos = 0;
-      for (int i = 0; i < authLength; i++) {
-        char c = auth.charAt(i);
-        if (isBackslashSymbol(c)) {
-          i++;
-          c = auth.charAt(i);
-          if (!isQuoteOrSlash(c)) {
-            throw new IllegalArgumentException("Illegal escape sequence in auth : " + auth);
-          }
-        } else if (isQuoteSymbol(c)) {
-          // should only see quote after a slash
-          throw new IllegalArgumentException("Unescaped quote in auth : " + auth);
-        }
-
-        unescapedCopy[pos++] = c;
-      }
-
-      return new String(unescapedCopy);
-    } else {
-      return auth;
-    }
-  }
-
-  /**
-   * Properly escapes an authorization string. The string can be quoted if desired.
-   *
-   * @param auth authorization string, as UTF-8 encoded bytes
-   * @param shouldQuote true to wrap escaped authorization in quotes
-   * @return escaped authorization string
-   */
-  public static CharSequence escape(CharSequence auth, boolean shouldQuote) {
-    int escapeCount = 0;
-    final int authLength = auth.length();
-    for (int i = 0; i < authLength; i++) {
-      if (isQuoteOrSlash(auth.charAt(i))) {
-        escapeCount++;
-      }
-    }
-
-    if (escapeCount > 0 || shouldQuote) {
-      char[] escapedAuth = new char[authLength + escapeCount + (shouldQuote ? 2 : 0)];
-      int index = shouldQuote ? 1 : 0;
-      for (int i = 0; i < authLength; i++) {
-        char c = auth.charAt(i);
-        if (isQuoteOrSlash(c)) {
-          escapedAuth[index++] = BACKSLASH;
-        }
-        escapedAuth[index++] = c;
-      }
-
-      if (shouldQuote) {
-        escapedAuth[0] = QUOTE;
-        escapedAuth[escapedAuth.length - 1] = QUOTE;
-      }
-
-      auth = new String(escapedAuth);
-    }
-    return auth;
   }
 
   @Override

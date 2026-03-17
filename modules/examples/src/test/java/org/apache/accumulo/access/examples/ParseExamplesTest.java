@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access.examples.test;
+package org.apache.accumulo.access.examples;
 
 import static org.apache.accumulo.access.examples.ParseExamples.ACCESS;
 import static org.apache.accumulo.access.examples.ParseExamples.replaceAuthorizations;
@@ -26,11 +26,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.accumulo.access.examples.ParseExamples;
 import org.junit.jupiter.api.Test;
 
 // In addition to testing the examples, these test also provide extensive testing of ParsedAccessExpression
-public class ParseExamplesTest {
+class ParseExamplesTest {
 
   @Test
   public void testNormalize() {

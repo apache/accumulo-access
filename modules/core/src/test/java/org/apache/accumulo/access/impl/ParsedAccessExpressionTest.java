@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access.tests;
+package org.apache.accumulo.access.impl;
 
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.AND;
 import static org.apache.accumulo.access.ParsedAccessExpression.ExpressionType.AUTHORIZATION;
@@ -36,7 +36,8 @@ import org.apache.accumulo.access.AuthorizationValidator;
 import org.apache.accumulo.access.ParsedAccessExpression;
 import org.junit.jupiter.api.Test;
 
-public class ParsedAccessExpressionTest {
+class ParsedAccessExpressionTest {
+
   @Test
   public void testParsing() {
     HashSet<String> seenAuths = new HashSet<>();

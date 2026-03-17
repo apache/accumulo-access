@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access.examples.test;
+package org.apache.accumulo.access.examples;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -27,10 +27,9 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 
-import org.apache.accumulo.access.examples.AccessExample;
 import org.junit.jupiter.api.Test;
 
-public class AccessExampleTest {
+class AccessExampleTest {
   @Test
   public void testExampleCode() throws IOException {
     try (final var baos = new ByteArrayOutputStream();

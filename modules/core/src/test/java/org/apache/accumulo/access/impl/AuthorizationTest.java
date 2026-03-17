@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access.tests;
+package org.apache.accumulo.access.impl;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,10 +31,9 @@ import java.util.Set;
 import org.apache.accumulo.access.Access;
 import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.access.InvalidAuthorizationException;
-import org.apache.accumulo.access.impl.Tokenizer;
 import org.junit.jupiter.api.Test;
 
-public class AuthorizationTest {
+class AuthorizationTest {
 
   @Test
   public void testAuthorizationValidation() {

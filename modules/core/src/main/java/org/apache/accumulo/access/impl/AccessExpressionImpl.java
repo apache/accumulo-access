@@ -55,44 +55,4 @@ public final class AccessExpressionImpl extends AccessExpression {
     return parseTree;
   }
 
-  public static CharSequence quote(CharSequence term) {
-    if (term.isEmpty()) {
-      throw new IllegalArgumentException("Empty strings are not legal authorizations.");
-    }
-
-    boolean needsQuote = false;
-    final int len = term.length();
-    for (int i = 0; i < len; i++) {
-      if (!Tokenizer.isValidAuthChar(term.charAt(i))) {
-        needsQuote = true;
-        break;
-      }
-    }
-
-    if (!needsQuote) {
-      return term;
-    }
-
-    return AccessEvaluatorImpl.escape(term, true);
-  }
-
-  public static CharSequence unquote(CharSequence term) {
-    final int len = term.length();
-    if (len >= 1) {
-      final boolean firstIsQuote = term.charAt(0) == '"';
-      final boolean lastIsQuote = term.charAt(len - 1) == '"';
-      if (firstIsQuote || lastIsQuote) {
-        if (len == 1 || (firstIsQuote != lastIsQuote)) {
-          throw new IllegalArgumentException("Unbalanced quotes : " + term);
-        }
-
-        term = len == 2 ? "" : AccessEvaluatorImpl.unescape(term.subSequence(1, len - 1));
-      }
-    }
-    if (term.isEmpty()) {
-      throw new IllegalArgumentException("Empty strings are not legal authorizations.");
-    }
-    return term;
-  }
-
 }

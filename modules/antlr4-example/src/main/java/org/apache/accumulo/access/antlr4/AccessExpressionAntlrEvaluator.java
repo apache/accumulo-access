@@ -26,11 +26,11 @@ import java.util.Set;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.accumulo.access.Access;
-import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
-import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_tokenContext;
-import org.apache.accumulo.access.grammars.AccessExpressionParser.And_operatorContext;
-import org.apache.accumulo.access.grammars.AccessExpressionParser.Or_expressionContext;
-import org.apache.accumulo.access.grammars.AccessExpressionParser.Or_operatorContext;
+import org.apache.accumulo.access.antlr4.grammars.AccessExpressionParser.Access_expressionContext;
+import org.apache.accumulo.access.antlr4.grammars.AccessExpressionParser.Access_tokenContext;
+import org.apache.accumulo.access.antlr4.grammars.AccessExpressionParser.And_operatorContext;
+import org.apache.accumulo.access.antlr4.grammars.AccessExpressionParser.Or_expressionContext;
+import org.apache.accumulo.access.antlr4.grammars.AccessExpressionParser.Or_operatorContext;
 
 public class AccessExpressionAntlrEvaluator {
 

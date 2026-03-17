@@ -41,10 +41,10 @@ public class AccessImpl implements Access {
 
   private void validateAuthArgument(CharSequence auth) {
     if (auth.isEmpty()) {
-      throw new IllegalArgumentException("Empty string is not a valid authorization");
+      throw InvalidAuthorizationException.emptyString();
     }
     if (!authValidator.test(auth, ANY)) {
-      throw new InvalidAuthorizationException(auth.toString());
+      throw InvalidAuthorizationException.invalidChars(auth);
     }
   }
 
@@ -75,14 +75,33 @@ public class AccessImpl implements Access {
   @Override
   public String quote(String authorization) {
     validateAuthArgument(authorization);
-    return AccessExpressionImpl.quote(authorization).toString();
+    boolean needsQuote = false;
+    final int len = authorization.length();
+    for (int i = 0; i < len; i++) {
+      if (!Tokenizer.isValidAuthChar(authorization.charAt(i))) {
+        needsQuote = true;
+        break;
+      }
+    }
+    return needsQuote ? CharUtils.escape(authorization, true) : authorization;
   }
 
   @Override
   public String unquote(String authorization) {
-    var unquoted = AccessExpressionImpl.unquote(authorization);
+    String unquoted = authorization;
+    final int len = unquoted.length();
+    if (len >= 1) {
+      final boolean firstIsQuote = unquoted.charAt(0) == '"';
+      final boolean lastIsQuote = unquoted.charAt(len - 1) == '"';
+      if (firstIsQuote || lastIsQuote) {
+        if (len == 1 || (firstIsQuote != lastIsQuote)) {
+          throw InvalidAuthorizationException.unablancedQuotes(authorization); // unbalanced quotes
+        }
+        unquoted = len == 2 ? "" : CharUtils.unescape(unquoted.substring(1, len - 1)).toString();
+      }
+    }
     validateAuthArgument(unquoted);
-    return unquoted.toString();
+    return unquoted;
   }
 
   @Override

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.accumulo.access.grammar.antlr;
+package org.apache.accumulo.access.antlr4.benchmark;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -29,10 +29,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.accumulo.access.antlr.TestDataLoader;
 import org.apache.accumulo.access.antlr4.AccessExpressionAntlrEvaluator;
 import org.apache.accumulo.access.antlr4.AccessExpressionAntlrParser;
-import org.apache.accumulo.access.grammars.AccessExpressionParser.Access_expressionContext;
+import org.apache.accumulo.access.antlr4.grammars.AccessExpressionParser.Access_expressionContext;
+import org.apache.accumulo.access.testdata.TestDataLoader;
+import org.apache.accumulo.access.testdata.TestDataLoader.ExpectedResult;
+import org.apache.accumulo.access.testdata.TestDataLoader.TestDataSet;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.Scope;
@@ -79,7 +81,7 @@ public class AccessExpressionAntlrBenchmark {
 
     @Setup
     public void loadData() throws IOException, URISyntaxException {
-      List<TestDataLoader.TestDataSet> testData = TestDataLoader.readTestData();
+      List<TestDataSet> testData = TestDataLoader.readTestData();
       allTestExpressions = new ArrayList<>();
       allTestExpressionsStr = new ArrayList<>();
       evaluatorTests = new ArrayList<>();
@@ -93,7 +95,7 @@ public class AccessExpressionAntlrBenchmark {
             Stream.of(testDataSet.getAuths()).map(a -> Set.of(a)).collect(Collectors.toList()));
 
         for (var tests : testDataSet.getTests()) {
-          if (tests.getExpectedResult() != TestDataLoader.ExpectedResult.ERROR) {
+          if (tests.getExpectedResult() != ExpectedResult.ERROR) {
             for (var exp : tests.getExpressions()) {
               allTestExpressionsStr.add(exp);
               byte[] byteExp = exp.getBytes(UTF_8);

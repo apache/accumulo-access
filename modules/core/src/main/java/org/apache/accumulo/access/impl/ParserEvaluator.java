@@ -63,12 +63,12 @@ public final class ParserEvaluator {
     charsWrapper.set(authToken.data, authToken.start, authToken.len);
     CharSequence authorizations;
     if (authToken.hasEscapes) {
-      authorizations = AccessEvaluatorImpl.unescape(charsWrapper);
+      authorizations = CharUtils.unescape(charsWrapper);
     } else {
       authorizations = charsWrapper;
     }
     if (!authValidator.test(authorizations, authToken.quoting)) {
-      throw new InvalidAuthorizationException(authorizations.toString());
+      throw InvalidAuthorizationException.invalidChars(authorizations);
     }
     return authorizations;
   }
