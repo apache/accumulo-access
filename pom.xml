@@ -135,6 +135,7 @@ under the License.
     <sourceReleaseAssemblyDescriptor>source-release-tar</sourceReleaseAssemblyDescriptor>
     <surefire.failIfNoSpecifiedTests>false</surefire.failIfNoSpecifiedTests>
     <version.accumulo>3.0.0</version.accumulo>
+    <version.apache-rat-plugin>0.18</version.apache-rat-plugin>
     <version.errorprone>2.47.0</version.errorprone>
     <version.gson>2.13.2</version.gson>
     <version.jmh>1.37</version.jmh>
@@ -245,7 +246,7 @@ under the License.
         <plugin>
           <groupId>org.gaul</groupId>
           <artifactId>modernizer-maven-plugin</artifactId>
-          <version>3.2.0</version>
+          <version>3.3.0</version>
         </plugin>
         <plugin>
           <groupId>com.github.spotbugs</groupId>
@@ -389,18 +390,11 @@ under the License.
           <groupId>org.apache.rat</groupId>
           <artifactId>apache-rat-plugin</artifactId>
           <configuration>
-            <excludes combine.children="append">
+            <inputExcludes combine.children="append">
               <exclude>.github/**</exclude>
               <exclude>src/main/antlr4/Abnf.g4</exclude>
-            </excludes>
+            </inputExcludes>
           </configuration>
-          <dependencies>
-            <dependency>
-              <groupId>org.apache.maven.doxia</groupId>
-              <artifactId>doxia-site-renderer</artifactId>
-              <version>2.0.0</version>
-            </dependency>
-          </dependencies>
         </plugin>
         <plugin>
           <groupId>net.revelc.code</groupId>
