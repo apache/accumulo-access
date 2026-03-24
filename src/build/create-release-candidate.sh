@@ -23,12 +23,12 @@ scriptname=$(basename "$0")
 projectroot="$(git rev-parse --show-toplevel)" || exit 1
 cd "$projectroot" || exit 1
 export tlpName=accumulo
-export projName="${tlpName}-access"
-export projNameLong="Apache ${projName^}"
+export projName="$(xmllint --shell pom.xml <<<'xpath /*[local-name()="project"]/*[local-name()="artifactId"]/text()' | grep content= | cut -f2 -d=)"
+export projNameLong="$(xmllint --shell pom.xml <<<'xpath /*[local-name()="project"]/*[local-name()="name"]/text()' | grep content= | cut -f2 -d=)"
 export stagingRepoPrefix="https://repository.apache.org/content/repositories/orgapache$tlpName"
 export srcQualifier="source-release"
 export relTestingUrl="https://$tlpName.apache.org/contributor/verifying-release"
-export tagPrefix="rel/"
+export tagPrefix="rel/$projName-"
 
 # check if running in a color terminal
 terminalSupportsColor() {
@@ -161,8 +161,9 @@ createEmail() {
   echo
   echo "    Remember, $(red DO NOT PUSH) the $(red "$tag") tag until after the vote"
   echo "    passes and the tag is re-made with a gpg signature using:"
-  echo "      $(red "git tag -f -s -m '$projNameLong $ver' $tag") \\"
-  echo "      $(red "$commit")"
+  echo "      $(red "git tag -f -s -m '$projNameLong $ver'") \\"
+  echo "        $(red "$tag") \\"
+  echo "        $(red "$commit")"
   echo
   yellow "IMPORTANT!! IMPORTANT!! IMPORTANT!! IMPORTANT!! IMPORTANT!! IMPORTANT!!"
   echo
@@ -202,8 +203,9 @@ Branch:
     $(green "$branch")
 
 If this vote passes, a gpg-signed tag will be created using:
-    $(green "git tag -f -s -m '$projNameLong $ver' $tag") \\
-    $(green "$commit")
+    $(green "git tag -f -s -m '$projNameLong $ver'") \\
+      $(green "$tag") \\
+      $(green "$commit")
 
 Staging repo: $(green "$stagingRepoPrefix-$stagingrepo")
 Source (official release artifact): $(green "$stagingRepoPrefix-$stagingrepo/org/apache/$tlpName/$projName/$ver/$projName-$ver-$srcQualifier.tar.gz")
@@ -221,6 +223,8 @@ $(yellow "$projName-$ver-$srcQualifier.tar.gz.sha512") will contain:
 SHA512 ($(green "$projName-$ver-$srcQualifier.tar.gz")) = $(yellow "$srcSha")
 
 Issues and pull requests related to this release can be found at: $(green "https://github.com/apache/$projName/issues?q=milestone%3A$ver")
+
+Release testing instructions: $relTestingUrl
 
 Please vote one of:
 [ ] +1 - I have verified and accept...
@@ -414,14 +418,19 @@ createReleaseCandidate() {
 
   local numSrc
   numSrc=$(find target/checkout/ -type f -name "$projName-$ver-source-release.tar.gz" | wc -l)
+  local numBin
+  numBin=$(find target/checkout/ -type f -name "$projName-$ver-bin.tar.gz" | wc -l)
   shopt -s globstar
   local srcSha
   srcSha=""
+  local binSha
+  binSha=""
   [[ $numSrc == "1" ]] && srcSha=$(sha512sum target/checkout/**/"$projName-$ver-source-release.tar.gz" | cut -f1 -d" ")
+  [[ $numBin == "1" ]] && binSha=$(sha512sum target/checkout/**/"$projName-$ver-bin.tar.gz" | cut -f1 -d" ")
 
   # continue to creating email notification
   echo "$(red Running)" "$(yellow "$scriptname" --email "$ver" "$rc")"
-  createEmail "$ver" "$rc" "" "$srcSha"
+  createEmail "$ver" "$rc" "" "$srcSha" "$binSha"
 }
 
 SELECTED_FINGERPRINT=""
