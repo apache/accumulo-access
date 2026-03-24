@@ -29,7 +29,7 @@
   </parent>
   <groupId>org.apache.accumulo</groupId>
   <artifactId>accumulo-access</artifactId>
-  <version>1.0.0-beta2</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Apache Accumulo Access</name>
   <description>Apache Accumulo Access is a library that provides the same functionality,
@@ -85,7 +85,7 @@
   <scm>
     <connection>scm:git:https://gitbox.apache.org/repos/asf/accumulo-access.git</connection>
     <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/accumulo-access.git</developerConnection>
-    <tag>rel/accumulo-access-1.0.0-beta2</tag>
+    <tag>HEAD</tag>
     <url>https://gitbox.apache.org/repos/asf?p=accumulo-access.git</url>
   </scm>
   <issueManagement>
@@ -130,7 +130,7 @@ under the License.
     <minimalMavenBuildVersion>3.9</minimalMavenBuildVersion>
     <modernizer.javaVersion>${javaVersion}</modernizer.javaVersion>
     <!-- timestamp for reproducible outputs, updated on release by the release plugin -->
-    <project.build.outputTimestamp>2026-03-24T22:28:47Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-03-24T22:29:26Z</project.build.outputTimestamp>
     <rat.consoleOutput>true</rat.consoleOutput>
     <sourceReleaseAssemblyDescriptor>source-release-tar</sourceReleaseAssemblyDescriptor>
     <surefire.failIfNoSpecifiedTests>false</surefire.failIfNoSpecifiedTests>
