@@ -69,8 +69,9 @@ final class CharsWrapper implements CharSequence {
 
   @Override
   public boolean equals(Object o) {
-    return this == o || (o instanceof CharsWrapper obs && length() == obs.length() && Arrays
-        .equals(wrapped, offset, offset + len, obs.wrapped, obs.offset, obs.offset + obs.len));
+    return this == o || (o instanceof CharsWrapper && length() == ((CharsWrapper) o).length()
+        && Arrays.equals(wrapped, offset, offset + len, ((CharsWrapper) o).wrapped,
+            ((CharsWrapper) o).offset, ((CharsWrapper) o).offset + ((CharsWrapper) o).len));
   }
 
   @Override

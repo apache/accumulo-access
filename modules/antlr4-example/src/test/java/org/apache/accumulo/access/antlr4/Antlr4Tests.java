@@ -152,20 +152,20 @@ class Antlr4Tests {
         assertNotEquals(0, test.getExpressions().length);
         for (String expression : test.getExpressions()) {
           switch (test.getExpectedResult()) {
-            case ACCESSIBLE -> {
+            case ACCESSIBLE:
               assertTrue(evaluator.canAccess(expression), expression);
               assertTrue(antlr.canAccess(expression), expression);
-            }
-            case INACCESSIBLE -> {
+              break;
+            case INACCESSIBLE:
               assertFalse(evaluator.canAccess(expression), expression);
               assertFalse(antlr.canAccess(expression), expression);
-            }
-            case ERROR -> {
+              break;
+            case ERROR:
               assertThrows(InvalidAccessExpressionException.class,
                   () -> evaluator.canAccess(expression), expression);
               assertThrows(InvalidAccessExpressionException.class,
                   () -> antlr.canAccess(expression), expression);
-            }
+              break;
           }
         }
       }

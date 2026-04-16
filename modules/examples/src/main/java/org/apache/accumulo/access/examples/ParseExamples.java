@@ -85,12 +85,17 @@ public class ParseExamples {
 
     // determines the sort order of different kinds of subexpressions.
     private static int typeOrder(ExpressionType type) {
-      return switch (type) {
-        case AUTHORIZATION -> 1;
-        case OR -> 2;
-        case AND -> 3;
-        case EMPTY -> throw new IllegalArgumentException("Unexpected type " + type);
-      };
+      switch (type) {
+        case AUTHORIZATION:
+          return 1;
+        case OR:
+          return 2;
+        case AND:
+          return 3;
+        case EMPTY:
+        default:
+          throw new IllegalArgumentException("Unexpected type " + type);
+      }
     }
 
     @Override
@@ -111,7 +116,8 @@ public class ParseExamples {
 
     @Override
     public boolean equals(Object o) {
-      return this == o || (o instanceof NormalizedExpression n && compareTo(n) == 0);
+      return this == o
+          || (o instanceof NormalizedExpression && compareTo((NormalizedExpression) o) == 0);
     }
 
     @Override
