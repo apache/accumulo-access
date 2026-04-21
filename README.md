@@ -47,6 +47,11 @@ are package private and are not part of the public API.
   * [ExpressionType](modules/core/src/main/java/org/apache/accumulo/access/ParsedAccessExpression.java).
   * [Authorizations](modules/core/src/main/java/org/apache/accumulo/access/Authorizations.java).
 
+`AccessEvaluator`, `AccessExpression`, and `ParsedAccessExpression` will be
+sealed interfaces or classes in future releases that support class sealing. So,
+users should not create their own implementations of these. Their
+implementations are expected to be provided by this library only.
+
 ## Getting Started
 
 Add the library to your CLASSPATH. For Maven, use:
