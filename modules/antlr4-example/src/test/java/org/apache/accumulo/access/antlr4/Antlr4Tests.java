@@ -20,6 +20,7 @@ package org.apache.accumulo.access.antlr4;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -148,7 +149,7 @@ class Antlr4Tests {
 
       assertFalse(testSet.getTests().isEmpty());
       for (TestExpressions test : testSet.getTests()) {
-        assertFalse(test.getExpressions().length == 0);
+        assertNotEquals(0, test.getExpressions().length);
         for (String expression : test.getExpressions()) {
           switch (test.getExpectedResult()) {
             case ACCESSIBLE -> {
