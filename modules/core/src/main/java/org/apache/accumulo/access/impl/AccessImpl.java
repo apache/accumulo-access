@@ -40,7 +40,7 @@ public class AccessImpl implements Access {
   private final AuthorizationValidator authValidator;
 
   private void validateAuthArgument(CharSequence auth) {
-    if (auth.isEmpty()) {
+    if (auth.length() == 0) {
       throw InvalidAuthorizationException.emptyString();
     }
     if (!authValidator.test(auth, ANY)) {
