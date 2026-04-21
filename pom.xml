@@ -134,7 +134,7 @@ under the License.
     <rat.consoleOutput>true</rat.consoleOutput>
     <sourceReleaseAssemblyDescriptor>source-release-tar</sourceReleaseAssemblyDescriptor>
     <surefire.failIfNoSpecifiedTests>false</surefire.failIfNoSpecifiedTests>
-    <version.accumulo>2.1.4</version.accumulo>
+    <version.accumulo>3.0.0</version.accumulo>
     <version.apache-rat-plugin>0.18</version.apache-rat-plugin>
     <version.errorprone>2.47.0</version.errorprone>
     <version.gson>2.13.2</version.gson>
