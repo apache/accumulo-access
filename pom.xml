@@ -29,7 +29,7 @@
   </parent>
   <groupId>org.apache.accumulo</groupId>
   <artifactId>accumulo-access</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.0.0-beta3-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Apache Accumulo Access</name>
   <description>Apache Accumulo Access is a library that provides the same functionality,
@@ -130,7 +130,7 @@ under the License.
     <minimalMavenBuildVersion>3.9</minimalMavenBuildVersion>
     <modernizer.javaVersion>${javaVersion}</modernizer.javaVersion>
     <!-- timestamp for reproducible outputs, updated on release by the release plugin -->
-    <project.build.outputTimestamp>2026-03-24T22:29:26Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-04-21T21:48:46Z</project.build.outputTimestamp>
     <rat.consoleOutput>true</rat.consoleOutput>
     <sourceReleaseAssemblyDescriptor>source-release-tar</sourceReleaseAssemblyDescriptor>
     <surefire.failIfNoSpecifiedTests>false</surefire.failIfNoSpecifiedTests>
