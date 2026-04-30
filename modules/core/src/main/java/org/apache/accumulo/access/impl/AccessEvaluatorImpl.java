@@ -52,7 +52,7 @@ public final class AccessEvaluatorImpl implements AccessEvaluator {
         .andThen(auth -> wrappedAuths.add(new CharsWrapper(auth.toCharArray()))));
 
     this.authorizedPredicate =
-        auth -> auth instanceof CharsWrapper ? wrappedAuths.contains((CharsWrapper) auth)
+        auth -> auth instanceof CharsWrapper wrapped ? wrappedAuths.contains(wrapped)
             : wrappedAuths.contains(new CharsWrapper(auth.toString().toCharArray()));
     this.authorizationValidator = authorizationValidator;
   }
