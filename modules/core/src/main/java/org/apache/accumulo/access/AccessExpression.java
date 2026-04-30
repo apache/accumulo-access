@@ -21,12 +21,15 @@ package org.apache.accumulo.access;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.apache.accumulo.access.impl.AccessExpressionImpl;
+
 /**
  * An immutable wrapper for a validated access expression.
  *
  * @since 1.0.0
  */
-public abstract class AccessExpression implements Serializable {
+public sealed abstract class AccessExpression implements Serializable
+    permits AccessExpressionImpl, ParsedAccessExpression {
 
   private static final long serialVersionUID = 1L;
 
@@ -50,8 +53,8 @@ public abstract class AccessExpression implements Serializable {
 
   @Override
   public boolean equals(Object o) {
-    return this == o || (o instanceof AccessExpression
-        && Objects.equals(getExpression(), ((AccessExpression) o).getExpression()));
+    return this == o
+        || (o instanceof AccessExpression a && Objects.equals(getExpression(), a.getExpression()));
   }
 
   @Override

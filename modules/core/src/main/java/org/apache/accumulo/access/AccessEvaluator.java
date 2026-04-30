@@ -18,6 +18,9 @@
  */
 package org.apache.accumulo.access;
 
+import org.apache.accumulo.access.impl.AccessEvaluatorImpl;
+import org.apache.accumulo.access.impl.MultiAccessEvaluatorImpl;
+
 /**
  * This class is used to decide if an entity with a given set of authorizations can access
  * subsequent access expressions.
@@ -50,7 +53,7 @@ package org.apache.accumulo.access;
  * @see <a href="https://github.com/apache/accumulo-access">Accumulo Access Documentation</a>
  * @since 1.0.0
  */
-public interface AccessEvaluator {
+public sealed interface AccessEvaluator permits AccessEvaluatorImpl, MultiAccessEvaluatorImpl {
 
   /**
    * Evaluates an expression.
